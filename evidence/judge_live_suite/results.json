@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df123f21-f8e42ef95e",
+  "run_id": "001a1df1e67d4-3efd7f5e43",
   "suite_name": "payments-judge-live",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,72 +13,19 @@
       "tiktoken": "0.14.0"
     },
     "judge": "anthropic:global.anthropic.claude-sonnet-4-6",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "94729b46fee2b1f0",
+    "config_hash": "1e9efc09ab2b2dda",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743877.599866,
+    "started_at": 1794744674.4663296,
     "finished_at": null
   },
   "results": [
-    {
-      "case_id": "wrong-answer",
-      "status": "failed",
-      "input": "what is the daily ach limit",
-      "actual_output": "$25000",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "correctness",
-          "status": "scored",
-          "score": 0.1,
-          "passed": false,
-          "reason": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000).",
-          "details": {
-            "judge_rationale": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000)."
-          },
-          "usage": {
-            "prompt_tokens": 143,
-            "completion_tokens": 69,
-            "cost_usd": 0.001464,
-            "provider": "anthropic",
-            "model": "global.anthropic.claude-sonnet-4-6"
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 1.3039090008533094,
-      "judge_usage": {
-        "prompt_tokens": 143,
-        "completion_tokens": 69,
-        "cost_usd": 0.001464,
-        "provider": "anthropic",
-        "model": "global.anthropic.claude-sonnet-4-6"
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "judge",
-        "banking",
-        "live",
-        "failure"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
     {
       "case_id": "dispute-paraphrase",
       "status": "passed",
@@ -106,7 +53,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.4268159973435104,
+      "latency_ms": 1.5368229978776071,
       "judge_usage": {
         "prompt_tokens": 156,
         "completion_tokens": 55,
@@ -158,7 +105,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.642473001993494,
+      "latency_ms": 0.3929759986931458,
       "judge_usage": {
         "prompt_tokens": 153,
         "completion_tokens": 83,
@@ -210,7 +157,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.1996670000371523,
+      "latency_ms": 2.084569998260122,
       "judge_usage": {
         "prompt_tokens": 147,
         "completion_tokens": 48,
@@ -230,6 +177,59 @@
         "judge",
         "banking",
         "live"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "wrong-answer",
+      "status": "failed",
+      "input": "what is the daily ach limit",
+      "actual_output": "$25000",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "correctness",
+          "status": "scored",
+          "score": 0.1,
+          "passed": false,
+          "reason": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000).",
+          "details": {
+            "judge_rationale": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000)."
+          },
+          "usage": {
+            "prompt_tokens": 143,
+            "completion_tokens": 69,
+            "cost_usd": 0.001464,
+            "provider": "anthropic",
+            "model": "global.anthropic.claude-sonnet-4-6"
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.3229489995865151,
+      "judge_usage": {
+        "prompt_tokens": 143,
+        "completion_tokens": 69,
+        "cost_usd": 0.001464,
+        "provider": "anthropic",
+        "model": "global.anthropic.claude-sonnet-4-6"
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "judge",
+        "banking",
+        "live",
+        "failure"
       ],
       "repeat": {},
       "session_id": null,

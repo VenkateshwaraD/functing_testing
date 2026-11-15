@@ -7,7 +7,7 @@ Metrics declare which TestCase fields they require; cases missing them get
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aitestkit.models import MetricResult, MetricStatus, TargetOutput, TestCase
 
@@ -39,6 +39,17 @@ class MetricContext:
         self.memory_store = memory_store
         self.vector_store = vector_store
 
+    def derive(self, **overrides: Any) -> MetricContext:
+        """Copy with field overrides — per-case stores/registries."""
+        return MetricContext(
+            judge=overrides.get("judge", self.judge),
+            embedder=overrides.get("embedder", self.embedder),
+            embed_model=overrides.get("embed_model", self.embed_model),
+            redactor=overrides.get("redactor", self.redactor),
+            memory_store=overrides.get("memory_store", self.memory_store),
+            vector_store=overrides.get("vector_store", self.vector_store),
+        )
+
     def require_judge(self, metric_name: str) -> Judge:
         if self.judge is None:
             raise ValueError(f"metric {metric_name!r} requires a judge; none configured")
@@ -63,6 +74,7 @@ class BaseMetric(ABC):
         # Set by build_metric from the suite spec — see MetricSpec.
         self.negated = False
         self.informational = False
+        self.required = False
 
     def missing_fields(self, case: TestCase) -> list[str]:
         """Fields this metric needs that the case doesn't provide."""
@@ -79,11 +91,22 @@ class BaseMetric(ABC):
         """Public entry: handles skip-for-missing-fields then delegates."""
         missing = self.missing_fields(case)
         if missing:
-            return MetricResult.skipped(
+            result = MetricResult.skipped(
                 metric=self.name,
                 reason=f"case missing required fields: {', '.join(missing)}",
             )
+            if self.required:
+                return MetricResult.error(
+                    metric=self.name,
+                    reason=f"required metric skipped: {result.reason}",
+                )
+            return result
         result = await self.measure(case, output, ctx)
+        if self.required and result.status == MetricStatus.SKIPPED:
+            return MetricResult.error(
+                metric=self.name,
+                reason=f"required metric skipped: {result.reason}",
+            )
         if self.informational:
             result.details["informational"] = True
         if (

@@ -80,6 +80,8 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
   all-pass → `failed` with `unexpected_pass` detail. Never use
   `threshold: 0.0` to hide failures — it's rejected at load unless the
   metric sets `informational: true` (non-gating, excluded from verdict).
+- `required: true` on a metric means a skip is an authoring bug — it
+  reports `error`, never a silent pass-by-omission.
 - Gates `max_error_cases`, `max_flaky`, `max_skip_rate` are mandatory on
   every suite. `min_pass_rate` judges only
   passed/failed/xfailed — zero judged cases fails the gate.

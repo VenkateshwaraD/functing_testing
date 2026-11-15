@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1261ed-e2323538ef",
+  "run_id": "001a1df1d8dbb-ad9d2706d0",
   "suite_name": "payments-llm",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,16 +13,16 @@
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "52227d3d387a7bd1",
+    "config_hash": "e1ce001510ff38cc",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743886.5718455,
+    "started_at": 1794744618.6581638,
     "finished_at": null
   },
   "results": [
@@ -72,7 +72,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.6878340029506944,
+      "latency_ms": 1.3200989997130819,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -91,77 +91,6 @@
       "tags": [
         "banking",
         "limits"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
-    {
-      "case_id": "out-of-domain",
-      "status": "passed",
-      "input": "what is the weather today",
-      "actual_output": "I don't know",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "exact_match",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "exact match",
-          "details": {
-            "expected": "I don't know",
-            "actual": "I don't know"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "not_contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "0/3 forbidden substrings leaked",
-          "details": {
-            "leaked": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 3.7825449981028214,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "negative",
-        "edge"
       ],
       "repeat": {},
       "session_id": null,
@@ -213,7 +142,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 5.337768001481891,
+      "latency_ms": 0.3706559982674662,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -233,6 +162,77 @@
         "smoke",
         "banking",
         "read"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "out-of-domain",
+      "status": "passed",
+      "input": "what is the weather today",
+      "actual_output": "I don't know",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
+          "details": {
+            "expected": "I don't know",
+            "actual": "I don't know"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "not_contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "0/3 forbidden substrings leaked",
+          "details": {
+            "leaked": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.061719002085738,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "negative",
+        "edge"
       ],
       "repeat": {},
       "session_id": null,
@@ -284,7 +284,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.099054999940563,
+      "latency_ms": 1.5575930010527372,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -354,7 +354,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.349418998870533,
+      "latency_ms": 1.5618929974152707,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,

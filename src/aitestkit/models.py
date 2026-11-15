@@ -138,11 +138,13 @@ class TestCase(BaseModel):
     # Per-case metric selection — overrides the suite's metrics: list.
     # YAML `assert:` accepts metric names or {name: ..., params} dicts.
     assert_: list[Any] | None = Field(default=None, alias="assert")
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 
 class ConversationTurn(BaseModel):
     """One turn in a multi-turn conversational test."""
+
+    model_config = ConfigDict(extra="forbid")
 
     input: str
     expected_output: str | None = None
@@ -151,6 +153,8 @@ class ConversationTurn(BaseModel):
 
 class ConversationCase(BaseModel):
     """A multi-turn test case (conversational RAG, memory probes)."""
+
+    model_config = ConfigDict(extra="forbid")
 
     id: str | None = None
     turns: list[ConversationTurn]

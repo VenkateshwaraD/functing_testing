@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1275e0-0a4545576b",
+  "run_id": "001a1df1da5e4-564d19c329",
   "suite_name": "payments-memory",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,108 +13,19 @@
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "6e78b309555b2aa8",
+    "config_hash": "93977e622470638f",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743891.6258001,
+    "started_at": 1794744624.895271,
     "finished_at": null
   },
   "results": [
-    {
-      "case_id": "beneficiary-recall",
-      "status": "passed",
-      "input": "who is my beneficiary",
-      "actual_output": "your beneficiary is landlord llc",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "context_retention",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "retained 1/1 facts",
-          "details": {
-            "retained": [
-              "landlord llc"
-            ],
-            "lost": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "forgetting_check",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "key 'beneficiary' retained",
-          "details": {
-            "memory_key": "beneficiary",
-            "value": "landlord llc"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "contradiction_resolution",
-          "status": "skipped",
-          "score": null,
-          "passed": null,
-          "reason": "needs superseded+current metadata",
-          "details": {},
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 1.2837789981858805,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "memory",
-        "banking"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
     {
       "case_id": "currency-moved",
       "status": "passed",
@@ -180,7 +91,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.3833659975498449,
+      "latency_ms": 2.281232998939231,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -270,7 +181,96 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.5036309996503405,
+      "latency_ms": 0.4137659998377785,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "memory",
+        "banking"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "beneficiary-recall",
+      "status": "passed",
+      "input": "who is my beneficiary",
+      "actual_output": "your beneficiary is landlord llc",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "context_retention",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "retained 1/1 facts",
+          "details": {
+            "retained": [
+              "landlord llc"
+            ],
+            "lost": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "forgetting_check",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "key 'beneficiary' retained",
+          "details": {
+            "memory_key": "beneficiary",
+            "value": "landlord llc"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "contradiction_resolution",
+          "status": "skipped",
+          "score": null,
+          "passed": null,
+          "reason": "needs superseded+current metadata",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.242911999928765,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -359,7 +359,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.20986299932701513,
+      "latency_ms": 1.3690000014321413,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -449,7 +449,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.2060529986920301,
+      "latency_ms": 0.3900559968315065,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -539,7 +539,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.17669200315140188,
+      "latency_ms": 0.23079399761627428,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -629,7 +629,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.16578299982938915,
+      "latency_ms": 1.2161570011812728,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,

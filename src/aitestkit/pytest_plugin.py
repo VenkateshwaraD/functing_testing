@@ -59,7 +59,7 @@ class AitestkitFile(pytest.File):
 
         data = yaml.safe_load(self.path.read_text()) or {}
         cases = data.get("cases", [])
-        spec_keys = {"name", "threshold", "negate", "informational"}
+        spec_keys = {"name", "threshold", "negate", "informational", "required"}
         metrics = [
             build_metric(
                 spec["name"],
@@ -67,6 +67,7 @@ class AitestkitFile(pytest.File):
                 params={k: v for k, v in spec.items() if k not in spec_keys},
                 negate=bool(spec.get("negate", False)),
                 informational=bool(spec.get("informational", False)),
+                required=bool(spec.get("required", False)),
             )
             for spec in data.get("metrics", [])
         ]

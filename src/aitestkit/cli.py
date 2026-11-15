@@ -97,6 +97,7 @@ def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
             params=spec.params,
             negate=spec.negate,
             informational=spec.informational,
+            required=spec.required,
         )
         for spec in suite.metrics
     ]
@@ -266,7 +267,6 @@ async def _run_suite(
     from aitestkit.datasets import load_cases, load_conversations
     from aitestkit.gates import evaluate_gates
     from aitestkit.history import record_run
-    from aitestkit.metadata import collect_metadata
     from aitestkit.models import TestRun
     from aitestkit.providers.cassette import Cassette
     from aitestkit.redact import Redactor
@@ -396,13 +396,7 @@ async def _run_suite(
     test_run = TestRun(
         run_id=run_id_var.get(),
         suite_name=suite.name,
-        metadata=collect_metadata(
-            judge=f"{suite.judge.provider}:{suite.judge.model}",
-            embedder=f"{suite.embedder.provider}:{suite.embedder.model}",
-            version_tags=suite.version_tags,
-            seed=suite.seed,
-            config_hash=suite.config_hash,
-        ),
+        metadata=_run_metadata(suite, judge_provider, judge_model),
     )
     stream = ResultsStream(out_dir / "results.jsonl", redactor=redactor)
     stream.open(test_run)
@@ -432,7 +426,8 @@ async def _run_suite(
         max_cost_usd=suite.max_cost_usd,
         models=suite.models or None,
         conversations=conversations,
-        tool_registry=_build_tool_registry(suite),
+        tool_registry_factory=lambda: _build_tool_registry(suite),
+        memory_store_factory=lambda: _build_memory_store(suite),
         prompts=suite.prompts or None,
     )
     _install_sigint(engine)
@@ -443,12 +438,8 @@ async def _run_suite(
         test_run.results = previous_results + test_run.results
     test_run.run_id = run_id_var.get()
     test_run.suite_name = suite.name
-    test_run.metadata = collect_metadata(
-        judge=f"{suite.judge.provider}:{suite.judge.model}",
-        embedder=f"{suite.embedder.provider}:{suite.embedder.model}",
-        version_tags=suite.version_tags,
-        seed=suite.seed,
-        config_hash=suite.config_hash,
+    test_run.metadata = _run_metadata(
+        suite, judge_provider, judge_model, test_run
     )
     attribution.apply_attribution(test_run)
 
@@ -504,15 +495,66 @@ def _echo_compare(comparison: dict) -> None:
         typer.echo(f"   metadata drift: {drift}")
 
 
+def _run_metadata(
+    suite: SuiteConfig,
+    judge_provider: str | None,
+    judge_model: str | None,
+    test_run: TestRun | None = None,
+) -> Any:
+    """Run metadata stamped with the *effective* judge/embedder.
+
+    CLI overrides count, an unconfigured embedder reports as absent, and —
+    post-run — the judge recorded in actual metric usage wins over config
+    (cassette replay serves the recorded provider, not the configured one).
+    """
+    from aitestkit.metadata import collect_metadata
+
+    effective_judge = judge_provider or suite.judge.provider
+    effective_judge_model = judge_model or suite.judge.model
+    if test_run is not None:
+        observed = {
+            (u.provider, u.model)
+            for r in test_run.results
+            for m in r.metrics
+            for u in [m.usage]
+            if u.provider and u.model
+        }
+        if len(observed) == 1:
+            effective_judge, effective_judge_model = next(iter(observed))
+    embedder = (
+        f"{suite.embedder.provider}:{suite.embedder.model}"
+        if suite.embedder.provider
+        else None
+    )
+    return collect_metadata(
+        judge=f"{effective_judge}:{effective_judge_model}",
+        embedder=embedder,
+        version_tags=suite.version_tags,
+        seed=suite.seed,
+        config_hash=suite.config_hash,
+    )
+
+
 def _exit_for(test_run: TestRun, budget_hit: bool) -> ExitCode:
+    """Exit code from evaluated gates first, then explicit outcome counts.
+
+    Gate results win (they encode declared tolerances). Ungated outcomes
+    still count: errors abort, and flaky cases with no ``max_flaky`` gate
+    declared are instability, not a pass.
+    """
     from aitestkit.models import CaseStatus
 
     if budget_hit:
         return ExitCode.BUDGET_EXCEEDED
     if any(g.passed is False for g in test_run.gates):
         return ExitCode.GATE_FAILURE
-    if any(r.status == CaseStatus.ERROR for r in test_run.results):
+    errors = sum(r.status == CaseStatus.ERROR for r in test_run.results)
+    if errors:
         return ExitCode.ENFORCEMENT_ABORT
+    flaky = sum(r.status == CaseStatus.FLAKY for r in test_run.results)
+    flaky_gated = any(g.name == "max_flaky" for g in test_run.gates)
+    if flaky and not flaky_gated:
+        return ExitCode.TEST_FAILURES
     if any(r.status == CaseStatus.FAILED for r in test_run.results):
         return ExitCode.TEST_FAILURES
     return ExitCode.OK

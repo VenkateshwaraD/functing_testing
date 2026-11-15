@@ -21,6 +21,11 @@ _BUILTIN_PATTERNS: list[str] = [
     r"Bearer [A-Za-z0-9._\-]{10,}",
     r"xox[baprs]-[A-Za-z0-9-]{10,}",
     r"-----BEGIN [A-Z ]+PRIVATE KEY-----[\s\S]*?-----END [A-Z ]+PRIVATE KEY-----",
+    # PII — IBAN, payment-card PAN (grouped or contiguous), email
+    r"\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b",                 # IBAN
+    r"\b(?:\d{4}[ -]?){3}\d{4}\b",                       # PAN, grouped 16-digit
+    r"\b\d{13,19}\b",                                    # PAN, contiguous 13-19
+    r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",  # email
 ]
 
 # Env vars whose values must never appear in persisted output.

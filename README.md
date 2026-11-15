@@ -75,7 +75,7 @@ vectordb:                      # vector store under test
   collection: docs
 
 tools:                         # tool registry with fault injection + mocks
-  search: {function: "myapp.tools:search", fault: {rate: 0.1, error: timeout}}
+  search: {function: "myapp.tools:search", fault: {times: 1, error: "timeout"}}
 
 metrics:
   - name: faithfulness
@@ -91,9 +91,12 @@ max_cost_usd: 0.50             # run-level budget cap
 
 gates:                         # quality gates (exit code 5 on failure)
   min_pass_rate: 0.9
-  min_metric_mean: {faithfulness: 0.85}
-  max_flaky: 2
-  max_regression_vs_baseline: {faithfulness: 0.02}
+  max_error_cases: 0
+  max_flaky: 0.2               # fraction of cases allowed flaky
+  max_skip_rate: 0.0           # fraction of metric results allowed skipped
+  per_metric:
+    faithfulness: {min_mean: 0.85}
+  max_regression_vs_baseline: 0.02
 
 coverage:                      # requirement coverage by tag
   tools: agentic-tools

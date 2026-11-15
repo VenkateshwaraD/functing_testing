@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df125b06-c5467db7b2",
+  "run_id": "001a1df1d877a-e2c49ff063",
   "suite_name": "payments-api",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,158 +13,19 @@
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "88279ad43bb7143a",
+    "config_hash": "6f5385f0236a5557",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743884.8976083,
+    "started_at": 1794744617.2142956,
     "finished_at": null
   },
   "results": [
-    {
-      "case_id": "payment-status",
-      "status": "passed",
-      "input": "payment status TX-78231",
-      "actual_output": "answer for payment status TX-78231",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "answer for"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_sequence",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 expected tools in order",
-          "details": {
-            "tool_call_diff": {
-              "expected": [
-                "lookup"
-              ],
-              "actual": [
-                "lookup"
-              ],
-              "missing": [],
-              "unexpected": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_args_correct",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "args correct",
-          "details": {
-            "tool_call_diff": {
-              "mismatches": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "latency",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "84ms vs max 2000ms",
-          "details": {
-            "latency_ms": 83.92884500062792,
-            "max_ms": 2000
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": {
-        "schema_version": 1,
-        "events": [
-          {
-            "type": "tool_call",
-            "agent_id": null,
-            "step_index": 0,
-            "timestamp": 1794743884.880543,
-            "payload": {
-              "name": "lookup",
-              "args": {
-                "q": "payment status TX-78231"
-              },
-              "result": null
-            }
-          }
-        ],
-        "finish_reason": null
-      },
-      "latency_ms": 83.92884500062792,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "api",
-        "banking",
-        "payments"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
     {
       "case_id": "fx-quote",
       "status": "passed",
@@ -245,9 +106,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "18ms vs max 2000ms",
+          "reason": "89ms vs max 2000ms",
           "details": {
-            "latency_ms": 17.784407998988172,
+            "latency_ms": 89.14533300048788,
             "max_ms": 2000
           },
           "usage": {
@@ -267,7 +128,7 @@
             "type": "tool_call",
             "agent_id": null,
             "step_index": 0,
-            "timestamp": 1794743884.8816488,
+            "timestamp": 1794744617.1940246,
             "payload": {
               "name": "lookup",
               "args": {
@@ -279,7 +140,7 @@
         ],
         "finish_reason": null
       },
-      "latency_ms": 17.784407998988172,
+      "latency_ms": 89.14533300048788,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -299,6 +160,145 @@
         "api",
         "banking",
         "fx"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "payment-status",
+      "status": "passed",
+      "input": "payment status TX-78231",
+      "actual_output": "answer for payment status TX-78231",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "answer for"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_sequence",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 expected tools in order",
+          "details": {
+            "tool_call_diff": {
+              "expected": [
+                "lookup"
+              ],
+              "actual": [
+                "lookup"
+              ],
+              "missing": [],
+              "unexpected": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_args_correct",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "args correct",
+          "details": {
+            "tool_call_diff": {
+              "mismatches": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "latency",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "19ms vs max 2000ms",
+          "details": {
+            "latency_ms": 19.42256999973324,
+            "max_ms": 2000
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": {
+        "schema_version": 1,
+        "events": [
+          {
+            "type": "tool_call",
+            "agent_id": null,
+            "step_index": 0,
+            "timestamp": 1794744617.1952639,
+            "payload": {
+              "name": "lookup",
+              "args": {
+                "q": "payment status TX-78231"
+              },
+              "result": null
+            }
+          }
+        ],
+        "finish_reason": null
+      },
+      "latency_ms": 19.42256999973324,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "api",
+        "banking",
+        "payments"
       ],
       "repeat": {},
       "session_id": null,

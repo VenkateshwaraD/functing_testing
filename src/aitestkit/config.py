@@ -16,11 +16,13 @@ from typing import Any
 
 import yaml
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from aitestkit.exceptions import ConfigError
 
 _DEFAULTS_PATH = Path(__file__).parent / "defaults.yaml"
+
+_STRICT = ConfigDict(extra="forbid")
 
 
 def load_defaults() -> dict[str, Any]:
@@ -33,6 +35,8 @@ def load_defaults() -> dict[str, Any]:
 
 
 class JudgeConfig(BaseModel):
+    model_config = _STRICT
+
     provider: str = "openai"
     model: str = "gpt-4o-mini"
     temperature: float = 0.0
@@ -43,12 +47,16 @@ class JudgeConfig(BaseModel):
 
 
 class EmbedderConfig(BaseModel):
+    model_config = _STRICT
+
     provider: str | None = None
     model: str = "text-embedding-3-small"
     api_key_env: str | None = None
 
 
 class TargetConfig(BaseModel):
+    model_config = _STRICT
+
     type: str  # python|http|command|langgraph|custom|mcp
     function: str | None = None          # python target: module:function
     url: str | None = None               # http target
@@ -64,6 +72,8 @@ class TargetConfig(BaseModel):
 
 
 class ProviderEntry(BaseModel):
+    model_config = _STRICT
+
     provider: str
     model: str
     api_key_env: str | None = None
@@ -73,6 +83,8 @@ class ProviderEntry(BaseModel):
 
 
 class GateMetricRule(BaseModel):
+    model_config = _STRICT
+
     min_mean: float | None = None
     min_p10: float | None = None
     max_p95: float | None = None
@@ -80,6 +92,8 @@ class GateMetricRule(BaseModel):
 
 
 class GatesConfig(BaseModel):
+    model_config = _STRICT
+
     min_pass_rate: float | None = None
     per_metric: dict[str, GateMetricRule] = Field(default_factory=dict)
     max_error_cases: int | None = None
@@ -90,6 +104,8 @@ class GatesConfig(BaseModel):
 
 
 class MetricSpec(BaseModel):
+    model_config = _STRICT
+
     name: str
     threshold: float | None = None
     params: dict[str, Any] = Field(default_factory=dict)
@@ -99,6 +115,9 @@ class MetricSpec(BaseModel):
     # Recorded for review but excluded from case pass/fail — required when
     # an explicit `threshold: 0.0` would otherwise make the metric unfailable.
     informational: bool = False
+    # Must produce a verdict — a required metric that skips (missing case
+    # fields) reports an error instead of silently passing by omission.
+    required: bool = False
 
 
 class PromptVariant(BaseModel):
@@ -110,6 +129,8 @@ class PromptVariant(BaseModel):
     exactly one of ``template``/``file`` is required.
     """
 
+    model_config = _STRICT
+
     name: str
     template: str | None = None
     file: str | None = None
@@ -117,6 +138,8 @@ class PromptVariant(BaseModel):
 
 class SuiteConfig(BaseModel):
     """Validated suite definition."""
+
+    model_config = _STRICT
 
     name: str = "suite"
     target: TargetConfig | None = None
@@ -129,8 +152,8 @@ class SuiteConfig(BaseModel):
     providers: dict[str, ProviderEntry] = Field(default_factory=dict)
     gates: GatesConfig = Field(default_factory=GatesConfig)
     coverage: dict[str, str] = Field(default_factory=dict)  # tag -> capability
-    repeat: int = 1
-    concurrency: int = 8
+    repeat: int = Field(default=1, ge=1)
+    concurrency: int = Field(default=8, ge=1)
     case_timeout_seconds: int = 300
     max_cost_usd: float | None = None
     guardrails: dict[str, Any] = Field(default_factory=dict)
@@ -225,7 +248,7 @@ def _normalize_metrics(raw: Any) -> list[MetricSpec]:
             name = item.get("name")
             if not name:
                 raise ConfigError(f"metric entry {item!r} missing 'name'")
-            spec_keys = {"name", "threshold", "negate", "informational"}
+            spec_keys = {"name", "threshold", "negate", "informational", "required"}
             params = {k: v for k, v in item.items() if k not in spec_keys}
             spec = MetricSpec(
                 name=name,
@@ -233,6 +256,7 @@ def _normalize_metrics(raw: Any) -> list[MetricSpec]:
                 params=params,
                 negate=bool(item.get("negate", False)),
                 informational=bool(item.get("informational", False)),
+                required=bool(item.get("required", False)),
             )
             if spec.threshold == 0.0 and not spec.informational:
                 raise ConfigError(

@@ -220,3 +220,120 @@ def test_contains_rejects_empty_substrings() -> None:
         Contains()
     with pytest.raises(ValueError):
         Contains(substrings=[])
+
+
+async def test_required_metric_skip_becomes_error() -> None:
+    metric = ExactMatch()
+    metric.required = True
+    case = TestCase(id="c", input="what is the daily ach limit")  # no expected_output
+    test_run, _ = await _engine([metric]).run([case])
+    result = test_run.results[0]
+    assert result.status == CaseStatus.ERROR
+    assert "required metric skipped" in result.metrics[0].reason
+
+
+def test_required_flag_flows_through_normalize() -> None:
+    specs = _normalize_metrics([{"name": "exact_match", "required": True}])
+    assert specs[0].required is True
+
+
+def test_config_forbids_unknown_keys() -> None:
+    import yaml
+    from aitestkit.config import SuiteConfig
+
+    with pytest.raises(Exception):
+        SuiteConfig.model_validate({"name": "x", "gates": {"bogus_gate": 1}})
+    with pytest.raises(Exception):
+        TestCase(input="hi", bogus_field=True)  # type: ignore[call-arg]
+
+
+def test_concurrency_must_be_positive() -> None:
+    with pytest.raises(ConfigError, match="concurrency"):
+        _engine([]).__class__(
+            target=PythonTarget(spec="demo_app:answer"),
+            metrics=[],
+            ctx=MetricContext(),
+            concurrency=0,
+        )
+
+
+async def test_unexpected_target_error_is_error_case() -> None:
+    class CrashingTarget:
+        name = "crash"
+
+        async def invoke(self, case, **kwargs):
+            raise RuntimeError("segfault-ish")
+
+    engine = RunEngine(
+        target=CrashingTarget(), metrics=[], ctx=MetricContext()
+    )
+    test_run, _ = await engine.run([TestCase(id="c", input="x")])
+    assert test_run.results[0].status == CaseStatus.ERROR
+    assert "unexpected error" in (test_run.results[0].error or "")
+
+
+async def test_per_case_registry_and_store_reset() -> None:
+    from aitestkit.agentic.memory import DictMemoryStore
+
+    stores = []
+    registries = []
+
+    def store_factory():
+        s = DictMemoryStore()
+        stores.append(s)
+        return s
+
+    def registry_factory():
+        from aitestkit.targets.tool_registry import ToolRegistry
+
+        r = ToolRegistry()
+        registries.append(r)
+        return r
+
+    engine = RunEngine(
+        target=PythonTarget(spec="demo_app:answer"),
+        metrics=[ExactMatch()],
+        ctx=MetricContext(),
+        tool_registry_factory=registry_factory,
+        memory_store_factory=store_factory,
+    )
+    cases = [
+        TestCase(id="a", input="what is the daily ach limit", expected_output="$25000"),
+        TestCase(id="b", input="what is the daily ach limit", expected_output="$25000"),
+    ]
+    test_run, _ = await engine.run(cases)
+    assert len(stores) == 2 and stores[0] is not stores[1]
+    assert len(registries) == 2 and registries[0] is not registries[1]
+
+
+def test_exit_code_counts_ungated_flaky() -> None:
+    from aitestkit.cli import _exit_for
+
+    run = TestRun(
+        run_id="r",
+        results=[CaseResult(case_id="c", status=CaseStatus.FLAKY, input="")],
+    )
+    assert _exit_for(run, False).value == 1  # TEST_FAILURES — ungated instability
+
+    gated = TestRun(
+        run_id="r",
+        results=[CaseResult(case_id="c", status=CaseStatus.FLAKY, input="")],
+        gates=[
+            __import__("aitestkit.models", fromlist=["GateResult"]).GateResult(
+                name="max_flaky", passed=True, actual=1.0, expected="<= 1.0"
+            )
+        ],
+    )
+    assert _exit_for(gated, False).value == 0
+
+
+def test_pii_patterns_redact() -> None:
+    from aitestkit.redact import Redactor
+
+    r = Redactor()
+    text = "iban GB29NWBK60161331926819 card 4111 1111 1111 1111 mail a@bank.com"
+    out = r.redact_text(text)
+    assert "GB29NWBK60161331926819" not in out
+    assert "4111" not in out
+    assert "a@bank.com" not in out
+    assert out.count("[REDACTED]") == 3

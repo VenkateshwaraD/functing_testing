@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1264ec-16892dc718",
+  "run_id": "001a1df1d9076-6aae47c47e",
   "suite_name": "payments-llm-v2",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,16 +13,16 @@
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "8fb2822de04053a6",
+    "config_hash": "5c682947122c8dc8",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743887.271124,
+    "started_at": 1794744619.3563678,
     "finished_at": null
   },
   "results": [
@@ -72,7 +72,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.3455199987220112,
+      "latency_ms": 3.260146997490665,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -91,77 +91,6 @@
       "tags": [
         "banking",
         "limits"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
-    {
-      "case_id": "out-of-domain",
-      "status": "passed",
-      "input": "what is the weather today",
-      "actual_output": "I don't know",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "exact_match",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "exact match",
-          "details": {
-            "expected": "I don't know",
-            "actual": "I don't know"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "not_contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "0/3 forbidden substrings leaked",
-          "details": {
-            "leaked": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 0.36471600105869584,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "negative",
-        "edge"
       ],
       "repeat": {},
       "session_id": null,
@@ -213,7 +142,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.8225969979539514,
+      "latency_ms": 0.4476969988900237,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -239,21 +168,21 @@
       "metadata": {}
     },
     {
-      "case_id": "wire-cutoff",
-      "status": "failed",
-      "input": "what is the wire transfer cutoff",
-      "actual_output": "The answer is: 3:00 pm et.",
+      "case_id": "out-of-domain",
+      "status": "passed",
+      "input": "what is the weather today",
+      "actual_output": "I don't know",
       "error": null,
       "metrics": [
         {
           "metric": "exact_match",
           "status": "scored",
-          "score": 0.0,
-          "passed": false,
-          "reason": "output differs from expected",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
           "details": {
-            "expected": "3:00 pm et",
-            "actual": "The answer is: 3:00 pm et."
+            "expected": "I don't know",
+            "actual": "I don't know"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -284,7 +213,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.2631179997697473,
+      "latency_ms": 2.601328000309877,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -302,7 +231,8 @@
       "attribution": null,
       "tags": [
         "banking",
-        "policy"
+        "negative",
+        "edge"
       ],
       "repeat": {},
       "session_id": null,
@@ -354,7 +284,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.2489679975260515,
+      "latency_ms": 1.8873469998652581,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -373,6 +303,76 @@
       "tags": [
         "banking",
         "disputes"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "wire-cutoff",
+      "status": "failed",
+      "input": "what is the wire transfer cutoff",
+      "actual_output": "The answer is: 3:00 pm et.",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 0.0,
+          "passed": false,
+          "reason": "output differs from expected",
+          "details": {
+            "expected": "3:00 pm et",
+            "actual": "The answer is: 3:00 pm et."
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "not_contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "0/3 forbidden substrings leaked",
+          "details": {
+            "leaked": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.9127480009046849,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "policy"
       ],
       "repeat": {},
       "session_id": null,

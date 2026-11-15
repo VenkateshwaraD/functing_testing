@@ -53,6 +53,9 @@ def report_summary(test_run: TestRun) -> None:
     typer.echo("")
     typer.echo(f"== {test_run.suite_name or 'run'}: {total} cases — {' '.join(parts)}")
     typer.echo(
+        f"   errors={counts.get('error', 0)} flaky={counts.get('flaky', 0)}"
+    )
+    typer.echo(
         f"   latency {total_latency:.0f}ms total | "
         f"sut ${sut_cost:.4f} | judge ${judge_cost:.4f}"
     )

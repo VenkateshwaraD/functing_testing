@@ -63,6 +63,7 @@ def build_metric(
     params: dict[str, Any],
     negate: bool = False,
     informational: bool = False,
+    required: bool = False,
 ) -> BaseMetric:
     """Instantiate a registered metric from a suite spec."""
     register_builtins()
@@ -80,4 +81,5 @@ def build_metric(
         raise ConfigError(f"metric {name!r}: bad params {params}: {e}") from e
     metric.negated = negate
     metric.informational = informational
+    metric.required = required
     return metric

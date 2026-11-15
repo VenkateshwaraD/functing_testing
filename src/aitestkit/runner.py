@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 from aitestkit.exceptions import (
     AitestkitError,
     BudgetExceededError,
+    ConfigError,
     MetricError,
     TargetError,
 )
@@ -58,8 +59,12 @@ class RunEngine:
         tool_mocks: dict[str, Any] | None = None,
         conversations: list[ConversationCase] | None = None,
         tool_registry: Any | None = None,
+        tool_registry_factory: Any | None = None,
+        memory_store_factory: Any | None = None,
         prompts: list[PromptVariant] | None = None,
     ) -> None:
+        if concurrency < 1:
+            raise ConfigError(f"concurrency must be >= 1, got {concurrency}")
         self.target = target
         self.metrics = metrics
         self.ctx = ctx
@@ -71,6 +76,11 @@ class RunEngine:
         self.tool_mocks = tool_mocks
         self.conversations = conversations or []
         self.tool_registry = tool_registry
+        # Factories produce fresh per-case instances — the registry's call
+        # log and fault counters, and the memory store, reset each case so
+        # one case's state can't contaminate another's verdicts.
+        self.tool_registry_factory = tool_registry_factory
+        self.memory_store_factory = memory_store_factory
         self.prompts: list[PromptVariant | None] = (
             list(prompts) if prompts else [None]
         )
@@ -144,6 +154,10 @@ class RunEngine:
         """Run a multi-turn case sequentially; turns share a session_id."""
         from aitestkit.tracing.emitter import TraceEmitter
 
+        # Fresh registry + store per conversation — turns share state
+        # intentionally, but nothing leaks across conversations.
+        registry = self._registry_for_case()
+        conv_ctx = self.ctx.derive(memory_store=self._store_for_case())
         session = conversation.session_id or conversation.id
         results: list[CaseResult] = []
         for index, turn in enumerate(conversation.turns):
@@ -168,7 +182,7 @@ class RunEngine:
                         case,
                         session_id=session,
                         trace_sink=emitter,
-                        tool_registry=self.tool_registry,
+                        tool_registry=registry,
                     ),
                     timeout=self.case_timeout,
                 )
@@ -180,10 +194,15 @@ class RunEngine:
             except (TargetError, AitestkitError) as e:
                 results.append(self._error_result(case, case_id, str(e)))
                 continue
+            except Exception as e:  # noqa: BLE001 — unexpected target bug → error case
+                results.append(
+                    self._error_result(case, case_id, f"unexpected error: {e}")
+                )
+                continue
             if output.trajectory is None and len(emitter):
                 output.trajectory = emitter.trajectory
             self._spend(output.usage)
-            result = await self._evaluate_metrics(case, output, case_id)
+            result = await self._evaluate_metrics(case, output, case_id, ctx=conv_ctx)
             result.session_id = session
             results.append(result)
         return results
@@ -197,6 +216,18 @@ class RunEngine:
             tags=case.tags,
         )
 
+    def _registry_for_case(self) -> Any | None:
+        """Fresh registry per case when a factory is configured."""
+        if self.tool_registry_factory is not None:
+            return self.tool_registry_factory()
+        return self.tool_registry
+
+    def _store_for_case(self) -> Any | None:
+        """Fresh memory store per case when a factory is configured."""
+        if self.memory_store_factory is not None:
+            return self.memory_store_factory()
+        return self.ctx.memory_store
+
     async def _run_case(
         self,
         case: TestCase,
@@ -208,10 +239,11 @@ class RunEngine:
             (model_spec.split(":", 1) + [None])[:2] if model_spec else (None, None)
         )
         outcomes: list[CaseResult] = []
-        for _ in range(self.repeat):
+        for attempt in range(self.repeat):
             outcomes.append(
                 await self._run_once(
-                    case, provider=provider, model=model, prompt=prompt
+                    case, provider=provider, model=model, prompt=prompt,
+                    attempt=attempt,
                 )
             )
         if self.repeat == 1:
@@ -269,6 +301,7 @@ class RunEngine:
         provider: str | None,
         model: str | None,
         prompt: PromptVariant | None = None,
+        attempt: int = 0,
     ) -> CaseResult:
         case_id = _effective_id(
             case,
@@ -278,19 +311,29 @@ class RunEngine:
         from aitestkit.tracing.emitter import TraceEmitter
 
         emitter = TraceEmitter()
-        rendered_prompt = (
-            _render_prompt(prompt, case.input) if prompt is not None else None
-        )
+        registry = self._registry_for_case()
+        case_ctx = self.ctx.derive(memory_store=self._store_for_case())
+        # Unscoped cases get a private session bucket per attempt so writes
+        # can't leak between cases (or repeat attempts) via __global__.
+        session = case.metadata.get("session_id")
+        if session is None:
+            session = f"case:{case_id}:{attempt}"
+            case = case.model_copy(
+                update={"metadata": {**case.metadata, "session_id": session}}
+            )
         try:
+            rendered_prompt = (
+                _render_prompt(prompt, case.input) if prompt is not None else None
+            )
             output = await asyncio.wait_for(
                 self.target.invoke(
                     case,
                     model=model,
                     provider=provider,
                     tool_mocks=self.tool_mocks,
-                    session_id=case.metadata.get("session_id"),
+                    session_id=session,
                     trace_sink=emitter,
-                    tool_registry=self.tool_registry,
+                    tool_registry=registry,
                     prompt=rendered_prompt,
                     prompt_name=_prompt_name(prompt),
                 ),
@@ -300,12 +343,14 @@ class RunEngine:
             return self._error_result(case, case_id, f"target timed out after {self.case_timeout}s")
         except (TargetError, AitestkitError) as e:
             return self._error_result(case, case_id, str(e))
+        except Exception as e:  # noqa: BLE001 — unexpected target bug → error case
+            return self._error_result(case, case_id, f"unexpected error: {e}")
         if output.error:
             return self._error_result(case, case_id, output.error)
         if output.trajectory is None and len(emitter):
             output.trajectory = emitter.trajectory
         self._spend(output.usage)
-        result = await self._evaluate_metrics(case, output, case_id)
+        result = await self._evaluate_metrics(case, output, case_id, ctx=case_ctx)
         if prompt is not None:
             result.metadata["prompt_name"] = _prompt_name(prompt)
             result.metadata["rendered_prompt"] = rendered_prompt
@@ -350,6 +395,7 @@ class RunEngine:
                 and not spec.params
                 and not spec.negate
                 and not spec.informational
+                and not spec.required
             ):
                 chosen.append(match)  # bare name — reuse configured instance
             else:
@@ -360,17 +406,24 @@ class RunEngine:
                         params=spec.params,
                         negate=spec.negate,
                         informational=spec.informational,
+                        required=spec.required,
                     )
                 )
         return chosen
 
     async def _evaluate_metrics(
-        self, case: TestCase, output: TargetOutput, case_id: str
+        self,
+        case: TestCase,
+        output: TargetOutput,
+        case_id: str,
+        *,
+        ctx: MetricContext | None = None,
     ) -> CaseResult:
+        ctx = ctx or self.ctx
         results: list[MetricResult] = []
         for metric in self._metrics_for(case):
             try:
-                metric_result = await metric.evaluate(case, output, self.ctx)
+                metric_result = await metric.evaluate(case, output, ctx)
             except MetricError as e:
                 metric_result = MetricResult.error(metric=metric.name, reason=str(e))
             except Exception as e:  # noqa: BLE001 — metric bug must not kill the run

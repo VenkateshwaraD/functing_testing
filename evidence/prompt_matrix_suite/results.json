@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1253b3-b3385c5cb0",
+  "run_id": "001a1df1d7f64-a945fcecec",
   "suite_name": "payments-prompt-matrix",
   "metadata": {
-    "git_sha": "1fc4829",
+    "git_sha": "fdfffc9",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -13,19 +13,253 @@
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
-    "embedder": "None:text-embedding-3-small",
+    "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "01f92c80c67b9518",
+    "config_hash": "b8b41964dec17039",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794743883.4042013,
+    "started_at": 1794744615.5651662,
     "finished_at": null
   },
   "results": [
+    {
+      "case_id": "wire-cutoff[terse]",
+      "status": "passed",
+      "input": "what is the wire transfer cutoff",
+      "actual_output": "echo what is the wire transfer cutoff",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: what is the wire transfer cutoff",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 11
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.4425410008698236,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "policy"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "terse",
+        "rendered_prompt": "Answer in one word: what is the wire transfer cutoff"
+      }
+    },
+    {
+      "case_id": "dispute-guidance[terse]",
+      "status": "passed",
+      "input": "how do i dispute a charge",
+      "actual_output": "echo how do i dispute a charge",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: how do i dispute a charge",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 11
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.4737960007332731,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "disputes"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "terse",
+        "rendered_prompt": "Answer in one word: how do i dispute a charge"
+      }
+    },
+    {
+      "case_id": "wire-cutoff[verbose]",
+      "status": "passed",
+      "input": "what is the wire transfer cutoff",
+      "actual_output": "echo what is the wire transfer cutoff",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: what is the wire transfer cutoff",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 11
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.43218599967076443,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "policy"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "verbose",
+        "rendered_prompt": "You are a thorough assistant. Explain: what is the wire transfer cutoff"
+      }
+    },
     {
       "case_id": "out-of-domain[verbose]",
       "status": "passed",
@@ -77,7 +311,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.2912380007037427,
+      "latency_ms": 0.7890509987191763,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -103,6 +337,84 @@
       "metadata": {
         "prompt_name": "verbose",
         "rendered_prompt": "You are a thorough assistant. Explain: what is the weather today"
+      }
+    },
+    {
+      "case_id": "ach-limit[terse]",
+      "status": "passed",
+      "input": "what is the daily ach limit",
+      "actual_output": "echo what is the daily ach limit",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: what is the daily ach limit",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 11
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 4.888920997473178,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "limits"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "terse",
+        "rendered_prompt": "Answer in one word: what is the daily ach limit"
       }
     },
     {
@@ -156,7 +468,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.45129700083634816,
+      "latency_ms": 4.130059001909103,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -235,7 +547,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.3544549981597811,
+      "latency_ms": 4.138430002058158,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -261,475 +573,6 @@
       "metadata": {
         "prompt_name": "terse",
         "rendered_prompt": "Answer in one word: what is the weather today"
-      }
-    },
-    {
-      "case_id": "dispute-guidance[verbose]",
-      "status": "passed",
-      "input": "how do i dispute a charge",
-      "actual_output": "echo how do i dispute a charge",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: how do i dispute a charge",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 11
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 0.6867699994472787,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "disputes"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "verbose",
-        "rendered_prompt": "You are a thorough assistant. Explain: how do i dispute a charge"
-      }
-    },
-    {
-      "case_id": "wire-cutoff[terse]",
-      "status": "passed",
-      "input": "what is the wire transfer cutoff",
-      "actual_output": "echo what is the wire transfer cutoff",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: what is the wire transfer cutoff",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 11
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 4.070767998200608,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "policy"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "terse",
-        "rendered_prompt": "Answer in one word: what is the wire transfer cutoff"
-      }
-    },
-    {
-      "case_id": "ach-limit[terse]",
-      "status": "passed",
-      "input": "what is the daily ach limit",
-      "actual_output": "echo what is the daily ach limit",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: what is the daily ach limit",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 11
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 3.306427999632433,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "limits"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "terse",
-        "rendered_prompt": "Answer in one word: what is the daily ach limit"
-      }
-    },
-    {
-      "case_id": "dispute-guidance[terse]",
-      "status": "passed",
-      "input": "how do i dispute a charge",
-      "actual_output": "echo how do i dispute a charge",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: how do i dispute a charge",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 11
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 3.326607999042608,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "disputes"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "terse",
-        "rendered_prompt": "Answer in one word: how do i dispute a charge"
-      }
-    },
-    {
-      "case_id": "balance-inquiry[verbose]",
-      "status": "passed",
-      "input": "what is my checking balance",
-      "actual_output": "echo what is my checking balance",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: what is my checking balance",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 10
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 2.7928700001211837,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "smoke",
-        "banking",
-        "read"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "verbose",
-        "rendered_prompt": "You are a thorough assistant. Explain: what is my checking balance"
-      }
-    },
-    {
-      "case_id": "wire-cutoff[verbose]",
-      "status": "passed",
-      "input": "what is the wire transfer cutoff",
-      "actual_output": "echo what is the wire transfer cutoff",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "echo"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "prompt_sim",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "rendered_prompt": "Answer in one word: what is the wire transfer cutoff",
-            "unresolved": [],
-            "banned_hits": [],
-            "tokens": 11
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 2.807320997817442,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "policy"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "verbose",
-        "rendered_prompt": "You are a thorough assistant. Explain: what is the wire transfer cutoff"
       }
     },
     {
@@ -783,7 +626,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 2.7833899985125754,
+      "latency_ms": 3.398289001779631,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -808,6 +651,163 @@
       "metadata": {
         "prompt_name": "verbose",
         "rendered_prompt": "You are a thorough assistant. Explain: what is the daily ach limit"
+      }
+    },
+    {
+      "case_id": "dispute-guidance[verbose]",
+      "status": "passed",
+      "input": "how do i dispute a charge",
+      "actual_output": "echo how do i dispute a charge",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: how do i dispute a charge",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 11
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 3.464130000793375,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "disputes"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "verbose",
+        "rendered_prompt": "You are a thorough assistant. Explain: how do i dispute a charge"
+      }
+    },
+    {
+      "case_id": "balance-inquiry[verbose]",
+      "status": "passed",
+      "input": "what is my checking balance",
+      "actual_output": "echo what is my checking balance",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "echo"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "prompt_sim",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "rendered_prompt": "Answer in one word: what is my checking balance",
+            "unresolved": [],
+            "banned_hits": [],
+            "tokens": 10
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 3.4979800002474803,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "smoke",
+        "banking",
+        "read"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "verbose",
+        "rendered_prompt": "You are a thorough assistant. Explain: what is my checking balance"
       }
     }
   ],
