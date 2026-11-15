@@ -123,7 +123,9 @@ def _build_ctx(
         provider: ChatProvider | None = None
         if cassette is None or cassette.mode == "record":
             provider = make_chat_provider(
-                provider_name, rpm=provider_cfg.rpm if provider_cfg else None
+                provider_name,
+                rpm=provider_cfg.rpm if provider_cfg else None,
+                impl=provider_cfg.impl if provider_cfg else None,
             )
         if cassette is not None:
             provider = CassetteChatProvider(provider, cassette, name=provider_name)
@@ -139,14 +141,14 @@ def _build_ctx(
             judge.warn_if_self_judging(sut_model=entry.split(":", 1)[-1])
     embedder = None
     if suite.embedder.provider:
-        embed_rpm = (
-            suite.providers[suite.embedder.provider].rpm
-            if suite.embedder.provider in suite.providers
-            else None
-        )
+        embed_cfg = suite.providers.get(suite.embedder.provider)
         inner = None
         if cassette is None or cassette.mode == "record":
-            inner = make_embedder(suite.embedder.provider, rpm=embed_rpm)
+            inner = make_embedder(
+                suite.embedder.provider,
+                rpm=embed_cfg.rpm if embed_cfg else None,
+                impl=embed_cfg.impl if embed_cfg else None,
+            )
         embedder = (
             CassetteEmbedder(inner, cassette, name=suite.embedder.provider)
             if cassette is not None

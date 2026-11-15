@@ -69,4 +69,22 @@ def build_target(
             timeout_seconds=config.kwargs.get("timeout_seconds", 120.0),
             env=config.kwargs.get("env"),
         )
+    if config.type == "custom":
+        if not allow_python_targets:
+            raise ConfigError(
+                "custom targets execute project code — re-run with --allow-python-targets"
+            )
+        if not config.function:
+            raise ConfigError("custom target requires 'function: module:Class'")
+        from aitestkit.targets.python_target import load_callable
+
+        target = load_callable(config.function)
+        if isinstance(target, type):
+            target = target(**config.kwargs)
+        if not isinstance(target, TargetAdapter):
+            raise ConfigError(
+                f"custom target {config.function!r} must implement the "
+                "TargetAdapter protocol (name attr + async invoke(case, **kw))"
+            )
+        return target
     raise ConfigError(f"target type {config.type!r} not implemented")

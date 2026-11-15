@@ -66,6 +66,7 @@ class ProviderEntry(BaseModel):
     provider: str
     model: str
     api_key_env: str | None = None
+    impl: str | None = None  # "module:Class" — custom ChatProvider/Embedder
     rpm: int | None = None   # per-provider rate limit
     tpm: int | None = None
 
@@ -190,6 +191,10 @@ def validate_provider_envs(
         if provider_name in skip:
             continue
         provider_cfg = suite.providers.get(provider_name)
+        if provider_cfg and provider_cfg.impl and not provider_cfg.api_key_env:
+            continue  # custom impl manages its own auth
+        if provider_cfg is None and ":" in provider_name:
+            continue  # "module:Class" custom provider — class manages auth
         env_var = (
             provider_cfg.api_key_env
             if provider_cfg and provider_cfg.api_key_env
@@ -243,10 +248,14 @@ def load_suite(path: str | Path) -> SuiteConfig:
 def _validate_suite(suite: SuiteConfig, path: Path) -> None:
     if not suite.datasets and not suite.target:
         raise ConfigError(f"{path}: suite needs at least one of 'datasets' or 'target'")
-    if suite.target and suite.target.type not in {"python", "http", "command", "langgraph"}:
+    if suite.target and suite.target.type not in {
+        "python", "http", "command", "langgraph", "custom",
+    }:
         raise ConfigError(f"{path}: unknown target type {suite.target.type!r}")
     if suite.target and suite.target.type == "python" and not suite.target.function:
         raise ConfigError(f"{path}: python target requires 'function: module:func'")
+    if suite.target and suite.target.type == "custom" and not suite.target.function:
+        raise ConfigError(f"{path}: custom target requires 'function: module:Class'")
     if suite.target and suite.target.type == "command" and not suite.target.command:
         raise ConfigError(f"{path}: command target requires 'command: [argv, ...]'")
     if suite.target and suite.target.type == "http" and not suite.target.url:

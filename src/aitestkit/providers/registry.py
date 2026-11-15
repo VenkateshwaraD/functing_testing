@@ -45,7 +45,8 @@ def parse_model_spec(spec: str) -> tuple[str, str]:
 
 
 def make_chat_provider(
-    provider_name: str, *, rpm: int | None = None, **kwargs: Any
+    provider_name: str, *, rpm: int | None = None, impl: str | None = None,
+    **kwargs: Any,
 ) -> ChatProvider:
     """Instantiate a chat provider by name (with optional shared rate limit)."""
     from aitestkit.providers.ratelimit import limiter_for
@@ -60,6 +61,15 @@ def make_chat_provider(
         return cast(
             ChatProvider, _load(provider_name, module_name, class_name, **kwargs)
         )
+    custom_spec = impl or (provider_name if ":" in provider_name else None)
+    if custom_spec is not None:
+        provider = _load_impl(custom_spec, kind="provider", **kwargs)
+        if not isinstance(provider, ChatProvider):
+            raise ConfigError(
+                f"custom provider {custom_spec!r} must implement the "
+                "ChatProvider protocol (name attr + async complete())"
+            )
+        return provider
     if provider_name in _EXTRA_HINT:
         return cast(
             ChatProvider,
@@ -68,12 +78,14 @@ def make_chat_provider(
         )
     raise ConfigError(
         f"unknown provider {provider_name!r}. "
-        "Built-ins: openai, anthropic, gemini, litellm(+ollama/azure/bedrock/...), fake"
+        "Built-ins: openai, anthropic, gemini, litellm(+ollama/azure/bedrock/...), "
+        "fake; or impl: 'module:Class' for a custom ChatProvider"
     )
 
 
 def make_embedder(
-    provider_name: str, *, rpm: int | None = None, **kwargs: Any
+    provider_name: str, *, rpm: int | None = None, impl: str | None = None,
+    **kwargs: Any,
 ) -> Embedder:
     """Instantiate an embedder by name (with optional shared rate limit)."""
     from aitestkit.providers.ratelimit import limiter_for
@@ -88,6 +100,15 @@ def make_embedder(
         return cast(
             Embedder, _load(provider_name, module_name, class_name, **kwargs)
         )
+    custom_spec = impl or (provider_name if ":" in provider_name else None)
+    if custom_spec is not None:
+        embedder = _load_impl(custom_spec, kind="embedder", **kwargs)
+        if not isinstance(embedder, Embedder):
+            raise ConfigError(
+                f"custom embedder {custom_spec!r} must implement the "
+                "Embedder protocol (name attr + async embed())"
+            )
+        return embedder
     if provider_name in _EXTRA_HINT:
         return cast(
             Embedder,
@@ -95,6 +116,26 @@ def make_embedder(
                   provider=provider_name, **kwargs),
         )
     raise ConfigError(f"provider {provider_name!r} does not support embeddings")
+
+
+def _load_impl(spec: str, *, kind: str, **kwargs: Any) -> Any:
+    """Instantiate a custom ``module:Class`` provider/embedder spec."""
+    module_name, class_name = spec.split(":", 1)
+    try:
+        module = __import__(module_name, fromlist=[class_name])
+    except ImportError as e:
+        raise ConfigError(
+            f"cannot import custom {kind} module {module_name!r}: {e}"
+        ) from e
+    cls = getattr(module, class_name, None)
+    if cls is None or not callable(cls):
+        raise ConfigError(f"custom {kind} {spec!r} does not resolve to a class")
+    try:
+        return cls(**kwargs)
+    except TypeError as e:
+        raise ConfigError(
+            f"custom {kind} {spec!r}: bad constructor kwargs: {e}"
+        ) from e
 
 
 def _load(
