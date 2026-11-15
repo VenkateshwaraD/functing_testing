@@ -119,6 +119,15 @@ well-formed.
 
 ## 5. Run
 
+Option 1: 
+
+set .env file at repo root 
+
+# .env  
+PROVIDER_API_KEY=sk-your-key-here (use can select any provider key)
+aitestkit run suites/prompt_testing_suite.yaml
+
+
 **One command** — copy-paste this from the repo root:
 
 ```bash
