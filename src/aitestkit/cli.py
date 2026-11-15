@@ -91,7 +91,13 @@ def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     from aitestkit.metrics.registry import build_metric
 
     return [
-        build_metric(spec.name, threshold=spec.threshold, params=spec.params)
+        build_metric(
+            spec.name,
+            threshold=spec.threshold,
+            params=spec.params,
+            negate=spec.negate,
+            informational=spec.informational,
+        )
         for spec in suite.metrics
     ]
 

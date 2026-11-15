@@ -25,6 +25,7 @@ from aitestkit.models import (
     CaseStatus,
     ConversationCase,
     MetricResult,
+    MetricStatus,
     TargetOutput,
     TestCase,
     TestRun,
@@ -221,7 +222,9 @@ class RunEngine:
         self, case: TestCase, outcomes: list[CaseResult], model_spec: str | None
     ) -> CaseResult:
         """Merge repeated outcomes; mixed pass/fail marks the case flaky."""
-        passes = sum(o.status == CaseStatus.PASSED for o in outcomes)
+        passing = {CaseStatus.PASSED, CaseStatus.XFAIL}
+        statuses = [o.status.value for o in outcomes]  # capture before overwrite
+        passes = sum(o.status in passing for o in outcomes)
         fails = sum(o.status == CaseStatus.FAILED for o in outcomes)
         errors = sum(o.status == CaseStatus.ERROR for o in outcomes)
         if errors == len(outcomes):
@@ -235,14 +238,26 @@ class RunEngine:
         else:
             status = CaseStatus.SKIPPED
         base = outcomes[0]
-        base.status = status
         base.repeat = {
             "runs": len(outcomes),
             "pass_rate": passes / len(outcomes),
-            "statuses": [o.status.value for o in outcomes],
+            "statuses": statuses,
             "model": model_spec,
+            "per_run": [
+                {
+                    "status": statuses[i],
+                    "output": o.actual_output,
+                    "metric_scores": {
+                        m.metric: m.score
+                        for m in o.metrics
+                        if m.status == MetricStatus.SCORED
+                    },
+                }
+                for i, o in enumerate(outcomes)
+            ],
         }
-        base.metrics = outcomes[0].metrics
+        base.status = status
+        base.metrics = outcomes[0].metrics  # reported metrics are run 1's
         base.judge_usage = _sum_usage(o.judge_usage for o in outcomes)
         base.sut_usage = _sum_usage(o.sut_usage for o in outcomes)
         return base
@@ -329,11 +344,23 @@ class RunEngine:
         chosen: list[BaseMetric] = []
         for spec in _normalize_metrics(case.assert_):
             match = next((m for m in self.metrics if m.name == spec.name), None)
-            if match is not None and spec.threshold is None and not spec.params:
+            if (
+                match is not None
+                and spec.threshold is None
+                and not spec.params
+                and not spec.negate
+                and not spec.informational
+            ):
                 chosen.append(match)  # bare name — reuse configured instance
             else:
                 chosen.append(
-                    build_metric(spec.name, threshold=spec.threshold, params=spec.params)
+                    build_metric(
+                        spec.name,
+                        threshold=spec.threshold,
+                        params=spec.params,
+                        negate=spec.negate,
+                        informational=spec.informational,
+                    )
                 )
         return chosen
 
@@ -351,14 +378,41 @@ class RunEngine:
                 metric_result = MetricResult.error(
                     metric=metric.name, reason=f"metric error: {e}"
                 )
+            if metric.informational:
+                metric_result.details["informational"] = True
             results.append(metric_result)
-        scored = [r for r in results if r.status.value == "scored"]
-        if scored and all(r.passed for r in scored):
+        scored = [
+            r
+            for r in results
+            if r.status == MetricStatus.SCORED and not r.details.get("informational")
+        ]
+        errored = [
+            r
+            for r in results
+            if r.status == MetricStatus.ERROR and not r.details.get("informational")
+        ]
+        if errored:
+            status = CaseStatus.ERROR
+        elif case.expect == "fail":
+            if scored and any(not r.passed for r in scored):
+                status = CaseStatus.XFAIL
+            elif scored:
+                status = CaseStatus.FAILED
+            else:
+                status = CaseStatus.SKIPPED
+        elif scored and all(r.passed for r in scored):
             status = CaseStatus.PASSED
         elif scored:
             status = CaseStatus.FAILED
         else:
             status = CaseStatus.SKIPPED
+        if status == CaseStatus.FAILED and case.expect == "fail":
+            for r in results:
+                if r.status == MetricStatus.SCORED:
+                    r.details.setdefault(
+                        "unexpected_pass",
+                        "expected detection did not fire — all scored metrics passed",
+                    )
         judge_usage = _sum_usage(r.usage for r in results)
         return CaseResult(
             case_id=case_id,

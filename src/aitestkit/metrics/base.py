@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from aitestkit.models import MetricResult, TargetOutput, TestCase
+from aitestkit.models import MetricResult, MetricStatus, TargetOutput, TestCase
 
 if TYPE_CHECKING:
     from aitestkit.agentic.memory import MemoryStore
@@ -60,6 +60,9 @@ class BaseMetric(ABC):
 
     def __init__(self, *, threshold: float | None = None) -> None:
         self.threshold = self.default_threshold if threshold is None else threshold
+        # Set by build_metric from the suite spec — see MetricSpec.
+        self.negated = False
+        self.informational = False
 
     def missing_fields(self, case: TestCase) -> list[str]:
         """Fields this metric needs that the case doesn't provide."""
@@ -80,7 +83,18 @@ class BaseMetric(ABC):
                 metric=self.name,
                 reason=f"case missing required fields: {', '.join(missing)}",
             )
-        return await self.measure(case, output, ctx)
+        result = await self.measure(case, output, ctx)
+        if self.informational:
+            result.details["informational"] = True
+        if (
+            self.negated
+            and result.status == MetricStatus.SCORED
+            and result.passed is not None
+        ):
+            result.passed = not result.passed
+            result.details["negated"] = True
+            result.reason = f"(negated) {result.reason}".strip()
+        return result
 
     @abstractmethod
     async def measure(

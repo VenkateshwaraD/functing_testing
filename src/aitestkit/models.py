@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import enum
 import time
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -23,6 +23,7 @@ class CaseStatus(enum.StrEnum):
     ERROR = "error"
     SKIPPED = "skipped"
     FLAKY = "flaky"
+    XFAIL = "xfailed"  # expected failure — detection confirmed (expect: fail)
 
 
 class MetricStatus(enum.StrEnum):
@@ -131,6 +132,9 @@ class TestCase(BaseModel):
     expected_trajectory: Trajectory | None = None
     tags: list[str] = Field(default_factory=list)  # incl. capability tags for coverage
     metadata: dict[str, Any] = Field(default_factory=dict)
+    # Expected outcome — `fail` marks a detection probe (strict xfail):
+    # a scored metric failing → xfailed; everything passing → failed.
+    expect: Literal["fail"] | None = None
     # Per-case metric selection — overrides the suite's metrics: list.
     # YAML `assert:` accepts metric names or {name: ..., params} dicts.
     assert_: list[Any] | None = Field(default=None, alias="assert")

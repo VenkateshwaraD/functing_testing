@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from typing import Any
 
 from aitestkit.exceptions import MetricError
@@ -142,7 +143,10 @@ class Judge:
 
     @staticmethod
     def _parse(text: str) -> JudgeVerdict:
-        payload = json.loads(text)
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            payload = json.loads(_extract_json(text))
         if "score" not in payload:
             raise ValueError("judge response missing 'score'")
         score = float(payload["score"])
@@ -151,3 +155,11 @@ class Judge:
             reason=str(payload.get("reason", "")),
             raw=payload,
         )
+
+
+def _extract_json(text: str) -> str:
+    """Pull the first {...} span out of fenced or prose-wrapped judge output."""
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        raise ValueError("judge response contains no JSON object")
+    return match.group(0)

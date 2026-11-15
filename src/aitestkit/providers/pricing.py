@@ -6,6 +6,8 @@ spend caps. Unknown models return zero rather than guessing.
 
 from __future__ import annotations
 
+from typing import Any
+
 # (input $/1M tokens, output $/1M tokens) — public list prices, prefix-matched.
 MODEL_PRICES: dict[str, tuple[float, float]] = {
     "gpt-4o": (2.50, 10.00),
@@ -15,6 +17,7 @@ MODEL_PRICES: dict[str, tuple[float, float]] = {
     "text-embedding-3-small": (0.02, 0.0),
     "text-embedding-3-large": (0.13, 0.0),
     "text-embedding-ada-002": (0.10, 0.0),
+    "claude-sonnet-4-6": (3.00, 15.00),
     "claude-sonnet-4-5": (3.00, 15.00),
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-opus-4-1": (15.00, 75.00),
@@ -40,8 +43,17 @@ def estimate_cost(
 
 def _price_for(model: str) -> tuple[float, float] | None:
     """Longest-prefix match so 'gpt-4o-2024-08-06' hits 'gpt-4o'."""
+    best = _match(model, lambda m, p: m.startswith(p))
+    return best if best is not None else _match(model, lambda m, p: p in m)
+
+
+def _match(
+    model: str, pred: Any
+) -> tuple[float, float] | None:
+    """Longest entry whose key satisfies ``pred`` — the fallback (substring)
+    catches gateway/Bedrock names like 'global.anthropic.claude-sonnet-4-6'."""
     best: tuple[int, tuple[float, float]] | None = None
     for prefix, price in MODEL_PRICES.items():
-        if model.startswith(prefix) and (best is None or len(prefix) > best[0]):
+        if pred(model, prefix) and (best is None or len(prefix) > best[0]):
             best = (len(prefix), price)
     return best[1] if best else None

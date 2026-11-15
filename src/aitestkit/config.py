@@ -84,6 +84,7 @@ class GatesConfig(BaseModel):
     per_metric: dict[str, GateMetricRule] = Field(default_factory=dict)
     max_error_cases: int | None = None
     max_flaky: float | None = None
+    max_skip_rate: float | None = None  # fraction of metric results skipped
     max_regression_vs_baseline: float | None = None
     min_coverage: dict[str, int] = Field(default_factory=dict)
 
@@ -92,6 +93,12 @@ class MetricSpec(BaseModel):
     name: str
     threshold: float | None = None
     params: dict[str, Any] = Field(default_factory=dict)
+    # Inverts the metric's pass verdict — output must FAIL the check
+    # (e.g. contains must find nothing). Recorded with details.negated.
+    negate: bool = False
+    # Recorded for review but excluded from case pass/fail — required when
+    # an explicit `threshold: 0.0` would otherwise make the metric unfailable.
+    informational: bool = False
 
 
 class PromptVariant(BaseModel):
@@ -218,10 +225,22 @@ def _normalize_metrics(raw: Any) -> list[MetricSpec]:
             name = item.get("name")
             if not name:
                 raise ConfigError(f"metric entry {item!r} missing 'name'")
-            params = {k: v for k, v in item.items() if k not in {"name", "threshold"}}
-            specs.append(
-                MetricSpec(name=name, threshold=item.get("threshold"), params=params)
+            spec_keys = {"name", "threshold", "negate", "informational"}
+            params = {k: v for k, v in item.items() if k not in spec_keys}
+            spec = MetricSpec(
+                name=name,
+                threshold=item.get("threshold"),
+                params=params,
+                negate=bool(item.get("negate", False)),
+                informational=bool(item.get("informational", False)),
             )
+            if spec.threshold == 0.0 and not spec.informational:
+                raise ConfigError(
+                    f"metric {name!r}: explicit threshold 0.0 makes the check "
+                    "unfailable — mark it `informational: true`, use `negate: "
+                    "true`, or set `expect: fail` on the case instead"
+                )
+            specs.append(spec)
         else:
             raise ConfigError(f"invalid metric entry: {item!r}")
     return specs

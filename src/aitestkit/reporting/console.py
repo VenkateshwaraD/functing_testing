@@ -16,13 +16,16 @@ _STATUS_MARK = {
     CaseStatus.ERROR: "ERR ",
     CaseStatus.SKIPPED: "SKIP",
     CaseStatus.FLAKY: "FLKY",
+    CaseStatus.XFAIL: "XFLK",
 }
 
 
 def _line_for(result: CaseResult) -> str:
     mark = _STATUS_MARK.get(result.status, "????")
     failed_metrics = [
-        f"{m.metric}={m.score:.2f}" for m in result.metrics if m.passed is False
+        f"{m.metric}={m.score:.2f}" if m.score is not None else f"{m.metric}=err"
+        for m in result.metrics
+        if m.passed is False
     ]
     detail = f"  ({', '.join(failed_metrics)})" if failed_metrics else ""
     error = f"  [{result.error}]" if result.error else ""

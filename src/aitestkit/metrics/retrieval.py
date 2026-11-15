@@ -22,10 +22,14 @@ def _ranked(output: TargetOutput) -> list[str]:
     return output.retrieval_context or []
 
 
-def _relevant(case: TestCase) -> list[str]:
-    if case.expected_retrieval_ids:
+def _relevant(case: TestCase) -> list[str] | None:
+    """Golden labels. ``expected_retrieval_ids`` is authoritative when set —
+    an explicit ``[]`` means 'nothing should be retrieved' (unanswerable
+    probe), so it is NOT a skip; it only falls back to ``context`` when the
+    field is absent (``None``)."""
+    if case.expected_retrieval_ids is not None:
         return case.expected_retrieval_ids
-    return case.context or []
+    return case.context if case.context else None
 
 
 def _matched(ranked: list[str], relevant: list[str]) -> list[int]:
@@ -40,18 +44,37 @@ class _RankedRetrievalMetric(BaseMetric):
     def _setup(
         self, case: TestCase, output: TargetOutput
     ) -> tuple[list[str], list[int]] | MetricResult:
-        ranked = _ranked(output)
-        if not ranked:
-            return MetricResult.skipped(
-                metric=self.name,
-                reason="no retrieval output (retrieval_ids/context absent)",
-            )
         relevant = _relevant(case)
-        if not relevant:
+        if relevant is None:
             return MetricResult.skipped(
                 metric=self.name,
                 reason="no golden relevance labels "
                 "(expected_retrieval_ids/context absent)",
+            )
+        ranked = _ranked(output)
+        if not relevant:
+            # Explicit 'expect nothing retrieved' — unanswerable probe.
+            score = 0.0 if ranked else 1.0
+            return MetricResult(
+                metric=self.name,
+                status=MetricStatus.SCORED,
+                score=score,
+                passed=score >= self.threshold,
+                reason=(
+                    "retrieved results despite empty golden labels"
+                    if ranked
+                    else "correct abstention — nothing retrieved"
+                ),
+                details={"retrieved": ranked, "expected_labels": 0},
+            )
+        if not ranked:
+            return MetricResult(
+                metric=self.name,
+                status=MetricStatus.SCORED,
+                score=0.0,
+                passed=self.threshold <= 0.0,
+                reason="expected retrieval but nothing was retrieved",
+                details={"expected_labels": relevant},
             )
         return ranked, _matched(ranked, relevant)
 
@@ -74,7 +97,7 @@ class RecallAtK(_RankedRetrievalMetric):
         if isinstance(setup, MetricResult):
             return setup
         _, matched = setup
-        relevant = _relevant(case)
+        relevant = _relevant(case) or []
         hits = sum(1 for pos in matched if pos < self.k)
         score = hits / len(relevant)
         return MetricResult(
@@ -164,7 +187,7 @@ class NDCG(_RankedRetrievalMetric):
         if isinstance(setup, MetricResult):
             return setup
         _, matched = setup
-        relevant = _relevant(case)
+        relevant = _relevant(case) or []
         dcg = sum(
             1.0 / math.log2(pos + 2) for pos in matched if pos < self.k
         )

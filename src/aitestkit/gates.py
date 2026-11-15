@@ -25,6 +25,7 @@ def evaluate_gates(
     results.extend(_pass_rate_gate(test_run, gates))
     results.extend(_error_gate(test_run, gates))
     results.extend(_flaky_gate(test_run, gates))
+    results.extend(_skip_rate_gate(test_run, gates))
     results.extend(_metric_gates(test_run, gates))
     results.extend(_coverage_gates(test_run, gates))
     results.extend(_regression_gate(gates, regression_actual))
@@ -34,12 +35,23 @@ def evaluate_gates(
 def _pass_rate_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
     if gates.min_pass_rate is None:
         return []
-    judged = [r for r in test_run.results if r.status in {CaseStatus.PASSED, CaseStatus.FAILED}]
-    rate = (
-        sum(r.status == CaseStatus.PASSED for r in judged) / len(judged)
-        if judged
-        else 0.0
-    )
+    judged = [
+        r
+        for r in test_run.results
+        if r.status in {CaseStatus.PASSED, CaseStatus.FAILED, CaseStatus.XFAIL}
+    ]
+    if not judged:
+        return [
+            GateResult(
+                name="min_pass_rate",
+                passed=False,
+                actual=0.0,
+                expected=f">= {gates.min_pass_rate}",
+                detail="0 judged cases — nothing produced a verdict",
+            )
+        ]
+    passing = {CaseStatus.PASSED, CaseStatus.XFAIL}
+    rate = sum(r.status in passing for r in judged) / len(judged)
     return [
         GateResult(
             name="min_pass_rate",
@@ -77,6 +89,23 @@ def _flaky_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
             passed=fraction <= gates.max_flaky,
             actual=round(fraction, 4),
             expected=f"<= {gates.max_flaky}",
+        )
+    ]
+
+
+def _skip_rate_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
+    if gates.max_skip_rate is None:
+        return []
+    metrics = [m for r in test_run.results for m in r.metrics]
+    skipped = sum(m.status == MetricStatus.SKIPPED for m in metrics)
+    rate = skipped / len(metrics) if metrics else 0.0
+    return [
+        GateResult(
+            name="max_skip_rate",
+            passed=rate <= gates.max_skip_rate,
+            actual=round(rate, 4),
+            expected=f"<= {gates.max_skip_rate}",
+            detail=f"{skipped}/{len(metrics)} metric results skipped",
         )
     ]
 

@@ -37,7 +37,7 @@ th { background:#f0f3f6; }
   color:#fff; font-size:12px; font-weight:600; }
 .b-passed{background:var(--pass)} .b-failed{background:var(--fail)}
 .b-error{background:var(--err)} .b-skipped{background:var(--skip)}
-.b-flaky{background:var(--flaky)}
+.b-flaky{background:var(--flaky)} .b-xfailed{background:#8250df}
 .b-REGRESSION{background:var(--fail)} .b-IMPROVEMENT{background:var(--pass)}
 .b-NEUTRAL{background:var(--skip)}
 .card { background:var(--card); border:1px solid var(--border);
@@ -156,7 +156,8 @@ def _header(test_run: TestRun) -> str:
         "<button onclick='toggleAll(false)'>collapse all</button> "
         "filter: <select onchange='filterCases(this.value)'>"
         "<option value=''>all</option><option>passed</option><option>failed</option>"
-        "<option>error</option><option>flaky</option><option>skipped</option>"
+        "<option>xfailed</option><option>error</option>"
+        "<option>flaky</option><option>skipped</option>"
         "</select></div>"
     )
 
@@ -239,14 +240,16 @@ def _coverage_section(test_run: TestRun) -> str:
     rows = "".join(
         f"<tr><td>{_esc(tag)}</td><td>{c['total']}</td>"
         f"<td>{c.get('passed',0)}</td><td>{c.get('failed',0)}</td>"
-        f"<td>{c.get('error',0)}</td><td>{c.get('flaky',0)}</td>"
-        f"<td>{c.get('skipped',0)}</td><td>{c['pass_rate']:.0%}</td></tr>"
+        f"<td>{c.get('xfailed',0)}</td><td>{c.get('error',0)}</td>"
+        f"<td>{c.get('flaky',0)}</td><td>{c.get('skipped',0)}</td>"
+        f"<td>{c['pass_rate']:.0%}</td></tr>"
         for tag, c in sorted(by_tag.items())
     )
     return (
         "<section><h2>Coverage by tag</h2><table>"
         "<tr><th>tag</th><th>cases</th><th>passed</th><th>failed</th>"
-        "<th>error</th><th>flaky</th><th>skipped</th><th>pass rate</th></tr>"
+        "<th>xfail</th><th>error</th><th>flaky</th><th>skipped</th>"
+        "<th>pass rate</th></tr>"
         f"{rows}</table></section>"
     )
 
@@ -289,9 +292,22 @@ def _case_card(result: CaseResult) -> str:
     )
     repeat = ""
     if result.repeat.get("runs", 1) > 1:
+        runs_html = ""
+        for index, run in enumerate(result.repeat.get("per_run", []), start=1):
+            scores = ", ".join(
+                f"{name}={score:.2f}" if score is not None else f"{name}=err"
+                for name, score in (run.get("metric_scores") or {}).items()
+            )
+            runs_html += (
+                f"<div class='mono'>run {index}: <b>{_esc(run.get('status','?'))}</b>"
+                f" — {_esc(_truncate(run.get('output'), 60))}"
+                f"{f' ({scores})' if scores else ''}</div>"
+            )
         repeat = (
             f"<div>repeat: {result.repeat['runs']} runs, "
-            f"{result.repeat.get('pass_rate', 0):.0%} pass rate</div>"
+            f"{result.repeat.get('pass_rate', 0):.0%} pass rate — "
+            "metrics below are run 1's</div>"
+            f"<div class='evidence'>{runs_html}</div>"
         )
     return (
         f"<details class='card' data-status='{result.status.value}'>"
@@ -312,8 +328,13 @@ def _case_card(result: CaseResult) -> str:
 def _metric_row(metric: MetricResult) -> str:
     score = f"{metric.score:.3f}" if metric.score is not None else "—"
     evidence = _evidence_html(metric.details) if metric.details else ""
+    info = (
+        " <span class='badge b-skipped'>info</span>"
+        if metric.details.get("informational")
+        else ""
+    )
     return (
-        f"<tr><td class='mono'>{_esc(metric.metric)}</td><td>{score}</td>"
+        f"<tr><td class='mono'>{_esc(metric.metric)}{info}</td><td>{score}</td>"
         f"<td><span class='badge b-{_metric_badge(metric)}'>{metric.status.value}</span></td>"
         f"<td>{_esc(metric.reason)}{evidence}</td>"
         f"<td>${metric.usage.cost_usd:.5f}</td></tr>"

@@ -7,6 +7,8 @@ a judge or provider.
 
 from __future__ import annotations
 
+import re
+
 from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.metrics.registry import register
 from aitestkit.models import MetricResult, MetricStatus, TargetOutput, TestCase
@@ -20,7 +22,8 @@ class PromptSim(BaseMetric):
 
     Params:
         template: prompt template with ``{input}``/``{metadata_key}``
-        banned: substrings that must not appear in the rendered prompt
+        banned: phrases that must not appear in the rendered prompt
+            (word-boundary matched — 'dan' does not hit 'dangerous')
         max_tokens: token budget for the rendered prompt
     """
 
@@ -48,7 +51,11 @@ class PromptSim(BaseMetric):
         leftovers = unresolved_placeholders(rendered)
         if leftovers:
             problems.append(f"unresolved placeholders: {leftovers}")
-        hits = [b for b in self.banned if b.lower() in rendered.lower()]
+        hits = [
+            b
+            for b in self.banned
+            if re.search(rf"(?<!\w){re.escape(b)}(?!\w)", rendered, re.IGNORECASE)
+        ]
         if hits:
             problems.append(f"banned phrases present: {hits}")
         tokens = count_tokens(rendered)

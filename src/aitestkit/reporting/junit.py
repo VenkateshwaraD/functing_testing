@@ -52,6 +52,13 @@ def _write_case_body(
         error.text = redactor.redact_text(result.error or "")
     elif result.status in (CaseStatus.SKIPPED,):
         ET.SubElement(case_el, "skipped", {"message": result.error or "skipped"})
+    elif result.status == CaseStatus.XFAIL:
+        reasons = "; ".join(f"{m.metric}: {m.reason}" for m in failed)
+        ET.SubElement(
+            case_el,
+            "skipped",
+            {"message": f"expected failure (detection confirmed): {reasons}"},
+        )
     elif result.status == CaseStatus.FLAKY:
         flaky = ET.SubElement(
             case_el,

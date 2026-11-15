@@ -30,6 +30,7 @@ class AnthropicChatProvider:
         self,
         *,
         api_key: str | None = None,
+        base_url: str | None = None,
         rate_limiter: RateLimiter | None = None,
         max_retries: int = 5,
         timeout_seconds: float = 60.0,
@@ -42,7 +43,11 @@ class AnthropicChatProvider:
             raise ConfigError(
                 f"provider 'anthropic' requires {default_api_key_env('anthropic')}"
             )
-        self._client = anthropic.AsyncAnthropic(api_key=key, timeout=timeout_seconds)
+        self._client = anthropic.AsyncAnthropic(
+            api_key=key,
+            base_url=base_url or os.environ.get("ANTHROPIC_BASE_URL"),
+            timeout=timeout_seconds,
+        )
         self._rate_limiter = rate_limiter
         self._max_retries = max_retries
 
@@ -74,7 +79,6 @@ class AnthropicChatProvider:
         kwargs: dict[str, Any] = {
             "model": params["model"],
             "messages": chat,
-            "temperature": params["temperature"],
             "max_tokens": 4096,
         }
         if system:

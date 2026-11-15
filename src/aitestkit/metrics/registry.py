@@ -56,7 +56,14 @@ def register_builtins() -> None:
     import aitestkit.vectordb.checks  # noqa: F401
 
 
-def build_metric(name: str, *, threshold: float | None, params: dict[str, Any]) -> BaseMetric:
+def build_metric(
+    name: str,
+    *,
+    threshold: float | None,
+    params: dict[str, Any],
+    negate: bool = False,
+    informational: bool = False,
+) -> BaseMetric:
     """Instantiate a registered metric from a suite spec."""
     register_builtins()
     cls = _REGISTRY.get(name)
@@ -68,6 +75,9 @@ def build_metric(name: str, *, threshold: float | None, params: dict[str, Any]) 
     if threshold is not None:
         kwargs["threshold"] = threshold
     try:
-        return cls(**kwargs)
-    except TypeError as e:
+        metric = cls(**kwargs)
+    except (TypeError, ValueError) as e:
         raise ConfigError(f"metric {name!r}: bad params {params}: {e}") from e
+    metric.negated = negate
+    metric.informational = informational
+    return metric
