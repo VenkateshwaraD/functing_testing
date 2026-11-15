@@ -86,18 +86,6 @@ gates:
 
 
 def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
-    import aitestkit.dataquality.metric  # noqa: F401
-    import aitestkit.metrics.agentic  # noqa: F401 — registers metrics
-    import aitestkit.metrics.backends.deepeval_backend  # noqa: F401
-    import aitestkit.metrics.backends.ragas_backend  # noqa: F401
-    import aitestkit.metrics.deterministic  # noqa: F401 — registers metrics
-    import aitestkit.metrics.ingestion  # noqa: F401
-    import aitestkit.metrics.llm_judge  # noqa: F401
-    import aitestkit.metrics.memory  # noqa: F401
-    import aitestkit.metrics.prompts  # noqa: F401
-    import aitestkit.metrics.rag  # noqa: F401
-    import aitestkit.metrics.retrieval  # noqa: F401
-    import aitestkit.vectordb.checks  # noqa: F401
     from aitestkit.metrics.registry import build_metric
 
     return [
@@ -499,6 +487,14 @@ def run(
             help="Permit python: targets (default on; disable for locked-down CI)",
         ),
     ] = True,
+    export: Annotated[
+        list[str] | None,
+        typer.Option("--export", help="Exporters: otel,allure"),
+    ] = None,
+    otel_endpoint: Annotated[
+        str | None,
+        typer.Option("--otel-endpoint", help="OTLP HTTP endpoint"),
+    ] = None,
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run a test suite."""
@@ -532,7 +528,29 @@ def run(
     except AitestkitError as e:
         typer.echo(f"run failed: {e}", err=True)
         raise typer.Exit(ExitCode.ENFORCEMENT_ABORT) from e
+    if export:
+        _run_exporters(export, test_run, out_dir, otel_endpoint=otel_endpoint)
     raise typer.Exit(_exit_for(test_run, budget_hit))
+
+
+def _run_exporters(
+    names: list[str], test_run: Any, out_dir: Path, *, otel_endpoint: str | None
+) -> None:
+    from aitestkit.exporters.factory import build_exporters
+
+    flattened = [name for value in names for name in value.split(",")]
+    try:
+        exporters = build_exporters(flattened, otel_endpoint=otel_endpoint)
+    except ConfigError as e:
+        typer.echo(f"export error: {e}", err=True)
+        raise typer.Exit(ExitCode.CONFIG_ERROR) from e
+    for exporter in exporters:
+        try:
+            note = exporter.export(test_run, out_dir)
+            if note:
+                typer.echo(f"exported: {note}")
+        except AitestkitError as e:
+            typer.echo(f"export {exporter.name} failed: {e}", err=True)
 
 
 @app.command()
