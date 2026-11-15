@@ -19,8 +19,7 @@ htmlcov/
 .env.*
 !.env.example
 
-# Unit tests + demo material — kept local only, not committed
-tests/
+# Unit tests are tracked; demo material stays local only
 examples/
 
 # Run output — evidence/ is tracked (committed evidence), root strays are not

@@ -15,7 +15,7 @@ suites/               tracked suite YAMLs, grouped by pillar — agent/, ab/,
 dataset_testcases/    tracked test-case datasets (.yaml/.json/.jsonl)
 prompts/              tracked prompt .txt files (version by filename)
 docs/                 standalone per-module guides
-tests/                gitignored — local unit tests only
+tests/                tracked — unit tests (run before pushing)
 examples/             gitignored — bundled demo apps, golden + meta-eval sets (local only)
 evidence/             run output — tracked (committed evidence)
 ```
@@ -87,7 +87,7 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
 - Live calls: `--cassette FILE --cassette-mode record` needs the real
   provider key (loud `config error` without it); `--cassette FILE`
   replays offline. Sanitized cassettes live in `cassettes/` (tracked).
-- Don't commit `tests/`, `examples/`, `.env`, `results` —
+- Don't commit `examples/`, `.env`, `results` —
   gitignored on purpose. `evidence/` IS committed — it's the run-evidence
   trail reviewers look at.
 - Exit codes: `0` gates pass, `1` metric/gate failure, `2` config error.
