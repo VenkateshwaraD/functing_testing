@@ -42,7 +42,7 @@ class JudgeConfig(BaseModel):
 
 
 class EmbedderConfig(BaseModel):
-    provider: str = "openai"
+    provider: str | None = None
     model: str = "text-embedding-3-small"
     api_key_env: str | None = None
 
@@ -145,18 +145,28 @@ def default_api_key_env(provider: str) -> str:
     return _PROVIDER_KEY_ENVS.get(provider, f"{provider.upper()}_API_KEY")
 
 
-def validate_provider_envs(suite: SuiteConfig, *, skip: set[str] | None = None) -> list[str]:
+def validate_provider_envs(
+    suite: SuiteConfig,
+    *,
+    providers: set[str] | None = None,
+    skip: set[str] | None = None,
+) -> list[str]:
     """Eagerly validate that every selected provider's key is present.
 
     Returns the list of provider names validated. Providers in ``skip``
-    (e.g. ``fake``) need no key.
+    (e.g. ``fake``) need no key. When ``providers`` is None it is derived
+    from the suite (judge, embedder, model matrix, providers section).
     """
     skip = (skip or set()) | {"fake"}
     checked: list[str] = []
-    providers_used = {suite.judge.provider, suite.embedder.provider}
-    for entry in suite.models:
-        providers_used.add(entry.split(":", 1)[0])
-    providers_used.update(suite.providers.keys())
+    if providers is None:
+        providers = {suite.judge.provider}
+        if suite.embedder.provider:
+            providers.add(suite.embedder.provider)
+        for entry in suite.models:
+            providers.add(entry.split(":", 1)[0])
+        providers.update(suite.providers.keys())
+    providers_used = providers
     for provider_name in sorted(providers_used):
         if provider_name in skip:
             continue
