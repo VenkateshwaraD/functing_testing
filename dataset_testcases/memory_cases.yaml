@@ -1,0 +1,27 @@
+conversations:
+  - id: name-remember
+    session_id: sess-demo-1
+    turns:
+      - input: "my name is ada"
+      - input: "what is my name"
+    metadata:
+      must_remember: ["ada"]
+    tags: [memory, conversation]
+
+cases:
+  # dummy.memory_app pre-seeds sess-seeded with name=grace, live=paris
+  - id: name-recall
+    input: "what is my name"
+    metadata:
+      session_id: sess-seeded
+      must_remember: ["grace"]
+      memory_key: "name"
+    tags: [memory]
+
+  - id: moved-city
+    input: "where do i live"
+    metadata:
+      session_id: sess-seeded
+      superseded: "london"
+      current: "paris"
+    tags: [memory, contradiction]

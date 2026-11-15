@@ -1,0 +1,17 @@
+# Prompt-testing cases — positive path: templates resolve, no banned
+# phrases, under token budget. Paired with suites/prompt_testing_suite.yaml.
+cases:
+  - id: simple-query
+    input: "what is my balance"
+    expected_output: "echo what is my balance"   # prompt_echo returns "echo <input>"
+    tags: [prompt, smoke]
+
+  - id: arithmetic
+    input: "what is 2+2"
+    expected_output: "echo what is 2+2"
+    tags: [prompt]
+
+  - id: with-metadata
+    input: "explain overdraft fees"
+    metadata: {tone_rule: "Be formal."}          # fills {tone_rule} slot
+    tags: [prompt, template]

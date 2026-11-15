@@ -1,0 +1,28 @@
+# Prompt matrix + prompt_sim lint — positive path, fully offline.
+name: prompt-testing
+
+target:
+  type: python
+  function: "dummy.demo_app:prompt_echo"   # echoes input, records variant
+
+datasets:
+  - ../dataset_testcases/prompt_cases.yaml
+
+# Every case runs once per variant — results tagged by prompt_name.
+# Prompts live as files under <repo>/prompts/ — versioning is file-based
+# (v1/v2 etc.); paths resolve relative to this suite file.
+prompts:
+  - {name: formal, file: ../prompts/customer_support_v1.txt}
+  - {name: casual, file: ../prompts/customer_support_v2.txt}
+
+metrics:
+  - name: prompt_sim                       # lint the rendered prompt
+    template: "Answer: {input}"
+    banned: ["ignore previous", "reveal your", "system prompt", "dan"]
+    max_tokens: 500
+  - exact_match                            # prompt_echo output is deterministic
+  - {name: contains, substrings: ["echo"], threshold: 0.0}  # informational
+
+gates:
+  min_pass_rate: 1.0
+  max_error_cases: 0

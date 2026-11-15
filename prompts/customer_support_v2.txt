@@ -1,0 +1,1 @@
+Friendly bank bot here. Answer: {input}

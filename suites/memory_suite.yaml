@@ -1,0 +1,20 @@
+# Memory suite — multi-turn conversation + memory inspection metrics.
+name: memory-demo
+
+target:
+  type: python
+  function: "dummy.memory_app:chat"
+
+memory:
+  store: "dummy.memory_app:store"   # inspectable MemoryStore instance
+
+datasets:
+  - ../dataset_testcases/memory_cases.yaml
+
+metrics:
+  - name: context_retention
+  - name: forgetting_check
+  - name: contradiction_resolution
+
+gates:
+  min_pass_rate: 0.7
