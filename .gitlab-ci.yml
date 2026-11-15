@@ -28,16 +28,8 @@ check:
   script:
     - uv python install "$PY"
     - uv sync --frozen --python "$PY"
-    - uv run ruff check src examples
+    - uv run ruff check src
     - uv run mypy
-    - cd examples
-    - export PYTHONPATH=.
-    - for suite in suites/*.yaml; do uv run aitestkit run "$suite" -o "$CI_PROJECT_DIR/example-out" || exit $?; done
-  artifacts:
-    when: always
-    paths:
-      - example-out/
-    expire_in: 1 week
 
 # --- was audit.yml: dependency audit on lockfile/manifest changes ---
 audit:
@@ -70,9 +62,7 @@ live-smoke:
         echo "OPENAI_API_KEY not set — skipping live smoke."
         exit 0
       fi
-    - cd examples
-    - export PYTHONPATH=.
-    - uv run aitestkit run ../ci/live_suite.yaml -o "$CI_PROJECT_DIR/live-out" --report console,json
+    - uv run aitestkit run ci/live_suite.yaml -o "$CI_PROJECT_DIR/live-out" --report console,json
   artifacts:
     when: always
     paths:
