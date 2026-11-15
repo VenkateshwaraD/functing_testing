@@ -35,6 +35,6 @@ junit.xml
 .DS_Store
 .idea/
 .vscode/
-testcases/
+dataset_testcases/
 prompts/
 suites/

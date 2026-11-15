@@ -4,7 +4,7 @@ How to test prompt variants, lint rendered prompts for injection/leakage, and
 gate prompt changes in CI — self-contained guide.
 
 ```
-testcases/*.yaml ──┐
+dataset_testcases/*.yaml ──┐
                    ├─► aitestkit run suites/X.yaml ──► results.json + report
 prompts/*.txt   ───┘         (case × prompt variant)
 ```
@@ -21,7 +21,7 @@ with pass/fail gates.
 prompts/                  # one .txt file per prompt/version
 ├── customer_support_v1.txt
 └── customer_support_v2.txt
-testcases/                # test cases (input + expected output)
+dataset_testcases/                # test cases (input + expected output)
 └── prompt_cases.yaml
 suites/                   # wiring: target + datasets + prompts + metrics
 └── prompt_testing_suite.yaml
@@ -45,7 +45,7 @@ Version prompts by filename (`_v1`, `_v2`) — switching the suite to a new file
 
 ## 3. Write test cases
 
-`testcases/prompt_cases.yaml`:
+`dataset_testcases/prompt_cases.yaml`:
 
 ```yaml
 cases:
@@ -82,7 +82,7 @@ target:
   function: "dummy.demo_app:prompt_echo"    # your app under test
 
 datasets:
-  - ../testcases/prompt_cases.yaml          # relative to this file
+  - ../dataset_testcases/prompt_cases.yaml          # relative to this file
 
 prompts:                                    # one entry per variant
   - {name: formal, file: ../prompts/customer_support_v1.txt}
@@ -170,7 +170,7 @@ Exit code `0` = gates pass, `1` = gate/metric failures, `2` = config error.
 
 ## 7. Adversarial prompt testing
 
-`suites/prompt_adversarial_suite.yaml` + `testcases/prompt_adversarial_cases.yaml`
+`suites/prompt_adversarial_suite.yaml` + `dataset_testcases/prompt_adversarial_cases.yaml`
 — cases *designed to trip* `prompt_sim`:
 
 ```yaml
