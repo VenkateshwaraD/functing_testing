@@ -30,17 +30,17 @@ assistant) with `aitestkit`. Runnable reference implementation ships under
 
 | File | Role |
 |------|------|
-| `examples/dummy/banking_app.py` | Demo agent — balance/FX/transfer tools, confirmation-gated transfers, policy-blocked wires |
+| `banking_app.py` | Funds-transfer agent — balance/FX/transfer tools, confirmation-gated transfers, policy-blocked wires |
 | `dataset_testcases/banking_cases.yaml` | 5 cases: balance, FX, approved transfer, forbidden wire |
 | `suites/banking_suite.yaml` | Functional + safety suite (offline) |
 | `suites/banking_resilience_suite.yaml` | Fault-injection suite: `transfer_funds` always 503s → graceful-degradation assertions |
 | `dataset_testcases/banking_resilience_cases.yaml` | Degraded-transfer + unaffected-balance cases |
 
 ```bash
-cd examples && export PYTHONPATH=.
-
-uv run aitestkit run suites/banking_suite.yaml -o /tmp/bank-fn        # 5/5
-uv run aitestkit run suites/banking_resilience_suite.yaml -o /tmp/bank-res # 2/2
+aitestkit run suites/banking_suite.yaml \
+  --judge openai --judge-model gpt-4o-mini -o /tmp/bank-fn
+aitestkit run suites/banking_resilience_suite.yaml \
+  --judge openai --judge-model gpt-4o-mini -o /tmp/bank-res
 ```
 
 ## Step 1 — Point the target at YOUR agent

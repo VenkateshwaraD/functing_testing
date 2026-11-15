@@ -310,14 +310,12 @@ schedule with a `max_cost_usd` cap like `live-smoke` does.
 
 ## Worked example
 
-The repo ships a runnable one — a keyword-driven demo "ReAct" agent
-(`examples/dummy/agent_app.py`) that thinks, calls a `search` tool, observes, and
-answers:
+The repo ships a runnable one — a small ReAct-style agent (`agent_app.py`)
+that thinks, calls a `search` tool, observes, and answers:
 
 ```bash
-cd examples
-export PYTHONPATH=.
-uv run aitestkit run suites/agentic_suite.yaml -o /tmp/agentic-out
+aitestkit run suites/agentic_suite.yaml \
+  --judge openai --judge-model gpt-4o-mini -o /tmp/agentic-out
 ```
 
 It scores `tool_sequence`, `forbidden_tools`, `loop_detection`,

@@ -79,7 +79,7 @@ name: prompt-testing
 
 target:
   type: python
-  function: "dummy.demo_app:prompt_echo"    # your app under test
+  function: "support_chat.app:answer"      # your app under test
 
 datasets:
   - ../dataset_testcases/prompt_cases.yaml          # relative to this file
@@ -122,14 +122,14 @@ well-formed.
 **One command** — copy-paste this from the repo root:
 
 ```bash
-PYTHONPATH=examples uv run aitestkit run suites/prompt_testing_suite.yaml
+aitestkit run suites/prompt_testing_suite.yaml
 ```
 
 What each piece means:
 
 | Piece | What it does |
 |---|---|
-| `PYTHONPATH=examples` | lets Python find the demo app (`dummy.demo_app`). Only needed because this demo suite calls a bundled stand-in — skip it once `function:` points at *your* installed app |
+| `PYTHONPATH=...` | adds the dir holding your `function:` module — skip it when the app is already installed on the path |
 | `uv run` | runs aitestkit inside the project env (or use `aitestkit` directly / `python -m aitestkit.cli`) |
 | `aitestkit run` | the command — load suite → run cases × prompt variants → score → check gates |
 | `suites/prompt_testing_suite.yaml` | which suite file to run |
@@ -140,9 +140,10 @@ What each piece means:
 # choose where results go (default: scratch/)
 aitestkit run suites/X.yaml -o results/my-run
 
-# use a real LLM judge — only if your suite has judge metrics
-# (correctness, custom_rubric, faithfulness...). This demo suite doesn't.
-aitestkit run suites/X.yaml --judge anthropic --judge-model claude-haiku-4-5
+# use an LLM judge — needed when the suite has judge metrics
+# (correctness, custom_rubric, faithfulness...)
+OPENAI_API_KEY=sk-... aitestkit run suites/X.yaml \
+  --judge openai --judge-model gpt-4o-mini
 ```
 
 Not sure which to use? If the suite's `metrics:` list only has

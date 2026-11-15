@@ -233,6 +233,12 @@ uv run aitestkit run suites/prompt_matrix_suite.yaml -o /tmp/pm-out
 uv run aitestkit run ../ci/live_suite.yaml -o /tmp/live-out --report console,json
 ```
 
-`llm_suite.yaml` (`dummy.demo_app:answer` + `exact_match`/`contains`) and
-`prompt_matrix_suite.yaml` (two prompt variants + `prompt_sim`) both run
-with zero API keys — copy them as templates.
+`llm_suite.yaml` (`exact_match`/`contains`) and
+`prompt_matrix_suite.yaml` (two prompt variants + `prompt_sim`) are
+ready-made templates — repoint `target.function` at your app
+(`support_chat.app:answer`) and run with your judge:
+
+```bash
+OPENAI_API_KEY=sk-... aitestkit run suites/llm_suite.yaml \
+  --judge openai --judge-model gpt-4o-mini
+```
