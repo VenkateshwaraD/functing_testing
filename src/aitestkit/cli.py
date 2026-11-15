@@ -304,6 +304,36 @@ async def _run_suite(
         for case in cases
         for spec in (case.assert_ or [])
     )
+    if judge_needed:
+        # Judge must be chosen explicitly — no silent fallback to the
+        # shipped default. Any source counts: suite YAML judge: block,
+        # AITESTKIT_JUDGE_* in env/.env, or --judge/--judge-model flags.
+        import os
+
+        provider_set = bool(
+            judge_provider
+            or "provider" in suite.judge.model_fields_set
+            or os.environ.get("AITESTKIT_JUDGE_PROVIDER")
+        )
+        model_set = bool(
+            judge_model
+            or "model" in suite.judge.model_fields_set
+            or os.environ.get("AITESTKIT_JUDGE_MODEL")
+        )
+        if not (provider_set and model_set):
+            missing = [
+                v
+                for v, ok in (
+                    ("AITESTKIT_JUDGE_PROVIDER", provider_set),
+                    ("AITESTKIT_JUDGE_MODEL", model_set),
+                )
+                if not ok
+            ]
+            raise ConfigError(
+                f"{suite_path}: suite uses judge metrics — pick a judge first. "
+                f"Set {' and '.join(missing)} in .env (non-empty), add a judge: "
+                "block to the suite, or pass --judge/--judge-model."
+            )
     providers_used: set[str] = set()
     effective_judge = judge_provider or suite.judge.provider
     if judge_needed or judge_provider:
