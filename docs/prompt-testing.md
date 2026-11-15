@@ -122,14 +122,19 @@ well-formed.
 **Option 1 — `.env` at repo root** (auto-loaded, gitignored):
 
 ```bash
-# .env — the variable name must match your provider:
-OPENAI_API_KEY=sk-...          # provider: openai
-# ANTHROPIC_API_KEY=sk-ant-... # provider: anthropic
-# GEMINI_API_KEY=...           # provider: gemini
+# .env — set the key for whichever provider you use:
+OPENAI_API_KEY=sk-...             # openai
+ANTHROPIC_API_KEY=sk-ant-...      # anthropic
+GEMINI_API_KEY=...                # gemini
+AZURE_OPENAI_API_KEY=...          # azure
+# any other provider: <NAME>_API_KEY  e.g. GROQ_API_KEY, MISTRAL_API_KEY
 ```
 
+Any provider works — pick it per run or set a default:
+
 ```bash
-aitestkit run suites/prompt_testing_suite.yaml
+aitestkit run suites/prompt_testing_suite.yaml --judge openai --judge-model gpt-4o-mini
+# or via env:  AITESTKIT_JUDGE_PROVIDER=anthropic AITESTKIT_JUDGE_MODEL=claude-haiku-4-5
 ```
 
 **Option 2 — no key needed.** This suite only has deterministic metrics
