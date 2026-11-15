@@ -199,6 +199,7 @@ class CaseResult(BaseModel):
     attribution: str | None = None  # e.g. "retrieval" | "generation" | "rerank"
     tags: list[str] = Field(default_factory=list)
     repeat: dict[str, Any] = Field(default_factory=dict)  # pass_rate, runs, outcomes
+    session_id: str | None = None  # conversation/memory session
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

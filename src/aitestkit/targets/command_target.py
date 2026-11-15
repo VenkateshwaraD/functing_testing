@@ -53,6 +53,7 @@ class CommandTarget:
         tool_mocks: dict[str, Any] | None = None,
         session_id: str | None = None,
         trace_sink: Any | None = None,
+        tool_registry: Any | None = None,
     ) -> TargetOutput:
         payload = json.dumps(
             {

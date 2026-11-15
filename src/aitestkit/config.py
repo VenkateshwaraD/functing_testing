@@ -114,6 +114,10 @@ class SuiteConfig(BaseModel):
     redact: dict[str, Any] = Field(default_factory=lambda: {"enabled": True, "patterns": []})
     version_tags: dict[str, str] = Field(default_factory=dict)
     # ^ prompt/kb/chunker/embedder versions
+    memory: dict[str, Any] = Field(default_factory=dict)
+    # ^ {store: "module:store"} — inspectable MemoryStore for memory metrics
+    tools: dict[str, Any] = Field(default_factory=dict)
+    # ^ tool registry spec: name -> {function, requires_confirmation, fault, mock}
     seed: int | None = None
 
     @property

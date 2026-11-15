@@ -75,6 +75,7 @@ class PythonTarget:
         tool_mocks: dict[str, Any] | None = None,
         session_id: str | None = None,
         trace_sink: Any | None = None,
+        tool_registry: Any | None = None,
     ) -> TargetOutput:
         kwargs = self._build_kwargs(
             case,
@@ -83,6 +84,7 @@ class PythonTarget:
             tool_mocks=tool_mocks,
             session_id=session_id,
             trace_sink=trace_sink,
+            tool_registry=tool_registry,
         )
         start = time.perf_counter()
         try:
@@ -106,6 +108,7 @@ class PythonTarget:
         tool_mocks: dict[str, Any] | None,
         session_id: str | None,
         trace_sink: Any | None,
+        tool_registry: Any | None,
     ) -> dict[str, Any]:
         """Pass only kwargs the callable actually accepts (plus input always)."""
         signature = inspect.signature(self._func)
@@ -117,6 +120,7 @@ class PythonTarget:
             "tool_mocks": tool_mocks,
             "session_id": session_id,
             "trace_sink": trace_sink,
+            "tool_registry": tool_registry,
             **self._extra_kwargs,
         }
         kwargs = {"input": case.input}

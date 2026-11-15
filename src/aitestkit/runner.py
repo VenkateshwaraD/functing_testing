@@ -23,6 +23,7 @@ from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.models import (
     CaseResult,
     CaseStatus,
+    ConversationCase,
     MetricResult,
     TargetOutput,
     TestCase,
@@ -54,6 +55,8 @@ class RunEngine:
         max_cost_usd: float | None = None,
         models: list[str] | None = None,
         tool_mocks: dict[str, Any] | None = None,
+        conversations: list[ConversationCase] | None = None,
+        tool_registry: Any | None = None,
     ) -> None:
         self.target = target
         self.metrics = metrics
@@ -64,6 +67,8 @@ class RunEngine:
         self.max_cost_usd = max_cost_usd
         self.models: list[str | None] = list(models) if models else [None]
         self.tool_mocks = tool_mocks
+        self.conversations = conversations or []
+        self.tool_registry = tool_registry
         self._spent = Usage()
         self._budget_hit = False
         self._cancelled = False
@@ -116,7 +121,62 @@ class RunEngine:
                     maybe_awaitable = on_case_result(result)
                     if maybe_awaitable is not None:
                         await maybe_awaitable
+        for conversation in self.conversations:
+            for result in await self._run_conversation(conversation):
+                test_run.results.append(result)
+                if on_case_result is not None:
+                    maybe_awaitable = on_case_result(result)
+                    if maybe_awaitable is not None:
+                        await maybe_awaitable
         return test_run, self._budget_hit
+
+    async def _run_conversation(self, conversation: ConversationCase) -> list[CaseResult]:
+        """Run a multi-turn case sequentially; turns share a session_id."""
+        from aitestkit.tracing.emitter import TraceEmitter
+
+        session = conversation.session_id or conversation.id
+        results: list[CaseResult] = []
+        for index, turn in enumerate(conversation.turns):
+            case = TestCase(
+                id=f"{conversation.id}/turn-{index}",
+                input=turn.input,
+                expected_output=turn.expected_output,
+                tags=list(dict.fromkeys(turn.tags + conversation.tags)),
+                metadata={
+                    **conversation.metadata,
+                    "_conversation": conversation.id,
+                    "_turn": index,
+                    "_final_turn": index == len(conversation.turns) - 1,
+                    "session_id": session,
+                },
+            )
+            emitter = TraceEmitter()
+            case_id = case.id or "turn"
+            try:
+                output = await asyncio.wait_for(
+                    self.target.invoke(
+                        case,
+                        session_id=session,
+                        trace_sink=emitter,
+                        tool_registry=self.tool_registry,
+                    ),
+                    timeout=self.case_timeout,
+                )
+            except TimeoutError:
+                results.append(
+                    self._error_result(case, case_id, "turn timed out")
+                )
+                continue
+            except (TargetError, AitestkitError) as e:
+                results.append(self._error_result(case, case_id, str(e)))
+                continue
+            if output.trajectory is None and len(emitter):
+                output.trajectory = emitter.trajectory
+            self._spend(output.usage)
+            result = await self._evaluate_metrics(case, output, case_id)
+            result.session_id = session
+            results.append(result)
+        return results
 
     def _skipped_result(self, case: TestCase, reason: str) -> CaseResult:
         return CaseResult(
@@ -182,7 +242,9 @@ class RunEngine:
                     model=model,
                     provider=provider,
                     tool_mocks=self.tool_mocks,
+                    session_id=case.metadata.get("session_id"),
                     trace_sink=emitter,
+                    tool_registry=self.tool_registry,
                 ),
                 timeout=self.case_timeout,
             )

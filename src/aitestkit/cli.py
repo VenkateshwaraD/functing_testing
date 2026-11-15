@@ -7,7 +7,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
 
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from aitestkit.providers.cassette import Cassette
     from aitestkit.redact import Redactor
     from aitestkit.runner import RunEngine
+    from aitestkit.targets.tool_registry import ToolRegistry
 
 from aitestkit.exceptions import (
     AitestkitError,
@@ -88,6 +89,7 @@ def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     import aitestkit.metrics.agentic  # noqa: F401 — registers metrics
     import aitestkit.metrics.deterministic  # noqa: F401 — registers metrics
     import aitestkit.metrics.llm_judge  # noqa: F401
+    import aitestkit.metrics.memory  # noqa: F401
     from aitestkit.metrics.registry import build_metric
 
     return [
@@ -159,7 +161,26 @@ def _build_ctx(
         embedder=embedder,
         embed_model=suite.embedder.model,
         redactor=redactor or _Redactor(enabled=suite.redact.get("enabled", True)),
+        memory_store=_build_memory_store(suite),
     )
+
+
+def _build_tool_registry(suite: SuiteConfig) -> ToolRegistry | None:
+    """Build the suite's ToolRegistry with fault injection + mocks."""
+    from aitestkit.targets.tool_registry import build_registry
+
+    return build_registry(suite.tools or None)
+
+
+def _build_memory_store(suite: SuiteConfig) -> Any:
+    """Load the suite's inspectable MemoryStore (memory.store: module:obj)."""
+    from aitestkit.targets.python_target import load_callable
+
+    spec = suite.memory.get("store")
+    if not spec:
+        return None
+    store = load_callable(spec)
+    return store() if callable(store) else store
 
 
 def _install_sigint(engine: RunEngine) -> None:
@@ -197,7 +218,7 @@ async def _run_suite(
 ) -> tuple[TestRun, bool, SuiteConfig]:
     from aitestkit.baseline import compare_runs, load_baseline, save_baseline
     from aitestkit.config import load_suite, validate_provider_envs
-    from aitestkit.datasets import load_cases
+    from aitestkit.datasets import load_cases, load_conversations
     from aitestkit.gates import evaluate_gates
     from aitestkit.history import record_run
     from aitestkit.metadata import collect_metadata
@@ -268,7 +289,12 @@ async def _run_suite(
         for dataset in suite.datasets
         for case in load_cases(suite_path.parent / dataset)
     ]
-    if not cases:
+    conversations = [
+        conversation
+        for dataset in suite.datasets
+        for conversation in load_conversations(suite_path.parent / dataset)
+    ]
+    if not cases and not conversations:
         raise ConfigError(f"{suite_path}: no test cases loaded")
 
     test_run = TestRun(
@@ -309,6 +335,8 @@ async def _run_suite(
         repeat=suite.repeat,
         max_cost_usd=suite.max_cost_usd,
         models=suite.models or None,
+        conversations=conversations,
+        tool_registry=_build_tool_registry(suite),
     )
     _install_sigint(engine)
     test_run, budget_hit = await engine.run(

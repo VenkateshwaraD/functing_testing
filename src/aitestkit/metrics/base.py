@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from aitestkit.models import MetricResult, TargetOutput, TestCase
 
 if TYPE_CHECKING:
+    from aitestkit.agentic.memory import MemoryStore
     from aitestkit.judge.judge import Judge
     from aitestkit.providers.base import Embedder
     from aitestkit.redact import Redactor
@@ -27,11 +28,13 @@ class MetricContext:
         embedder: Embedder | None = None,
         embed_model: str | None = None,
         redactor: Redactor | None = None,
+        memory_store: MemoryStore | None = None,
     ) -> None:
         self.judge = judge
         self.embedder = embedder
         self.embed_model = embed_model
         self.redactor = redactor
+        self.memory_store = memory_store
 
     def require_judge(self, metric_name: str) -> Judge:
         if self.judge is None:

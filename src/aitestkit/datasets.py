@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 
 from aitestkit.exceptions import DatasetError
-from aitestkit.models import TestCase
+from aitestkit.models import ConversationCase, TestCase
 
 
 def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
@@ -62,6 +62,29 @@ def load_cases(path: str | Path) -> list[TestCase]:
             case.id = f"{path.stem}-{index}"
         cases.append(case)
     return cases
+
+
+def load_conversations(path: str | Path) -> list[ConversationCase]:
+    """Load multi-turn conversation cases from the ``conversations:`` key."""
+    path = Path(path)
+    if not path.exists() or path.suffix not in (".yaml", ".yml"):
+        return []
+    payload = yaml.safe_load(path.read_text())
+    if not isinstance(payload, dict) or "conversations" not in payload:
+        return []
+    raw = payload["conversations"]
+    if not isinstance(raw, list):
+        raise DatasetError(f"{path}: 'conversations' must be a list")
+    conversations: list[ConversationCase] = []
+    for index, item in enumerate(raw):
+        try:
+            conversation = ConversationCase.model_validate(item)
+        except Exception as e:
+            raise DatasetError(f"{path}: conversation #{index} invalid: {e}") from e
+        if conversation.id is None:
+            conversation.id = f"{path.stem}-conv-{index}"
+        conversations.append(conversation)
+    return conversations
 
 
 def iter_cases(path: str | Path) -> Iterator[TestCase]:

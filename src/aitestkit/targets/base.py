@@ -22,6 +22,7 @@ class TargetAdapter(Protocol):
         tool_mocks: dict[str, Any] | None = None,
         session_id: str | None = None,
         trace_sink: Any | None = None,
+        tool_registry: Any | None = None,
     ) -> TargetOutput:
         """Run the SUT for ``case`` and return its output + telemetry."""
         ...
