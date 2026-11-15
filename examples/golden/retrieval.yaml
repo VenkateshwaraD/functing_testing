@@ -1,0 +1,12 @@
+schema_version: 1
+corpus_id: capitals
+queries:
+  - id: q-paris
+    query: "capital of France"
+    # chunk ids are {doc_id}:{index} — deterministic per strategy
+    relevant_ids: ["paris:0"]
+    tags: [capitals]
+  - id: q-tokyo
+    query: "capital of Japan"
+    relevant_ids: ["tokyo:0"]
+    tags: [capitals]

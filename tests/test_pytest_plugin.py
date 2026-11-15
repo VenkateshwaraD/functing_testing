@@ -16,7 +16,7 @@ def test_aitestkit_yaml_collection(tmp_path: Path) -> None:
 target: {type: python, function: "demo_app:answer"}
 metrics:
   - name: contains
-    params: {substrings: ["hello"]}
+    substrings: ["hello"]
 cases:
   - id: greeting
     input: "say hello"
@@ -40,7 +40,7 @@ def test_aitestkit_yaml_all_pass(tmp_path: Path) -> None:
 target: {type: python, function: "demo_app:answer"}
 metrics:
   - name: contains
-    params: {substrings: ["hello"]}
+    substrings: ["hello"]
 cases:
   - id: greeting
     input: "say hello"

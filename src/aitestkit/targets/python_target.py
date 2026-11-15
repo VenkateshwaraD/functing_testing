@@ -15,7 +15,7 @@ import time
 from typing import Any
 
 from aitestkit.exceptions import ConfigError, TargetError
-from aitestkit.models import TargetOutput, TestCase, Trajectory, Usage
+from aitestkit.models import TargetOutput, TestCase, ToolCall, Trajectory, Usage
 
 
 def load_callable(spec: str) -> Any:
@@ -45,13 +45,20 @@ def _coerce_output(result: Any) -> TargetOutput:
         trajectory = result.get("trajectory")
         if isinstance(trajectory, dict):
             trajectory = Trajectory.model_validate(trajectory)
+        tool_calls = [
+            t if isinstance(t, ToolCall) else ToolCall.model_validate(t)
+            for t in result.get("tool_calls") or []
+        ]
         usage_raw = result.get("usage") or result.get("sut_usage") or {}
         usage = usage_raw if isinstance(usage_raw, Usage) else Usage.model_validate(usage_raw)
         return TargetOutput(
             output=result.get("output") or result.get("text"),
             trajectory=trajectory,
             retrieval_context=result.get("retrieval_context") or result.get("context"),
+            retrieval_ids=result.get("retrieval_ids"),
+            tool_calls=tool_calls,
             usage=usage,
+            metadata=result.get("metadata") or {},
         )
     return TargetOutput(output=str(result))
 

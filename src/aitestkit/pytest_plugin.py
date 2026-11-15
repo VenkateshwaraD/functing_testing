@@ -86,7 +86,10 @@ class AitestkitFile(pytest.File):
             build_metric(
                 spec["name"],
                 threshold=spec.get("threshold"),
-                params=spec.get("params", {}),
+                params={
+                    k: v for k, v in spec.items()
+                    if k not in {"name", "threshold"}
+                },
             )
             for spec in data.get("metrics", [])
         ]

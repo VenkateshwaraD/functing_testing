@@ -1,0 +1,26 @@
+# Agentic suite — trajectory metrics over a demo ReAct agent (offline).
+name: agentic-demo
+
+target:
+  type: python
+  function: "agent_app:run"
+
+datasets:
+  - ../datasets/agentic_cases.yaml
+
+judge:
+  provider: fake    # offline — fake judge returns canned verdicts
+  model: fake
+
+metrics:
+  - name: tool_sequence       # reads case.expected_tools — no params
+  - name: forbidden_tools
+    tools: ["delete", "drop"]
+  - name: loop_detection
+    max_repeats: 3
+  - name: termination_check
+  - name: task_completion
+    threshold: 0.0   # informational — fake judge always passes
+
+gates:
+  min_pass_rate: 0.8

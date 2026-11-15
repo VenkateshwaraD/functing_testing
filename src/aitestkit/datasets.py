@@ -22,6 +22,8 @@ def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
         payload = yaml.safe_load(fh)
     if isinstance(payload, dict) and "cases" in payload:
         payload = payload["cases"]
+    elif isinstance(payload, dict) and "conversations" in payload:
+        return  # conversations-only file — load_conversations() handles it
     if not isinstance(payload, list):
         raise DatasetError(f"{path}: expected a list of cases or a 'cases:' mapping")
     for index, item in enumerate(payload):

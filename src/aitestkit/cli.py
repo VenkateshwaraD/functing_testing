@@ -170,14 +170,26 @@ def _build_tool_registry(suite: SuiteConfig) -> ToolRegistry | None:
 
 
 def _build_memory_store(suite: SuiteConfig) -> Any:
-    """Load the suite's inspectable MemoryStore (memory.store: module:obj)."""
-    from aitestkit.targets.python_target import load_callable
+    """Load the suite's inspectable MemoryStore (memory.store: module:obj).
+
+    The spec resolves to either a store instance or a zero-arg factory —
+    memory stores aren't functions, so load_callable doesn't apply.
+    """
+    import importlib
 
     spec = suite.memory.get("store")
     if not spec:
         return None
-    store = load_callable(spec)
-    return store() if callable(store) else store
+    if ":" not in str(spec):
+        raise ConfigError(
+            f"memory.store must be 'module:attribute', got {spec!r}"
+        )
+    module_name, attr = str(spec).split(":", 1)
+    try:
+        obj = getattr(importlib.import_module(module_name), attr)
+    except (ImportError, AttributeError) as e:
+        raise ConfigError(f"memory.store {spec!r} not resolvable: {e}") from e
+    return obj() if callable(obj) else obj
 
 
 def _build_vector_store(suite: SuiteConfig, embedder: Any) -> Any:
@@ -207,7 +219,7 @@ _JUDGE_METRICS = {
     "answer_relevancy", "groundedness", "citation_accuracy", "task_completion",
     "reasoning_coherence", "plan_validity", "contextual_precision",
     "contextual_recall", "multi_turn_coherence", "tool_args_correct",
-    "memory_accuracy", "context_retention",
+    "memory_accuracy",
 }
 
 
