@@ -99,10 +99,13 @@ class PromptVariant(BaseModel):
 
     ``{input}`` inside ``template`` is substituted with the case input;
     targets that accept a ``prompt`` kwarg receive the rendered text.
+    ``file`` loads the template from a path relative to the suite file —
+    exactly one of ``template``/``file`` is required.
     """
 
     name: str
-    template: str
+    template: str | None = None
+    file: str | None = None
 
 
 class SuiteConfig(BaseModel):
@@ -247,6 +250,16 @@ def load_suite(path: str | Path) -> SuiteConfig:
         raise ConfigError(f"{path}: invalid suite config: {e}") from e
     _apply_env_overrides(suite)
     _validate_suite(suite, path)
+    for variant in suite.prompts:
+        if variant.file is not None:
+            prompt_path = path.parent / variant.file
+            if not prompt_path.is_file():
+                raise ConfigError(f"{path}: prompt file not found: {variant.file}")
+            variant.template = prompt_path.read_text(encoding="utf-8").strip()
+        if variant.template is None:
+            raise ConfigError(
+                f"{path}: prompt {variant.name!r} needs 'template' or 'file'"
+            )
     return suite
 
 

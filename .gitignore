@@ -35,3 +35,5 @@ junit.xml
 .DS_Store
 .idea/
 .vscode/
+datasets/
+prompts/

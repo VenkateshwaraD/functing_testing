@@ -364,6 +364,8 @@ def _prompt_name(prompt: PromptVariant | None) -> str | None:
 
 def _render_prompt(prompt: PromptVariant, input_text: str) -> str:
     """Substitute ``{input}`` in a PromptVariant template."""
+    if prompt.template is None:
+        raise TargetError(f"prompt {prompt.name!r}: no template resolved")
     try:
         return prompt.template.format(input=input_text)
     except (KeyError, IndexError) as e:
