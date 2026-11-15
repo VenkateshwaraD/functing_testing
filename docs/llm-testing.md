@@ -28,7 +28,8 @@ case runs once per `models:` entry **and** once per `prompts:` variant.
 ### A. Raw model API — `type: http`
 
 Test the model directly; `{input}` is substituted into the request body and
-`${ENV_VAR}` into headers/URL:
+`${ENV_VAR}` into headers/URL (an unset var is a config error — secrets are
+never sent as literal `${VAR}` strings):
 
 ```yaml
 target:

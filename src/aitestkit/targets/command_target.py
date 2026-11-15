@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import time
 from typing import Any
 
 from aitestkit.exceptions import ConfigError, TargetError
 from aitestkit.models import TargetOutput, TestCase, Trajectory, Usage
+from aitestkit.targets.base import child_env
 
 
 class CommandTarget:
@@ -74,7 +74,7 @@ class CommandTarget:
         return _parse_stdout(stdout, stderr=stderr, latency_ms=latency)
 
     async def _run_process(self, stdin_payload: str) -> tuple[str, str]:
-        env = {**os.environ, **self.env} if self.env else None
+        env = child_env(self.env)
         try:
             process = await asyncio.create_subprocess_exec(
                 *self.command,

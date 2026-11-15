@@ -253,7 +253,10 @@ aitestkit run agent_suite.yaml --cassette cassettes/agent.jsonl   # replay = off
 ```
 
 If the suite has `command:` targets add `--allow-command-targets`; strip
-python targets in locked-down CI with `--no-allow-python-targets`.
+python targets in locked-down CI with `--no-allow-python-targets` — that
+flag also rejects `memory.store`, `tools.*.function`, `providers.*.impl`
+and `module:Class` judge/embedder specs, so no YAML key can smuggle code
+execution past it.
 
 ---
 

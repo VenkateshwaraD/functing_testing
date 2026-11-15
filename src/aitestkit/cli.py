@@ -111,6 +111,7 @@ def _build_ctx(
     redactor: Redactor | None = None,
     cassette: Cassette | None = None,
     needs_judge: bool | None = None,
+    allow_python: bool = True,
 ) -> MetricContext:
     from aitestkit.judge.judge import Judge
     from aitestkit.metrics.base import MetricContext
@@ -138,6 +139,7 @@ def _build_ctx(
                 provider_name,
                 rpm=provider_cfg.rpm if provider_cfg else None,
                 impl=provider_cfg.impl if provider_cfg else None,
+                allow_custom=allow_python,
             )
         if cassette is not None:
             provider = CassetteChatProvider(provider, cassette, name=provider_name)
@@ -170,6 +172,7 @@ def _build_ctx(
                 suite.embedder.provider,
                 rpm=embed_cfg.rpm if embed_cfg else None,
                 impl=embed_cfg.impl if embed_cfg else None,
+                allow_custom=allow_python,
             )
         embedder = (
             CassetteEmbedder(inner, cassette, name=suite.embedder.provider)
@@ -181,29 +184,73 @@ def _build_ctx(
         embedder=embedder,
         embed_model=suite.embedder.model,
         redactor=redactor or _Redactor(enabled=suite.redact.get("enabled", True)),
-        memory_store=_build_memory_store(suite),
+        memory_store=_build_memory_store(suite, allow_python=allow_python),
         vector_store=_build_vector_store(suite, embedder),
     )
 
 
-def _build_tool_registry(suite: SuiteConfig) -> ToolRegistry | None:
+def _build_tool_registry(
+    suite: SuiteConfig, *, allow_python: bool = True
+) -> ToolRegistry | None:
     """Build the suite's ToolRegistry with fault injection + mocks."""
     from aitestkit.targets.tool_registry import build_registry
 
-    return build_registry(suite.tools or None)
+    return build_registry(suite.tools or None, allow_python=allow_python)
 
 
-def _build_memory_store(suite: SuiteConfig) -> Any:
+def _reject_python_code_paths(
+    suite: SuiteConfig, *, judge_provider: str | None = None
+) -> None:
+    """``--no-allow-python-targets`` must cover every dynamic import path.
+
+    ``build_target`` blocks python/langgraph/custom targets; everything else
+    that imports project code is listed here so a suite cannot gain code
+    execution by moving the spec into a different YAML key.
+    """
+    paths: list[str] = []
+    if suite.memory.get("store"):
+        paths.append(f"memory.store={suite.memory['store']!r}")
+    paths.extend(f"tools.{name}.function" for name in suite.tools)
+    for pname, cfg in suite.providers.items():
+        if cfg.impl or ":" in pname:
+            paths.append(f"providers.{pname}")
+    effective_judge = judge_provider or suite.judge.provider
+    for label, name in (
+        ("judge.provider", effective_judge),
+        ("embedder.provider", suite.embedder.provider),
+    ):
+        if name and ":" in name:
+            paths.append(f"{label}={name!r}")
+    targets = [suite.target, *suite.stage_targets.values()]
+    paths.extend(
+        f"target.type={t.type!r}"
+        for t in targets
+        if t is not None and t.type in {"python", "langgraph", "custom"}
+    )
+    if paths:
+        raise ConfigError(
+            "--no-allow-python-targets rejects suite code-loading keys: "
+            + ", ".join(paths)
+        )
+
+
+def _build_memory_store(suite: SuiteConfig, *, allow_python: bool = True) -> Any:
     """Load the suite's inspectable MemoryStore (memory.store: module:obj).
 
     The spec resolves to either a store instance or a zero-arg factory —
-    memory stores aren't functions, so load_callable doesn't apply.
+    memory stores aren't functions, so load_callable doesn't apply. It still
+    imports and calls project code, so --no-allow-python-targets blocks it.
     """
     import importlib
 
     spec = suite.memory.get("store")
     if not spec:
         return None
+    if not allow_python:
+        raise ConfigError(
+            f"memory.store {spec!r} imports and calls project code — "
+            "re-run with --allow-python-targets"
+        )
     if ":" not in str(spec):
         raise ConfigError(
             f"memory.store must be 'module:attribute', got {spec!r}"
@@ -378,6 +425,8 @@ async def _run_suite(
     python_allowed = allow_python_targets and not os.environ.get(
         "AITESTKIT_DISALLOW_PYTHON_TARGETS"
     )
+    if not python_allowed:
+        _reject_python_code_paths(suite, judge_provider=judge_provider)
     target = build_target(
         suite.target,
         allow_python_targets=python_allowed,
@@ -391,6 +440,7 @@ async def _run_suite(
         redactor=redactor,
         cassette=cassette,
         needs_judge=judge_needed,
+        allow_python=python_allowed,
     )
 
     test_run = TestRun(
@@ -398,13 +448,6 @@ async def _run_suite(
         suite_name=suite.name,
         metadata=_run_metadata(suite, judge_provider, judge_model),
     )
-    stream = ResultsStream(out_dir / "results.jsonl", redactor=redactor)
-    stream.open(test_run)
-
-    def on_case(result: CaseResult) -> None:
-        console.report_case(result)
-        stream.write_case(result)
-
     previous_results: list[CaseResult] = []
     skip_ids: set[str] = set()
     if resume_from is not None:
@@ -416,6 +459,14 @@ async def _run_suite(
         _header, previous_results = read_stream(jsonl_path)
         skip_ids = {r.case_id for r in previous_results}
         logger.info("resume: skipping %d completed cases", len(skip_ids))
+    stream = ResultsStream(out_dir / "results.jsonl", redactor=redactor)
+    stream.open(test_run)
+    for prior in previous_results:
+        stream.write_case(prior)
+
+    def on_case(result: CaseResult) -> None:
+        console.report_case(result)
+        stream.write_case(result)
     engine = RunEngine(
         target=target,
         metrics=metrics,
@@ -426,8 +477,12 @@ async def _run_suite(
         max_cost_usd=suite.max_cost_usd,
         models=suite.models or None,
         conversations=conversations,
-        tool_registry_factory=lambda: _build_tool_registry(suite),
-        memory_store_factory=lambda: _build_memory_store(suite),
+        tool_registry_factory=lambda: _build_tool_registry(
+            suite, allow_python=python_allowed
+        ),
+        memory_store_factory=lambda: _build_memory_store(
+            suite, allow_python=python_allowed
+        ),
         prompts=suite.prompts or None,
     )
     _install_sigint(engine)

@@ -29,10 +29,16 @@ class ResultsStream:
         self._redactor = redactor or Redactor()
         self._fh: IO[str] | None = None
 
-    def open(self, test_run: TestRun) -> None:
-        """Open the stream and write the run header record."""
+    def open(self, test_run: TestRun, *, mode: str = "w") -> None:
+        """Open the stream and write the run header record.
+
+        Default ``w``: a fresh run must not append to a previous run's file —
+        stale lines keep old (possibly pre-redaction) records on disk and
+        corrupt ``--resume`` skip logic. Resume paths rewrite prior records
+        explicitly instead of appending.
+        """
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._fh = self.path.open("a", encoding="utf-8")
+        self._fh = self.path.open(mode, encoding="utf-8")
         header = {
             "type": "run_header",
             "run_id": test_run.run_id,

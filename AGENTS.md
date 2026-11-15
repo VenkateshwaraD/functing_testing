@@ -70,6 +70,12 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
   break unrelated suites. Keep it that way.
 - **Custom integrations** via `module:Class`: providers `impl:`, targets
   `type: custom`, metrics via `@register`.
+- **Security boundary**: `--no-allow-python-targets` rejects every
+  code-loading key — `memory.store`, `tools.*.function`, `providers.*.impl`,
+  `module:Class` judge/embedder names — not just `target.type`. Command/mcp
+  subprocesses get a minimal env (PATH/HOME/`LC_*`/`AITESTKIT_*` + explicit
+  `env:`); provider keys never reach a child implicitly. `${VAR}` in
+  headers/URLs/`env:` fails loudly when unset.
 - Prompt variants accept `file:` (relative to suite) or inline `template:`.
 - `ToolCall` args key is `args:` (not `arguments:` — silently ignored).
 - Per-case `assert:` in datasets overrides suite `metrics:` for that case —

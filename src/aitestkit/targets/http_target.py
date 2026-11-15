@@ -8,8 +8,6 @@
 from __future__ import annotations
 
 import json
-import os
-import re
 import time
 from typing import Any
 
@@ -17,6 +15,7 @@ import httpx
 
 from aitestkit.exceptions import TargetError
 from aitestkit.models import TargetOutput, TestCase
+from aitestkit.targets.base import expand_env as _expand_env
 
 
 class HttpTarget:
@@ -115,14 +114,6 @@ def _render(template: Any, **values: Any) -> Any:
     if isinstance(template, list):
         return [_render(item, **values) for item in template]
     return template
-
-
-_ENV_RE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
-
-
-def _expand_env(value: str) -> str:
-    """Expand ${VAR} references — keeps secrets out of suite files."""
-    return _ENV_RE.sub(lambda m: os.environ.get(m.group(1), m.group(0)), value)
 
 
 def _dig(payload: Any, path: str) -> Any:

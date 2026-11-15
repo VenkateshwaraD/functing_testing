@@ -202,7 +202,9 @@ target:
   **factory/adapter instance** (used as-is).
 - Constructor kwargs come from the `kwargs:` block.
 - Runs under the `python`-target security gate: enabled by default,
-  `--no-allow-python-targets` blocks it in locked-down CI.
+  `--no-allow-python-targets` blocks it in locked-down CI — along with every
+  other code-loading key (`memory.store`, `tools.*.function`,
+  `providers.*.impl`, `module:Class` judge/embedder names).
 - A class missing `name` or `invoke()` fails at load with a `ConfigError`.
 
 ---

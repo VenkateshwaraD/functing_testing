@@ -82,22 +82,27 @@ def _metric_rows(test_run: TestRun) -> str:
 def _emit_annotations(
     test_run: TestRun, redactor: Redactor, suite_path: Path | None
 ) -> None:
-    """Emit ::error/::warning workflow commands for failing cases."""
-    location = f"file={suite_path}," if suite_path else ""
+    """Emit ::error/::warning workflow commands for failing cases.
+
+    Every interpolated field is escaped — an unescaped newline or ``::`` in a
+    case id would let a dataset line inject arbitrary workflow commands.
+    """
+    location = f"file={_escape_property(str(suite_path))}," if suite_path else ""
     for result in test_run.results:
+        case_id = _escape_property(redactor.redact_text(result.case_id))
         if result.status == CaseStatus.FAILED:
             message = _escape_command(redactor.redact_text(_fail_reason(result)))
             sys.stdout.write(
-                f"::error {location}title=aitestkit::{result.case_id}: {message}\n"
+                f"::error {location}title=aitestkit::{case_id}: {message}\n"
             )
         elif result.status == CaseStatus.ERROR:
             message = _escape_command(redactor.redact_text(result.error or "error"))
             sys.stdout.write(
-                f"::error {location}title=aitestkit-infra::{result.case_id}: {message}\n"
+                f"::error {location}title=aitestkit-infra::{case_id}: {message}\n"
             )
         elif result.status == CaseStatus.FLAKY:
             sys.stdout.write(
-                f"::warning {location}title=aitestkit-flaky::{result.case_id}: "
+                f"::warning {location}title=aitestkit-flaky::{case_id}: "
                 f"flaky ({result.repeat.get('pass_rate', 0):.0%} pass rate)\n"
             )
 
@@ -112,5 +117,14 @@ def _escape_command(text: str) -> str:
     return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
 
+def _escape_property(text: str) -> str:
+    """Escape a workflow-command property value (``file=``, ``title=``).
+
+    Property fields additionally require ``:`` and ``,`` escaping so the
+    value cannot end the annotation block early.
+    """
+    return _escape_command(text).replace(":", "%3A").replace(",", "%2C")
+
+
 def _md(text: str) -> str:
-    return text.replace("|", "\\|")
+    return text.replace("|", "\\|").replace("\r", " ").replace("\n", " ")

@@ -21,6 +21,7 @@ from typing import Any
 
 from aitestkit.exceptions import ConfigError, TargetError
 from aitestkit.models import TargetOutput, TestCase, ToolCall
+from aitestkit.targets.base import child_env
 
 
 class _NullSink:
@@ -113,7 +114,9 @@ class McpTarget:
             from mcp.client.stdio import stdio_client
 
             params = StdioServerParameters(
-                command=self.command[0], args=self.command[1:], env=self.env
+                command=self.command[0],
+                args=self.command[1:],
+                env=child_env(self.env),
             )
             async with stdio_client(params) as (read, write), client_session(
                 read, write

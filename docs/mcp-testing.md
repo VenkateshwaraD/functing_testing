@@ -174,7 +174,7 @@ srv.run()                                    srv.run()   # stdio by default
 | `kwargs.tool` | tool name called per case (required) |
 | `kwargs.args_template` | `{input}`/`{session_id}`/`{case_id}` mapping |
 | `kwargs.timeout_seconds` | connect+call bound (default 60) |
-| `kwargs.env` | env vars for the stdio subprocess |
+| `kwargs.env` | extra env vars for the stdio subprocess (`${VAR}` expands; unset vars are a config error). The child gets a minimal env — PATH/HOME/`LC_*`/`AITESTKIT_*` + these; provider keys are never inherited implicitly |
 
 ## Related
 

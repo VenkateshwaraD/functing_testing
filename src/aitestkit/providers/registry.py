@@ -45,13 +45,33 @@ def parse_model_spec(spec: str) -> tuple[str, str]:
 
 
 def make_chat_provider(
-    provider_name: str, *, rpm: int | None = None, impl: str | None = None,
+    provider_name: str,
+    *,
+    rpm: int | None = None,
+    impl: str | None = None,
+    allow_custom: bool = True,
     **kwargs: Any,
 ) -> ChatProvider:
     """Instantiate a chat provider by name (with optional shared rate limit)."""
     from aitestkit.providers.ratelimit import limiter_for
 
     kwargs.setdefault("rate_limiter", limiter_for(provider_name, rpm=rpm))
+    # An explicit impl overrides the name lookup — silently ignoring it
+    # would run a different provider than the suite author configured.
+    custom_spec = impl or (provider_name if ":" in provider_name else None)
+    if custom_spec is not None:
+        if not allow_custom:
+            raise ConfigError(
+                f"custom provider {custom_spec!r} loads project code — "
+                "re-run with --allow-python-targets"
+            )
+        provider = _load_impl(custom_spec, kind="provider", **kwargs)
+        if not isinstance(provider, ChatProvider):
+            raise ConfigError(
+                f"custom provider {custom_spec!r} must implement the "
+                "ChatProvider protocol (name attr + async complete())"
+            )
+        return provider
     if provider_name == "fake":
         from aitestkit.providers.fake import FakeChatProvider
 
@@ -61,15 +81,6 @@ def make_chat_provider(
         return cast(
             ChatProvider, _load(provider_name, module_name, class_name, **kwargs)
         )
-    custom_spec = impl or (provider_name if ":" in provider_name else None)
-    if custom_spec is not None:
-        provider = _load_impl(custom_spec, kind="provider", **kwargs)
-        if not isinstance(provider, ChatProvider):
-            raise ConfigError(
-                f"custom provider {custom_spec!r} must implement the "
-                "ChatProvider protocol (name attr + async complete())"
-            )
-        return provider
     if provider_name in _EXTRA_HINT:
         return cast(
             ChatProvider,
@@ -84,13 +95,31 @@ def make_chat_provider(
 
 
 def make_embedder(
-    provider_name: str, *, rpm: int | None = None, impl: str | None = None,
+    provider_name: str,
+    *,
+    rpm: int | None = None,
+    impl: str | None = None,
+    allow_custom: bool = True,
     **kwargs: Any,
 ) -> Embedder:
     """Instantiate an embedder by name (with optional shared rate limit)."""
     from aitestkit.providers.ratelimit import limiter_for
 
     kwargs.setdefault("rate_limiter", limiter_for(provider_name, rpm=rpm))
+    custom_spec = impl or (provider_name if ":" in provider_name else None)
+    if custom_spec is not None:
+        if not allow_custom:
+            raise ConfigError(
+                f"custom embedder {custom_spec!r} loads project code — "
+                "re-run with --allow-python-targets"
+            )
+        embedder = _load_impl(custom_spec, kind="embedder", **kwargs)
+        if not isinstance(embedder, Embedder):
+            raise ConfigError(
+                f"custom embedder {custom_spec!r} must implement the "
+                "Embedder protocol (name attr + async embed())"
+            )
+        return embedder
     if provider_name == "fake":
         from aitestkit.providers.fake import FakeEmbedder
 
@@ -100,15 +129,6 @@ def make_embedder(
         return cast(
             Embedder, _load(provider_name, module_name, class_name, **kwargs)
         )
-    custom_spec = impl or (provider_name if ":" in provider_name else None)
-    if custom_spec is not None:
-        embedder = _load_impl(custom_spec, kind="embedder", **kwargs)
-        if not isinstance(embedder, Embedder):
-            raise ConfigError(
-                f"custom embedder {custom_spec!r} must implement the "
-                "Embedder protocol (name attr + async embed())"
-            )
-        return embedder
     if provider_name in _EXTRA_HINT:
         return cast(
             Embedder,

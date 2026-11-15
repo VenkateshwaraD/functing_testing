@@ -127,14 +127,25 @@ class ToolRegistry:
             raise ConfigError(f"tool {name!r} not registered in ToolRegistry")
 
 
-def build_registry(spec: dict[str, Any] | None) -> ToolRegistry | None:
+def build_registry(
+    spec: dict[str, Any] | None, *, allow_python: bool = True
+) -> ToolRegistry | None:
     """Build a registry from a suite ``tools:`` config block.
 
     ``spec`` maps tool name -> {"function": "module:fn", "requires_confirmation": bool,
     "fault": {...}, "mock": value}.
+
+    ``function:`` imports and calls project code — rejected when
+    ``allow_python`` is False (``--no-allow-python-targets``).
     """
     if not spec:
         return None
+    if not allow_python:
+        names = ", ".join(sorted(spec))
+        raise ConfigError(
+            f"tools.*.function imports project code ({names}) — "
+            "re-run with --allow-python-targets"
+        )
     from aitestkit.targets.python_target import load_callable
 
     registry = ToolRegistry()

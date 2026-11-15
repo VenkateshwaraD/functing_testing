@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1dca73-65c9e1cc78",
+  "run_id": "001a1df32c715-454e70685f",
   "suite_name": "payments-schema",
   "metadata": {
-    "git_sha": "fdfffc9",
+    "git_sha": "f0403c7",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -22,7 +22,7 @@
     "config_hash": "d02dff365fe09db8",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794744634.2759614,
+    "started_at": 1794746009.6799848,
     "finished_at": null
   },
   "results": [
@@ -51,7 +51,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 48.78954300147598,
+      "latency_ms": 48.28173900023103,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -71,56 +71,6 @@
         "schema",
         "banking",
         "json"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
-    {
-      "case_id": "freeform-response",
-      "status": "xfailed",
-      "input": "payment status",
-      "actual_output": "payment approved \u2014 see ticket TX-78231",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "json_schema",
-          "status": "scored",
-          "score": 0.0,
-          "passed": false,
-          "reason": "output is not valid JSON: Expecting value: line 1 column 1 (char 0)",
-          "details": {},
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 57.73706199761364,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "schema",
-        "banking",
-        "detection"
       ],
       "repeat": {},
       "session_id": null,
@@ -190,9 +140,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "63ms vs max 5000ms",
+          "reason": "62ms vs max 5000ms",
           "details": {
-            "latency_ms": 62.56477100032498,
+            "latency_ms": 62.47016400084249,
             "max_ms": 5000
           },
           "usage": {
@@ -206,7 +156,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 62.56477100032498,
+      "latency_ms": 62.47016400084249,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -292,7 +242,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 83.65550500093377,
+      "latency_ms": 60.79690999831655,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -312,6 +262,56 @@
         "schema",
         "banking",
         "data-quality",
+        "detection"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "freeform-response",
+      "status": "xfailed",
+      "input": "payment status",
+      "actual_output": "payment approved \u2014 see ticket TX-78231",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "json_schema",
+          "status": "scored",
+          "score": 0.0,
+          "passed": false,
+          "reason": "output is not valid JSON: Expecting value: line 1 column 1 (char 0)",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 81.54675000332645,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "schema",
+        "banking",
         "detection"
       ],
       "repeat": {},
