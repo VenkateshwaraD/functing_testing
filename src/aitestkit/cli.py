@@ -88,6 +88,8 @@ gates:
 def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     import aitestkit.dataquality.metric  # noqa: F401
     import aitestkit.metrics.agentic  # noqa: F401 — registers metrics
+    import aitestkit.metrics.backends.deepeval_backend  # noqa: F401
+    import aitestkit.metrics.backends.ragas_backend  # noqa: F401
     import aitestkit.metrics.deterministic  # noqa: F401 — registers metrics
     import aitestkit.metrics.ingestion  # noqa: F401
     import aitestkit.metrics.llm_judge  # noqa: F401

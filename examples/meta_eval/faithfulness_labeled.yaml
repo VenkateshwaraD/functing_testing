@@ -1,0 +1,34 @@
+# Labeled meta-eval set — known-faithful vs known-unfaithful answers.
+# Used by tests/test_meta_eval.py (live marker): validates that the
+# faithfulness metric actually discriminates, not just the plumbing.
+schema_version: 1
+samples:
+  - id: faithful-1
+    context: "Paris is the capital of France. It has a population of about 2.1 million."
+    answer: "Paris is the capital of France."
+    label: faithful
+
+  - id: faithful-2
+    context: "The Eiffel Tower was completed in 1889 and stands 330 metres tall."
+    answer: "The Eiffel Tower is 330 metres tall and was finished in 1889."
+    label: faithful
+
+  - id: unfaithful-1
+    context: "Paris is the capital of France."
+    answer: "Paris is the capital of France and has a population of 10 million."
+    label: unfaithful
+
+  - id: unfaithful-2
+    context: "The Eiffel Tower was completed in 1889."
+    answer: "The Eiffel Tower was completed in 1925 and designed by Gustave Eiffel."
+    label: unfaithful
+
+  - id: unfaithful-3
+    context: "Water boils at 100 degrees Celsius at sea level."
+    answer: "Water boils at 90 degrees Celsius, and it freezes at -5 degrees."
+    label: unfaithful
+
+  - id: faithful-3
+    context: "The Pacific Ocean is the largest ocean on Earth, covering about a third of its surface."
+    answer: "Earth's largest ocean is the Pacific."
+    label: faithful
