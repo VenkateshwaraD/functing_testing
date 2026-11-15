@@ -241,8 +241,38 @@ def load_suite(path: str | Path) -> SuiteConfig:
         suite = SuiteConfig.model_validate(raw)
     except Exception as e:
         raise ConfigError(f"{path}: invalid suite config: {e}") from e
+    _apply_env_overrides(suite)
     _validate_suite(suite, path)
     return suite
+
+
+def _apply_env_overrides(suite: SuiteConfig) -> None:
+    """Env vars fill fields the suite left unset — CLI > suite > env > defaults.
+
+    ``model_fields_set`` holds only keys present in the YAML, so an unset
+    judge/embedder field picks up ``AITESTKIT_*`` before falling back to
+    the shipped defaults.
+    """
+    overrides = (
+        (suite.judge, "provider", "AITESTKIT_JUDGE_PROVIDER"),
+        (suite.judge, "model", "AITESTKIT_JUDGE_MODEL"),
+        (suite.embedder, "provider", "AITESTKIT_EMBED_PROVIDER"),
+        (suite.embedder, "model", "AITESTKIT_EMBED_MODEL"),
+    )
+    for section, field, env_var in overrides:
+        if field not in section.model_fields_set and (
+            value := os.environ.get(env_var)
+        ):
+            setattr(section, field, value)
+    if suite.max_cost_usd is None and (
+        raw_cost := os.environ.get("AITESTKIT_MAX_COST_USD")
+    ):
+        try:
+            suite.max_cost_usd = float(raw_cost)
+        except ValueError:
+            raise ConfigError(
+                f"AITESTKIT_MAX_COST_USD={raw_cost!r} is not a number"
+            ) from None
 
 
 def _validate_suite(suite: SuiteConfig, path: Path) -> None:
