@@ -776,7 +776,11 @@ def doctor(
                 f"export {env} or use provider: fake / cassettes",
             )
     typer.echo("== optional extras")
+    seen_extras: set[str] = set()
     for module_name, extra in _OPTIONAL_DEPS.items():
+        if extra in seen_extras:
+            continue
+        seen_extras.add(extra)
         present = _module_present(module_name)
         check(f"aitestkit[{extra}]", present, f"pip install 'aitestkit[{extra}]'")
     raise typer.Exit(ExitCode.OK if ok else ExitCode.CONFIG_ERROR)

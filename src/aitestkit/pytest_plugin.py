@@ -33,34 +33,11 @@ from typing import Any
 import pytest
 import yaml
 
-from aitestkit.metrics.base import BaseMetric, MetricContext
-from aitestkit.models import MetricResult, TargetOutput, TestCase
+from aitestkit.assertions import assert_test
+from aitestkit.metrics.base import BaseMetric
+from aitestkit.models import TestCase
 
-
-async def assert_test(
-    case: TestCase,
-    output: TargetOutput,
-    metrics: list[BaseMetric],
-    *,
-    ctx: MetricContext | None = None,
-) -> list[MetricResult]:
-    """Evaluate metrics on a case output; raise AssertionError on failure."""
-    context = ctx or MetricContext()
-    results = [await metric.evaluate(case, output, context) for metric in metrics]
-    failures = [
-        f"{r.metric} score={r.score} reason={r.reason}"
-        for r in results
-        if r.passed is False
-    ]
-    errors = [
-        f"{r.metric} error={r.reason}" for r in results if r.status.value == "error"
-    ]
-    problems = failures + errors
-    if problems:
-        raise AssertionError(
-            f"aitestkit case {case.id or '<unnamed>'} failed:\n  " + "\n  ".join(problems)
-        )
-    return results
+__all__ = ["assert_test"]
 
 
 def pytest_collect_file(file_path: Path, parent: pytest.Collector) -> Any:

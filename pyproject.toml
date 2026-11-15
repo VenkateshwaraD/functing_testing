@@ -72,10 +72,6 @@ package = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/aitestkit"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/aitestkit/defaults.yaml" = "aitestkit/defaults.yaml"
-"src/aitestkit/tiktoken_data" = "aitestkit/tiktoken_data"
-
 [tool.ruff]
 target-version = "py313"
 line-length = 100

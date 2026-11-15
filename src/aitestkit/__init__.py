@@ -1,5 +1,6 @@
 """aitestkit — functional testing for agentic AI, RAG, and LLM apps."""
 
+from aitestkit.assertions import assert_test
 from aitestkit.models import (
     CaseResult,
     CaseStatus,
@@ -16,7 +17,6 @@ from aitestkit.models import (
     Trajectory,
     Usage,
 )
-from aitestkit.pytest_plugin import assert_test
 
 __version__ = "0.1.0"
 
