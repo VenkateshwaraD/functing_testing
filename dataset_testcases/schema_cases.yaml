@@ -1,7 +1,7 @@
 # Schema-testing cases — json_schema validates the response payload,
 # data_quality validates row data carried in case metadata. Detection
-# cases use informational thresholds so the run stays green while the
-# violations are recorded in results.json.
+# cases use `expect: fail` (strict xfail): the metric must score low —
+# if it unexpectedly passes, the case fails.
 cases:
   # --- json_schema: payment-status payload -----------------------------
   - id: payment-status-json
@@ -20,12 +20,12 @@ cases:
             iban: {type: string, pattern: "^[A-Z]{2}[0-9]{2}"}
           additionalProperties: false
 
-  - id: freeform-response               # target emits prose → score 0.0
-    input: "payment status"             #   shows schema-violation detection
+  - id: freeform-response               # target emits prose → json_schema
+    input: "payment status"             #   must score 0.0 — xfail confirms
+    expect: fail                        #   the detection fired
     tags: [schema, banking, detection]
     assert:
       - name: json_schema
-        threshold: 0.0                  # informational: detection, not a fail
         schema:
           type: object
           required: [status, amount]
@@ -48,11 +48,12 @@ cases:
         - {type: in_set, column: status, values: [posted, pending, failed]}
         - {type: row_count, min: 1}
 
-  - id: transactions-dirty              # every expectation fails → 0.0
-    input: "export check"
+  - id: transactions-dirty              # every expectation fails → 0.0 →
+    input: "export check"               #   xfail confirms detection fired
+    expect: fail
     tags: [schema, banking, data-quality, detection]
     assert:
-      - {name: data_quality, threshold: 0.0}   # informational — detection
+      - name: data_quality
     metadata:
       rows:
         - {txn_id: "TX-78231", iban: "DE89370400440532013000",
@@ -61,9 +62,9 @@ cases:
         - {txn_id: "TX-78231", iban: null,
            amount: 75.00, currency: XXX, status: weird}  # dup id, null, bad
       expectations:
-        - {type: not_null, column: iban, threshold: 0.0}
-        - {type: unique, column: txn_id, threshold: 0.0}
-        - {type: in_range, column: amount, min: 0, threshold: 0.0}
-        - {type: in_set, column: currency, values: [USD, EUR, GBP], threshold: 0.0}
-        - {type: in_set, column: status, values: [posted, pending, failed], threshold: 0.0}
-        - {type: no_pii, column: card, threshold: 0.0}
+        - {type: not_null, column: iban}
+        - {type: unique, column: txn_id}
+        - {type: in_range, column: amount, min: 0}
+        - {type: in_set, column: currency, values: [USD, EUR, GBP]}
+        - {type: in_set, column: status, values: [posted, pending, failed]}
+        - {type: no_pii, column: card}

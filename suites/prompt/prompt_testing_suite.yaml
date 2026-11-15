@@ -24,8 +24,10 @@ metrics:
     banned: ["ignore previous", "reveal your", "system prompt", "dan"]
     max_tokens: 500
   - exact_match                            # prompt_echo output is deterministic
-  - {name: contains, substrings: ["echo"], threshold: 0.0}  # informational
+  - {name: contains, substrings: ["echo"]} # output must echo the input
 
 gates:
   min_pass_rate: 1.0
   max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.0

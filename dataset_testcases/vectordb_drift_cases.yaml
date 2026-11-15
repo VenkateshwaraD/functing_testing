@@ -1,0 +1,8 @@
+# Drift-detection case — the stale index must trigger embedding_drift.
+# `expect: fail` makes this strict xfail: if the drift check ever passes
+# on the stale index, this case fails as an unexpected pass.
+cases:
+  - id: stale-index-drift
+    input: "detect embedding drift in the stale payments index"
+    expect: fail
+    tags: [vectordb, banking, detection, drift]

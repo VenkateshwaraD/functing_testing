@@ -1,0 +1,36 @@
+# Vector DB drift DETECTION — the stale index at evidence/vectordb_stale/
+# was built from an older chunking (stored vectors ≠ current text), so
+# embedding_drift scores below threshold on purpose. `expect: fail` marks
+# it: the case xfailed means the detection fired — an unexpected pass
+# would mean drift checking is broken. Requires: uv sync --extra faiss
+name: payments-vectordb-drift
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:answer"
+
+datasets:
+  - ../../dataset_testcases/vectordb_drift_cases.yaml
+
+embedder:
+  provider: fake
+  model: fake
+
+vectordb:
+  type: faiss
+  dims: 8
+  path: evidence/vectordb_stale/index   # stale vectors → drift detected
+
+metrics:
+  - name: embedding_drift
+    sample_fraction: 1.0
+    threshold: 0.95
+
+gates:
+  min_pass_rate: 1.0                  # xfail counts pass-side — detection
+  max_error_cases: 0                  #   must fire for the gate to hold
+  max_flaky: 0.0
+  max_skip_rate: 0.0

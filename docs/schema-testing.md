@@ -33,8 +33,12 @@ Two distinct failure modes land in `reason`:
 - `schema violation: …` — parsed, but wrong shape (`details.path` points at
   the offending key)
 
-Use `threshold: 0.0` on adversarial/freeform cases: the score still records
-the violation without failing the run.
+For adversarial/freeform cases — where a schema violation is the
+*expected* outcome — mark the case `expect: fail` instead of weakening
+the metric. A violation then reports `xfailed` (detector confirmed); a
+surprising *pass* fails the case with an `unexpected_pass` detail.
+`threshold: 0.0` is rejected at load unless the spec also sets
+`informational: true`.
 
 ---
 
@@ -85,8 +89,20 @@ inherited. A case that wants `json_schema` must restate the schema:
 ```yaml
 assert:
   - name: json_schema
-    threshold: 0.0                      # informational detection
+    informational: true               # record the score, never gate
     schema: {type: object, required: [status]}
+```
+
+Or make the case itself a detection probe — `expect: fail` turns a scored
+violation into `xfailed` rather than a green pass:
+
+```yaml
+- id: freeform-response
+  input: "tell me a story"
+  expect: fail                        # valid JSON here would be a surprise
+  assert:
+    - name: json_schema
+      schema: {type: object, required: [status]}
 ```
 
 Bare names (`assert: [exact_match]`) reuse the suite's configured instance.
@@ -106,14 +122,17 @@ target emits canned JSON when the input says "json", prose otherwise.
 
 ```
 PASS structured-response   json_schema 1.0  valid against schema
-PASS freeform-response     json_schema 0.0  output is not valid JSON: …
+XFLK freeform-response     json_schema 0.0  output is not valid JSON: …
 PASS accounts-clean        data_quality 1.0
-PASS accounts-dirty        data_quality 0.0  not_null(email): 1 null of 2;
+XFLK transactions-dirty    data_quality 0.0  not_null(email): 1 null of 2;
                             unique(id): 1 duplicates of 2; …
 ```
 
-All four cases pass — detection cases ride informational thresholds, the
-same pattern as `prompt_adversarial_suite.yaml` but keeping the gate green.
+Detection cases report **xfailed** — the violation was the expected
+outcome, and XFAIL counts as judged+passing in `min_pass_rate`. If the
+target ever *did* return valid JSON on `freeform-response`, the case
+would flip to `failed` (`unexpected_pass`) — detectors must keep
+detecting.
 
 ---
 
@@ -127,14 +146,16 @@ Runs write `results.json`, `results.jsonl`, and `aitestkit-report.html` to
 schema violations; `details.path` is the violating key path:
 
 ```json
-{"metric": "json_schema", "score": 0.0, "passed": true,
+{"metric": "json_schema", "score": 0.0, "passed": false,
  "reason": "output is not valid JSON: Expecting value: line 1 column 1"}
 ```
+
+(the case above it reads `"status": "xfailed"` when `expect: fail` is set)
 
 **`data_quality` failures** — `details.results` lists every expectation:
 
 ```json
-{"metric": "data_quality", "score": 0.0, "passed": true,
+{"metric": "data_quality", "score": 0.0, "passed": false,
  "reason": "not_null(email): 1 null of 2; unique(id): 1 duplicates of 2; …",
  "details": {"backend": "builtin", "passed": 0, "failed": 4,
    "results": [
@@ -167,10 +188,10 @@ gates:
     data_quality: {min_mean: 1.0}      # no expectation failures tolerated
 ```
 
-`min_pass_rate` counts case verdicts; `per_metric.min_mean` averages scores
-— the right knob when detection cases use `threshold: 0.0` (they "pass" but
-still drag the mean down). Exit `0` gates pass, `1` metric failure, `5`
-gate failure.
+`min_pass_rate` counts case verdicts (xfailed counts as passing);
+`per_metric.min_mean` averages scores — with `expect: fail` cases the
+mean still reflects raw scores, so per-metric floors should target the
+healthy cases. Exit `0` gates pass, `1` metric failure, `5` gate failure.
 
 ## Config reference
 
@@ -180,7 +201,8 @@ gate failure.
 | `metadata.rows` | list of dicts `data_quality` evaluates |
 | `metadata.expectations` | `{type, column, …params}` spec list |
 | `metadata.backend` | `builtin` (default) or `gx` |
-| `threshold: 0.0` | informational — record score, never fail |
+| `expect: fail` | case-level detection probe → `xfailed` on violation, `failed` on unexpected pass |
+| `informational: true` | metric scores but never gates (also unlocks `threshold: 0.0`) |
 | `details.results` | per-expectation verdicts (data_quality) |
 | `details.path` | violating key path (json_schema) |
 

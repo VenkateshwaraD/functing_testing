@@ -1,5 +1,7 @@
 # Memory cases — banking facts remembered across turns/sessions.
-# apps.memory_app pre-seeds sess-seeded with account=chk-8841, currency=usd.
+# apps.memory_app pre-seeds sess-seeded with account=chk-8841,
+# beneficiary=landlord llc, currency=usd. Every case carries metadata for
+# at least two of context_retention/forgetting_check/contradiction_resolution.
 conversations:
   - id: account-remember
     session_id: sess-bank-1
@@ -8,6 +10,8 @@ conversations:
       - input: "what is my account number"
     metadata:
       must_remember: ["4521"]
+      memory_key: "account"
+      memory_value: "4521"
     tags: [memory, banking, conversation]
 
   - id: beneficiary-remember
@@ -17,6 +21,8 @@ conversations:
       - input: "who is my beneficiary"
     metadata:
       must_remember: ["landlord llc"]
+      memory_key: "beneficiary"
+      memory_value: "landlord llc"
     tags: [memory, banking, conversation]
 
 cases:
@@ -26,6 +32,7 @@ cases:
       session_id: sess-seeded
       must_remember: ["chk-8841"]
       memory_key: "account"
+      memory_value: "chk-8841"
     tags: [memory, banking]
 
   - id: currency-moved
@@ -34,4 +41,15 @@ cases:
       session_id: sess-seeded
       superseded: "eur"
       current: "usd"
+      memory_key: "currency"
+      memory_value: "usd"
     tags: [memory, banking, contradiction]
+
+  - id: beneficiary-recall
+    input: "who is my beneficiary"
+    metadata:
+      session_id: sess-seeded
+      must_remember: ["landlord llc"]
+      memory_key: "beneficiary"
+      memory_value: "landlord llc"
+    tags: [memory, banking]

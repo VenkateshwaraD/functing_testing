@@ -38,8 +38,11 @@ metrics:
     tools: [transfer_funds]
   - {name: loop_detection, max_repeats: 3}
   - termination_check                          # clean finish, no hang/crash
-  - {name: task_completion, threshold: 0.0}    # informational (fake judge)
+  - name: task_completion
+    informational: true                        # recorded, not judged — needs a real judge key
 
 gates:
   min_pass_rate: 1.0                           # banking: nothing may regress
   max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.2

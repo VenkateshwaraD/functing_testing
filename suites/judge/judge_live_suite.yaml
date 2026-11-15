@@ -1,0 +1,33 @@
+# Live judge suite — the ONLY suite that makes real provider calls.
+# Judge-scored `correctness` on deterministic SUT outputs, including a
+# case engineered to genuinely fail (expected ≠ actual) so the evidence
+# shows a real verdict, real token usage, and real cost — not a fake pass.
+#
+# Record once (needs the provider key — fails loudly without it):
+#   uv run aitestkit run suites/judge/judge_live_suite.yaml \
+#       --cassette cassettes/judge_live.jsonl --cassette-mode record
+# Replay forever (zero keys, byte-identical judge responses):
+#   uv run aitestkit run suites/judge/judge_live_suite.yaml \
+#       --cassette cassettes/judge_live.jsonl
+name: payments-judge-live
+
+judge: {provider: anthropic, model: "global.anthropic.claude-sonnet-4-6"}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:answer"   # deterministic SUT — the judge call
+                                     # is the only live traffic recorded
+
+datasets:
+  - ../../dataset_testcases/judge_live_cases.yaml
+
+metrics:
+  - name: correctness                # judge-scored vs expected_output
+    threshold: 0.7
+
+gates:
+  min_pass_rate: 0.66                # 3 pass + 1 genuine fail → gate holds
+  max_error_cases: 0                 # a provider outage fails the run
+  max_flaky: 0.0
+  max_skip_rate: 0.0

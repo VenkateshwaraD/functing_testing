@@ -17,4 +17,7 @@ metrics:
   - name: exact_match
 
 gates:
-  min_pass_rate: 0.0   # let flaky surface without gate noise
+  max_flaky: 1.0       # detection suite — all cases may surface flaky;
+                       # an explicit tolerance, not a vacuous 0-judged pass
+  max_error_cases: 0
+  max_skip_rate: 0.0

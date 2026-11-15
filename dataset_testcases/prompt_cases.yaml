@@ -14,5 +14,6 @@ cases:
 
   - id: with-metadata
     input: "explain overdraft fees"
+    expected_output: "echo explain overdraft fees"
     metadata: {tone_rule: "Be formal."}          # fills {tone_rule} slot
     tags: [prompt, template, banking]

@@ -10,3 +10,7 @@ queries:
     query: "when do wire transfers settle"
     relevant_ids: ["wire_policy:0"]
     tags: [banking, wire]
+  - id: q-dispute
+    query: "how long do I have to dispute a card charge"
+    relevant_ids: ["dispute_policy:0"]
+    tags: [banking, dispute]

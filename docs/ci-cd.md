@@ -125,6 +125,26 @@ Set under **Settings → CI/CD → Variables** (mask the secrets):
 Restrict `v*` tags (**Settings → Repository → Protected tags**) so only
 maintainers can cut releases — this also gates `publish-pypi`.
 
+### Gate reference
+
+Every suite should declare all of these — an unset gate is an unguarded
+failure mode:
+
+| Gate | Meaning | Production default |
+|---|---|---|
+| `min_pass_rate` | Fraction of *judged* cases (passed/failed/xfailed) that passed. Zero judged cases → gate fails, never vacuously green. | `0.8`–`1.0` |
+| `max_error_cases` | Cases whose target or metrics errored (a crashed metric is `error`, not `skipped`). | `0` |
+| `max_flaky` | Fraction of cases that came out flaky across `repeat:` runs. | `0.0` (demo suite uses `1.0`) |
+| `max_skip_rate` | Fraction of *metric results* skipped for missing fields. | `0.0`–`0.4` |
+| `min_coverage` | Per-tag minimum case counts. | as needed |
+
+Expected-failure cases (`expect: fail` → `xfailed`) count as *judged*
+and as *passing* — a detection probe that fires is a working detector.
+An unexpected pass on an `expect: fail` case marks the case `failed`.
+
+`threshold: 0.0` on a metric is rejected at load unless the spec adds
+`informational: true` (score recorded, never gates).
+
 ## How to run
 
 | What                      | How                                                        |

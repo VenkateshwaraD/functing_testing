@@ -24,5 +24,7 @@ metrics:
     max_ms: 5000
 
 gates:
-  min_pass_rate: 1.0                    # detection cases are informational
-  max_error_cases: 0                    #   (threshold 0.0) — run stays green
+  min_pass_rate: 1.0                    # detection cases xfail — counted as
+  max_error_cases: 0                    #   pass-side, run stays green
+  max_flaky: 0.0
+  max_skip_rate: 0.0

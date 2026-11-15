@@ -23,7 +23,10 @@ metrics:
     max_repeats: 3
   - name: termination_check
   - name: task_completion
-    threshold: 0.0   # informational — with fake judge always passes
+    informational: true   # recorded, not judged — needs a real judge key
 
 gates:
   min_pass_rate: 0.8
+  max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.2

@@ -75,6 +75,18 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
 - Per-case `assert:` in datasets overrides suite `metrics:` for that case —
   bare names reuse suite config, `{name, threshold, ...params}` dicts build
   fresh; unknown names fail at load.
+- `expect: fail` on a case marks it a detection probe: scored-metric
+  failure → `xfailed` (counts as judged+passing in `min_pass_rate`);
+  all-pass → `failed` with `unexpected_pass` detail. Never use
+  `threshold: 0.0` to hide failures — it's rejected at load unless the
+  metric sets `informational: true` (non-gating, excluded from verdict).
+- Gates `max_error_cases`, `max_flaky`, `max_skip_rate` are mandatory on
+  every suite. `min_pass_rate` judges only
+  passed/failed/xfailed — zero judged cases fails the gate.
+  A metric crash marks the case `error`, not `skipped`.
+- Live calls: `--cassette FILE --cassette-mode record` needs the real
+  provider key (loud `config error` without it); `--cassette FILE`
+  replays offline. Sanitized cassettes live in `cassettes/` (tracked).
 - Don't commit `tests/`, `examples/`, `.env`, `results` —
   gitignored on purpose. `evidence/` IS committed — it's the run-evidence
   trail reviewers look at.

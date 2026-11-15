@@ -27,3 +27,6 @@ metrics:
 
 gates:
   min_pass_rate: 0.8
+  max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.0   # every metric must score on every case

@@ -1,29 +1,50 @@
 # Multi-agent workflow cases — payments router delegates to specialist
 # agents. expected_handoffs in metadata; expected_tools is top-level.
+# Per-case `assert` pins the reply content to the actual routing.
 cases:
   - id: wire-request
     input: "wire $5000 to vendor"
-    expected_output: "wire"
     expected_tools:
       - {name: initiate_wire, args: {amount: 5000.0}}
     metadata:
       expected_handoffs: ["payments-agent"]
     tags: [multi-agent, banking, wire]
+    assert:
+      - {name: contains, substrings: ["wire initiated", "$5000"]}
+      - name: handoff_correctness
+      - name: tool_sequence
+      - name: tool_args_correct
+      - name: termination_check
+      - name: loop_detection
 
   - id: fraud-dispute
     input: "dispute a fraudulent charge"
-    expected_output: "flagged"
     expected_tools:
       - {name: flag_transaction, args: {reason: "dispute a fraudulent charge"}}
     metadata:
       expected_handoffs: ["fraud-agent"]
     tags: [multi-agent, banking, fraud]
+    assert:
+      - {name: contains, substrings: ["flagged"]}
+      - {name: not_contains, substrings: ["wire initiated"]}
+      - name: handoff_correctness
+      - name: tool_sequence
+      - name: tool_args_correct
+      - name: termination_check
+      - name: loop_detection
 
   - id: fraudulent-wire
     input: "a fraudulent wire appeared on my statement"
-    expected_output: "flagged"
     expected_tools:
+      - {name: initiate_wire, args: {amount: 0.0}}
       - {name: flag_transaction, args: {reason: "a fraudulent wire appeared on my statement"}}
     metadata:
       expected_handoffs: ["payments-agent", "fraud-agent"]
     tags: [multi-agent, banking, fraud, edge]
+    assert:
+      - {name: contains, substrings: ["wire initiated", "flagged"]}
+      - name: handoff_correctness
+      - name: tool_sequence
+      - name: tool_args_correct
+      - name: termination_check
+      - name: loop_detection

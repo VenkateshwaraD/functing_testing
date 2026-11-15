@@ -1,0 +1,24 @@
+# Judge-live cases — judged by a real LLM (cassette-replayed in CI).
+# `wrong-answer` is engineered to genuinely FAIL: the expected output
+# disagrees with the deterministic SUT, so the judge must score it low —
+# proving the verdicts discriminate instead of passing everything.
+cases:
+  - id: balance-correct
+    input: "what is my checking balance"
+    expected_output: "your checking balance is $1250.00"
+    tags: [judge, banking, live]
+
+  - id: wire-cutoff-correct
+    input: "what is the wire transfer cutoff"
+    expected_output: "wire transfers submitted after 3:00 PM ET settle the next business day"
+    tags: [judge, banking, live]
+
+  - id: dispute-paraphrase
+    input: "how do i dispute a charge"
+    expected_output: "you have 60 days from the statement date to file a dispute"
+    tags: [judge, banking, live]
+
+  - id: wrong-answer                          # genuine failure — expected
+    input: "what is the daily ach limit"      # $5000 vs actual $25000:
+    expected_output: "the daily ACH limit is $5000"   # judge must score low
+    tags: [judge, banking, live, failure]

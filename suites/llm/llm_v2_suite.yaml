@@ -15,9 +15,11 @@ datasets:
 
 metrics:
   - name: exact_match
-  - name: contains
-    substrings: ["!"]
-    threshold: 0.0  # informational — shows per-case metric detail
+  - name: not_contains              # responses must not leak failure markers
+    substrings: ["internal error", "unavailable", "traceback"]
 
 gates:
   min_pass_rate: 0.66
+  max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.0

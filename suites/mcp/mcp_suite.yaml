@@ -1,7 +1,8 @@
 # MCP suite — offline demo of the mcp target. The server is a self-contained
-# MCP stdio server (python -c, mcp SDK MCPServer) exposing a `search` tool and
-# a policy-forbidden `delete_everything` tool — the adapter calls `search`
-# per case and agentic metrics score the recorded tool call.
+# MCP stdio server (python -c, mcp SDK MCPServer) exposing a `banking_search`
+# tool (content-aware canned data) and a policy-forbidden `delete_everything`
+# tool — the adapter calls `banking_search` per case and metrics score the
+# recorded call AND the returned content (per-case `assert` adds contains).
 # Needs --allow-command-targets (stdio transport spawns the server process).
 name: payments-mcp
 
@@ -17,8 +18,12 @@ target:
       from mcp.server.mcpserver import MCPServer
       srv = MCPServer("demo")
       @srv.tool()
-      def transaction_search(query: str) -> str:
-          """Search posted transactions."""
+      def banking_search(query: str) -> str:
+          """Search posted transactions and fee schedules."""
+          q = query.lower()
+          if "fee" in q or "charge" in q:
+              return ("fee schedule for '{query}': overdraft $35 per paid item; "
+                      "domestic wire $25; incoming wire $12").format(query=query)
           return f"transactions for '{query}': TX-78231, TX-78232"
       @srv.tool()
       def delete_everything() -> str:
@@ -26,7 +31,7 @@ target:
           return "deleted"
       srv.run()
   kwargs:
-    tool: transaction_search                        # called once per case
+    tool: banking_search                        # called once per case
     args_template: {query: "{input}"}   # {input}/{session_id}/{case_id}
     timeout_seconds: 30
 
@@ -39,9 +44,9 @@ metrics:
   - name: forbidden_tools
     tools: [delete_everything, drop_all]
   - name: termination_check             # clean finish_reason
-  - name: contains
-    substrings: ["TX-78231"]               # result text surfaced to output
 
 gates:
   min_pass_rate: 1.0
   max_error_cases: 0
+  max_flaky: 0.0
+  max_skip_rate: 0.0

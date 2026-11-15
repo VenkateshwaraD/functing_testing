@@ -132,6 +132,33 @@ suites through the same `metrics:` list — lazy-imported, scoped errors
 when the extra is missing. Use them for metric coverage beyond the
 built-ins; the judge stays the built-in path.
 
+## 7. Live cassettes — record once, replay forever
+
+`suites/judge/judge_live_suite.yaml` is the one suite that makes real
+provider calls. The judge is the only live traffic (the SUT target is
+deterministic), so one recorded cassette captures every verdict.
+
+```bash
+# record — needs the provider key (fails loudly without it)
+ANTHROPIC_API_KEY=… uv run aitestkit run suites/judge/judge_live_suite.yaml \
+    --cassette cassettes/judge_live.jsonl --cassette-mode record
+
+# replay — zero keys, byte-identical judge responses
+uv run aitestkit run suites/judge/judge_live_suite.yaml \
+    --cassette cassettes/judge_live.jsonl
+```
+
+- `record` wraps the judge provider; each call is hashed on the canonical
+  request and written through the `Redactor` — committed cassettes carry
+  no keys, only request/response/usage payloads
+- `replay` (default when a cassette path is given) returns the recorded
+  response for the same request hash — deterministic and offline
+- `wrong-answer` in `dataset_testcases/judge_live_cases.yaml` is
+  engineered to genuinely fail (expected ≠ actual), so the evidence
+  proves the judge discriminates — real score ~0.1, not a rubber-stamp
+- Missing key in record mode → `config error: provider 'anthropic'
+  requires ANTHROPIC_API_KEY…` (exit 2), never a silent fallback
+
 ## Config reference
 
 | Key | Purpose |

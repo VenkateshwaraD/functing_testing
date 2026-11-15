@@ -19,6 +19,15 @@ cases:
       - "Wire transfers submitted after 3:00 PM ET settle the next business day."
     tags: [rag, retrieval, banking]
 
+  - id: dispute-window
+    input: "how long do I have to dispute a card charge"
+    expected_output: "Card disputes must be filed within 60 days of the statement date."
+    expected_retrieval_ids: ["doc3:0"]
+    context:
+      - "Card disputes must be filed within 60 days of the statement date."
+      - "Wire transfers submitted after 3:00 PM ET settle the next business day."
+    tags: [rag, retrieval, banking]
+
   - id: unanswerable
     input: "what is the mortgage rate forecast"
     expected_output: "I don't know."       # neither keyword present → no hits
