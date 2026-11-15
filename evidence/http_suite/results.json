@@ -1,27 +1,28 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dee587ce-c37b7f2abf",
+  "run_id": "001a1df125b06-c5467db7b2",
   "suite_name": "payments-api",
   "metadata": {
-    "git_sha": "9ff470d",
+    "git_sha": "1fc4829",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
       "openai": "3.51.0",
       "pydantic": "2.14.3",
+      "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
     "embedder": "None:text-embedding-3-small",
-    "region": "QA",
+    "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "57df8806209fb879",
+    "config_hash": "88279ad43bb7143a",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794740947.2872822,
+    "started_at": 1794743884.8976083,
     "finished_at": null
   },
   "results": [
@@ -105,9 +106,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "105ms vs max 2000ms",
+          "reason": "84ms vs max 2000ms",
           "details": {
-            "latency_ms": 105.22290100198006,
+            "latency_ms": 83.92884500062792,
             "max_ms": 2000
           },
           "usage": {
@@ -127,7 +128,7 @@
             "type": "tool_call",
             "agent_id": null,
             "step_index": 0,
-            "timestamp": 1794740947.2676063,
+            "timestamp": 1794743884.880543,
             "payload": {
               "name": "lookup",
               "args": {
@@ -139,7 +140,7 @@
         ],
         "finish_reason": null
       },
-      "latency_ms": 105.22290100198006,
+      "latency_ms": 83.92884500062792,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -244,9 +245,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "20ms vs max 2000ms",
+          "reason": "18ms vs max 2000ms",
           "details": {
-            "latency_ms": 20.14646099996753,
+            "latency_ms": 17.784407998988172,
             "max_ms": 2000
           },
           "usage": {
@@ -266,7 +267,7 @@
             "type": "tool_call",
             "agent_id": null,
             "step_index": 0,
-            "timestamp": 1794740947.268422,
+            "timestamp": 1794743884.8816488,
             "payload": {
               "name": "lookup",
               "args": {
@@ -278,7 +279,7 @@
         ],
         "finish_reason": null
       },
-      "latency_ms": 20.14646099996753,
+      "latency_ms": 17.784407998988172,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -319,6 +320,20 @@
       "actual": 0,
       "expected": "<= 0",
       "detail": ""
+    },
+    {
+      "name": "max_flaky",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": ""
+    },
+    {
+      "name": "max_skip_rate",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": "0/8 metric results skipped"
     }
   ],
   "baseline_tag": null

@@ -1,27 +1,28 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dee5b7c2-93f4fb1dfa",
+  "run_id": "001a1df12880e-cc9767ec7e",
   "suite_name": "payments-rag",
   "metadata": {
-    "git_sha": "9ff470d",
+    "git_sha": "1fc4829",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
       "openai": "3.51.0",
       "pydantic": "2.14.3",
+      "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
     "embedder": "fake:text-embedding-3-small",
-    "region": "QA",
+    "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "ced75fdc96c5736f",
+    "config_hash": "e60c80aded696390",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794740959.9089293,
+    "started_at": 1794743896.7777953,
     "finished_at": null
   },
   "results": [
@@ -134,7 +135,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.3199490022088867,
+      "latency_ms": 1.4574310007446911,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -154,6 +155,273 @@
         "rag",
         "retrieval",
         "banking"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "dispute-window",
+      "status": "passed",
+      "input": "how long do I have to dispute a card charge",
+      "actual_output": "Card disputes must be filed within 60 days of the statement date.",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "recall_at_k",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "k": 2,
+            "relevant": 1,
+            "hits_at_k": 1,
+            "approximate": false
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "hit_rate",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "k": 2
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_window",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "tokens_used": 24,
+            "max_tokens": 8000,
+            "headroom": 7976,
+            "approximate": true
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "ingestion_parse",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "total": 2,
+            "unparseable": [],
+            "attribution_hint": "ingestion"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "ingestion_dedup",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "total": 2,
+            "duplicate_indexes": [],
+            "attribution_hint": "ingestion"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.4149960004724562,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "rag",
+        "retrieval",
+        "banking"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "unanswerable",
+      "status": "passed",
+      "input": "what is the mortgage rate forecast",
+      "actual_output": "I don't know.",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "recall_at_k",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "correct abstention \u2014 nothing retrieved",
+          "details": {
+            "retrieved": [],
+            "expected_labels": 0
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "hit_rate",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "correct abstention \u2014 nothing retrieved",
+          "details": {
+            "retrieved": [],
+            "expected_labels": 0
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_window",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "tokens_used": 21,
+            "max_tokens": 8000,
+            "headroom": 7979,
+            "approximate": true
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "ingestion_parse",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "total": 1,
+            "unparseable": [],
+            "attribution_hint": "ingestion"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "ingestion_dedup",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "",
+          "details": {
+            "total": 1,
+            "duplicate_indexes": [],
+            "attribution_hint": "ingestion"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.9140980002703145,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "rag",
+        "edge",
+        "unanswerable"
       ],
       "repeat": {},
       "session_id": null,
@@ -268,7 +536,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.47842700223554857,
+      "latency_ms": 1.3094889982312452,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -292,133 +560,6 @@
       "repeat": {},
       "session_id": null,
       "metadata": {}
-    },
-    {
-      "case_id": "unanswerable",
-      "status": "passed",
-      "input": "what is the mortgage rate forecast",
-      "actual_output": "I don't know.",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "recall_at_k",
-          "status": "skipped",
-          "score": null,
-          "passed": null,
-          "reason": "no retrieval output (retrieval_ids/context absent)",
-          "details": {},
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "hit_rate",
-          "status": "skipped",
-          "score": null,
-          "passed": null,
-          "reason": "no retrieval output (retrieval_ids/context absent)",
-          "details": {},
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "context_window",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "tokens_used": 21,
-            "max_tokens": 8000,
-            "headroom": 7979,
-            "approximate": true
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "ingestion_parse",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "total": 1,
-            "unparseable": [],
-            "attribution_hint": "ingestion"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "ingestion_dedup",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "",
-          "details": {
-            "total": 1,
-            "duplicate_indexes": [],
-            "attribution_hint": "ingestion"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 1.7550550001033116,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "rag",
-        "edge",
-        "unanswerable"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
     }
   ],
   "summary": {},
@@ -428,7 +569,28 @@
       "passed": true,
       "actual": 1.0,
       "expected": ">= 0.8",
-      "detail": "3 judged cases"
+      "detail": "4 judged cases"
+    },
+    {
+      "name": "max_error_cases",
+      "passed": true,
+      "actual": 0,
+      "expected": "<= 0",
+      "detail": ""
+    },
+    {
+      "name": "max_flaky",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": ""
+    },
+    {
+      "name": "max_skip_rate",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": "0/20 metric results skipped"
     }
   ],
   "baseline_tag": null

@@ -1,35 +1,36 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dee57a9d-d6ac6ddc26",
+  "run_id": "001a1df1250ef-5bfc16e65e",
   "suite_name": "payments-prompt-ab",
   "metadata": {
-    "git_sha": "9ff470d",
+    "git_sha": "1fc4829",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
       "openai": "3.51.0",
       "pydantic": "2.14.3",
+      "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
     "embedder": "None:text-embedding-3-small",
-    "region": "QA",
+    "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "0052841e03c5c895",
+    "config_hash": "298a30b84be24613",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794740943.7297935,
+    "started_at": 1794743882.1848016,
     "finished_at": null
   },
   "results": [
     {
-      "case_id": "wire-cutoff[casual]",
+      "case_id": "out-of-domain[casual]",
       "status": "passed",
-      "input": "what is the wire transfer cutoff",
-      "actual_output": "3:00 pm et \u2014 happy to help with anything else.",
+      "input": "what is the weather today",
+      "actual_output": "I don't know \u2014 happy to help with anything else.",
       "error": null,
       "metrics": [
         {
@@ -40,7 +41,7 @@
           "reason": "pattern matched",
           "details": {
             "pattern": "\\d|don't know",
-            "match": "3"
+            "match": "don't know"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -56,9 +57,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "1ms vs max 2000ms",
+          "reason": "2ms vs max 2000ms",
           "details": {
-            "latency_ms": 1.2728290021186695,
+            "latency_ms": 1.536212999781128,
             "max_ms": 2000
           },
           "usage": {
@@ -72,7 +73,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.2728290021186695,
+      "latency_ms": 1.536212999781128,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -90,87 +91,14 @@
       "attribution": null,
       "tags": [
         "banking",
-        "policy"
+        "negative",
+        "edge"
       ],
       "repeat": {},
       "session_id": null,
       "metadata": {
         "prompt_name": "casual",
-        "rendered_prompt": "Friendly bank bot here. Answer: what is the wire transfer cutoff"
-      }
-    },
-    {
-      "case_id": "dispute-guidance[casual]",
-      "status": "passed",
-      "input": "how do i dispute a charge",
-      "actual_output": "file a dispute within 60 days of the statement date \u2014 happy to help with anything else.",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "regex_match",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "pattern matched",
-          "details": {
-            "pattern": "\\d|don't know",
-            "match": "6"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "latency",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "0ms vs max 2000ms",
-          "details": {
-            "latency_ms": 0.4203159987810068,
-            "max_ms": 2000
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 0.4203159987810068,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "disputes"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "casual",
-        "rendered_prompt": "Friendly bank bot here. Answer: how do i dispute a charge"
+        "rendered_prompt": "Friendly bank bot here. Answer: what is the weather today"
       }
     },
     {
@@ -204,9 +132,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "1ms vs max 2000ms",
+          "reason": "0ms vs max 2000ms",
           "details": {
-            "latency_ms": 1.1937369999941438,
+            "latency_ms": 0.46181600191630423,
             "max_ms": 2000
           },
           "usage": {
@@ -220,7 +148,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.1937369999941438,
+      "latency_ms": 0.46181600191630423,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -279,9 +207,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "1ms vs max 2000ms",
+          "reason": "0ms vs max 2000ms",
           "details": {
-            "latency_ms": 1.1722470007953234,
+            "latency_ms": 0.4310269978304859,
             "max_ms": 2000
           },
           "usage": {
@@ -295,7 +223,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.1722470007953234,
+      "latency_ms": 0.4310269978304859,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -324,10 +252,10 @@
       }
     },
     {
-      "case_id": "ach-limit[casual]",
+      "case_id": "dispute-guidance[casual]",
       "status": "passed",
-      "input": "what is the daily ach limit",
-      "actual_output": "$25000 \u2014 happy to help with anything else.",
+      "input": "how do i dispute a charge",
+      "actual_output": "file a dispute within 60 days of the statement date \u2014 happy to help with anything else.",
       "error": null,
       "metrics": [
         {
@@ -338,7 +266,7 @@
           "reason": "pattern matched",
           "details": {
             "pattern": "\\d|don't know",
-            "match": "2"
+            "match": "6"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -354,9 +282,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "6ms vs max 2000ms",
+          "reason": "1ms vs max 2000ms",
           "details": {
-            "latency_ms": 6.454564001614926,
+            "latency_ms": 0.5681580005330034,
             "max_ms": 2000
           },
           "usage": {
@@ -370,7 +298,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 6.454564001614926,
+      "latency_ms": 0.5681580005330034,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -388,13 +316,13 @@
       "attribution": null,
       "tags": [
         "banking",
-        "limits"
+        "disputes"
       ],
       "repeat": {},
       "session_id": null,
       "metadata": {
         "prompt_name": "casual",
-        "rendered_prompt": "Friendly bank bot here. Answer: what is the daily ach limit"
+        "rendered_prompt": "Friendly bank bot here. Answer: how do i dispute a charge"
       }
     },
     {
@@ -428,9 +356,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "5ms vs max 2000ms",
+          "reason": "4ms vs max 2000ms",
           "details": {
-            "latency_ms": 5.076862998976139,
+            "latency_ms": 4.2407420005474705,
             "max_ms": 2000
           },
           "usage": {
@@ -444,7 +372,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 5.076862998976139,
+      "latency_ms": 4.2407420005474705,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -469,81 +397,6 @@
       "metadata": {
         "prompt_name": "formal",
         "rendered_prompt": "You are a formal banking assistant. Answer: what is the wire transfer cutoff"
-      }
-    },
-    {
-      "case_id": "out-of-domain[casual]",
-      "status": "passed",
-      "input": "what is the weather today",
-      "actual_output": "I don't know \u2014 happy to help with anything else.",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "regex_match",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "pattern matched",
-          "details": {
-            "pattern": "\\d|don't know",
-            "match": "don't know"
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "latency",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "5ms vs max 2000ms",
-          "details": {
-            "latency_ms": 5.315506998158526,
-            "max_ms": 2000
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 5.315506998158526,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "banking",
-        "negative",
-        "edge"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {
-        "prompt_name": "casual",
-        "rendered_prompt": "Friendly bank bot here. Answer: what is the weather today"
       }
     },
     {
@@ -577,9 +430,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "4ms vs max 2000ms",
+          "reason": "3ms vs max 2000ms",
           "details": {
-            "latency_ms": 3.581201999622863,
+            "latency_ms": 3.4394089998386335,
             "max_ms": 2000
           },
           "usage": {
@@ -593,7 +446,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 3.581201999622863,
+      "latency_ms": 3.4394089998386335,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -651,9 +504,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "4ms vs max 2000ms",
+          "reason": "3ms vs max 2000ms",
           "details": {
-            "latency_ms": 3.564721999282483,
+            "latency_ms": 3.419978998863371,
             "max_ms": 2000
           },
           "usage": {
@@ -667,7 +520,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 3.564721999282483,
+      "latency_ms": 3.419978998863371,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -725,9 +578,9 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "2ms vs max 2000ms",
+          "reason": "3ms vs max 2000ms",
           "details": {
-            "latency_ms": 2.196932000515517,
+            "latency_ms": 2.7429200017650146,
             "max_ms": 2000
           },
           "usage": {
@@ -741,7 +594,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 2.196932000515517,
+      "latency_ms": 2.7429200017650146,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -768,6 +621,154 @@
         "prompt_name": "casual",
         "rendered_prompt": "Friendly bank bot here. Answer: what is my checking balance"
       }
+    },
+    {
+      "case_id": "wire-cutoff[casual]",
+      "status": "passed",
+      "input": "what is the wire transfer cutoff",
+      "actual_output": "3:00 pm et \u2014 happy to help with anything else.",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "regex_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "pattern matched",
+          "details": {
+            "pattern": "\\d|don't know",
+            "match": "3"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "latency",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "3ms vs max 2000ms",
+          "details": {
+            "latency_ms": 2.7600089997577015,
+            "max_ms": 2000
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.7600089997577015,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "policy"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "casual",
+        "rendered_prompt": "Friendly bank bot here. Answer: what is the wire transfer cutoff"
+      }
+    },
+    {
+      "case_id": "ach-limit[casual]",
+      "status": "passed",
+      "input": "what is the daily ach limit",
+      "actual_output": "$25000 \u2014 happy to help with anything else.",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "regex_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "pattern matched",
+          "details": {
+            "pattern": "\\d|don't know",
+            "match": "2"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "latency",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "3ms vs max 2000ms",
+          "details": {
+            "latency_ms": 2.7476100003696047,
+            "max_ms": 2000
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.7476100003696047,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "limits"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {
+        "prompt_name": "casual",
+        "rendered_prompt": "Friendly bank bot here. Answer: what is the daily ach limit"
+      }
     }
   ],
   "summary": {},
@@ -778,6 +779,27 @@
       "actual": 1.0,
       "expected": ">= 1.0",
       "detail": "10 judged cases"
+    },
+    {
+      "name": "max_error_cases",
+      "passed": true,
+      "actual": 0,
+      "expected": "<= 0",
+      "detail": ""
+    },
+    {
+      "name": "max_flaky",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": ""
+    },
+    {
+      "name": "max_skip_rate",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": "0/20 metric results skipped"
     }
   ],
   "baseline_tag": null

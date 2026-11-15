@@ -1,37 +1,78 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dee59561-8dc1919299",
+  "run_id": "001a1df126757-cb91df3e2f",
   "suite_name": "payments-mcp",
   "metadata": {
-    "git_sha": "9ff470d",
+    "git_sha": "1fc4829",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
       "openai": "3.51.0",
       "pydantic": "2.14.3",
+      "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
     "embedder": "None:text-embedding-3-small",
-    "region": "QA",
+    "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "a8718417eb502736",
+    "config_hash": "bde99ddeb625eed6",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794740953.0091372,
+    "started_at": 1794743890.236441,
     "finished_at": null
   },
   "results": [
     {
-      "case_id": "transaction-search",
+      "case_id": "fee-schedule",
       "status": "passed",
-      "input": "october transaction history",
-      "actual_output": "transactions for 'october transaction history': TX-78231, TX-78232",
+      "input": "overdraft fee schedule",
+      "actual_output": "fee schedule for 'overdraft fee schedule': overdraft $35 per paid item; domestic wire $25; incoming wire $12",
       "error": null,
       "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "2/2 substrings present",
+          "details": {
+            "found": [
+              "$35",
+              "wire $25"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "not_contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "0/1 forbidden substrings leaked",
+          "details": {
+            "leaked": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
         {
           "metric": "tool_sequence",
           "status": "scored",
@@ -41,11 +82,11 @@
           "details": {
             "tool_call_diff": {
               "expected": [
-                "transaction_search"
+                "banking_search"
               ],
               "actual": [
-                "transaction_search",
-                "transaction_search"
+                "banking_search",
+                "banking_search"
               ],
               "missing": [],
               "unexpected": []
@@ -116,27 +157,6 @@
             "model": null
           },
           "duration_ms": 0.0
-        },
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "TX-78231"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
         }
       ],
       "trajectory": {
@@ -146,22 +166,22 @@
             "type": "thought",
             "agent_id": null,
             "step_index": 0,
-            "timestamp": 1794740951.3312883,
+            "timestamp": 1794743887.8710718,
             "payload": {
-              "text": "mcp: transaction_search({'query': 'october transaction history'}) via python3"
+              "text": "mcp: banking_search({'query': 'overdraft fee schedule'}) via python3"
             }
           },
           {
             "type": "tool_call",
             "agent_id": null,
             "step_index": 1,
-            "timestamp": 1794740952.909423,
+            "timestamp": 1794743890.0464125,
             "payload": {
-              "name": "transaction_search",
+              "name": "banking_search",
               "args": {
-                "query": "october transaction history"
+                "query": "overdraft fee schedule"
               },
-              "result": "transactions for 'october transaction history': TX-78231, TX-78232",
+              "result": "fee schedule for 'overdraft fee schedule': overdraft $35 per paid item; domestic wire $25; incoming wire $12",
               "error": null
             }
           },
@@ -169,10 +189,10 @@
             "type": "message",
             "agent_id": null,
             "step_index": 2,
-            "timestamp": 1794740952.9094346,
+            "timestamp": 1794743890.0464265,
             "payload": {
               "role": "assistant",
-              "content": "transactions for 'october transaction history': TX-78231, TX-78232"
+              "content": "fee schedule for 'overdraft fee schedule': overdraft $35 per paid item; domestic wire $25; incoming wire $12"
             }
           }
         ],
@@ -204,12 +224,33 @@
       "metadata": {}
     },
     {
-      "case_id": "fee-schedule",
+      "case_id": "transaction-search",
       "status": "passed",
-      "input": "overdraft fee schedule",
-      "actual_output": "transactions for 'overdraft fee schedule': TX-78231, TX-78232",
+      "input": "october transaction history",
+      "actual_output": "transactions for 'october transaction history': TX-78231, TX-78232",
       "error": null,
       "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "TX-78231"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
         {
           "metric": "tool_sequence",
           "status": "scored",
@@ -219,11 +260,11 @@
           "details": {
             "tool_call_diff": {
               "expected": [
-                "transaction_search"
+                "banking_search"
               ],
               "actual": [
-                "transaction_search",
-                "transaction_search"
+                "banking_search",
+                "banking_search"
               ],
               "missing": [],
               "unexpected": []
@@ -294,27 +335,6 @@
             "model": null
           },
           "duration_ms": 0.0
-        },
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "TX-78231"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
         }
       ],
       "trajectory": {
@@ -324,22 +344,22 @@
             "type": "thought",
             "agent_id": null,
             "step_index": 0,
-            "timestamp": 1794740950.5379343,
+            "timestamp": 1794743888.6101792,
             "payload": {
-              "text": "mcp: transaction_search({'query': 'overdraft fee schedule'}) via python3"
+              "text": "mcp: banking_search({'query': 'october transaction history'}) via python3"
             }
           },
           {
             "type": "tool_call",
             "agent_id": null,
             "step_index": 1,
-            "timestamp": 1794740952.993049,
+            "timestamp": 1794743890.2211108,
             "payload": {
-              "name": "transaction_search",
+              "name": "banking_search",
               "args": {
-                "query": "overdraft fee schedule"
+                "query": "october transaction history"
               },
-              "result": "transactions for 'overdraft fee schedule': TX-78231, TX-78232",
+              "result": "transactions for 'october transaction history': TX-78231, TX-78232",
               "error": null
             }
           },
@@ -347,10 +367,10 @@
             "type": "message",
             "agent_id": null,
             "step_index": 2,
-            "timestamp": 1794740952.9930625,
+            "timestamp": 1794743890.221122,
             "payload": {
               "role": "assistant",
-              "content": "transactions for 'overdraft fee schedule': TX-78231, TX-78232"
+              "content": "transactions for 'october transaction history': TX-78231, TX-78232"
             }
           }
         ],
@@ -397,6 +417,20 @@
       "actual": 0,
       "expected": "<= 0",
       "detail": ""
+    },
+    {
+      "name": "max_flaky",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": ""
+    },
+    {
+      "name": "max_skip_rate",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": "0/11 metric results skipped"
     }
   ],
   "baseline_tag": null

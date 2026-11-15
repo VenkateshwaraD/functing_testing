@@ -1,27 +1,28 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dee5bcf8-443bca0a67",
+  "run_id": "001a1df128ff4-46ce28129e",
   "suite_name": "payments-vectordb",
   "metadata": {
-    "git_sha": "9ff470d",
+    "git_sha": "1fc4829",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
       "openai": "3.51.0",
       "pydantic": "2.14.3",
+      "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
     "judge": "openai:GPT-4",
     "embedder": "fake:fake",
-    "region": "QA",
+    "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "0ba3e91b749849e3",
+    "config_hash": "cb16b9898c156a07",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794740960.884935,
+    "started_at": 1794743898.4247136,
     "finished_at": null
   },
   "results": [
@@ -39,7 +40,7 @@
           "passed": true,
           "reason": "",
           "details": {
-            "count": 5,
+            "count": 6,
             "min_count": 1
           },
           "usage": {
@@ -58,7 +59,7 @@
           "passed": true,
           "reason": "",
           "details": {
-            "sampled": 5,
+            "sampled": 6,
             "mean_similarity": 0.9999999999999997,
             "min_similarity": 0.999999999999999,
             "worst_chunk": "ach:0"
@@ -74,7 +75,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.3712500003748573,
+      "latency_ms": 1.6516139985469636,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -107,6 +108,27 @@
       "actual": 1.0,
       "expected": ">= 1.0",
       "detail": "1 judged cases"
+    },
+    {
+      "name": "max_error_cases",
+      "passed": true,
+      "actual": 0,
+      "expected": "<= 0",
+      "detail": ""
+    },
+    {
+      "name": "max_flaky",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": ""
+    },
+    {
+      "name": "max_skip_rate",
+      "passed": true,
+      "actual": 0.0,
+      "expected": "<= 0.0",
+      "detail": "0/2 metric results skipped"
     }
   ],
   "baseline_tag": null
