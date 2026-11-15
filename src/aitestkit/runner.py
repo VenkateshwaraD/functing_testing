@@ -172,6 +172,9 @@ class RunEngine:
         self, case: TestCase, *, provider: str | None, model: str | None
     ) -> CaseResult:
         case_id = _effective_id(case, f"{provider}:{model}" if model else None)
+        from aitestkit.tracing.emitter import TraceEmitter
+
+        emitter = TraceEmitter()
         try:
             output = await asyncio.wait_for(
                 self.target.invoke(
@@ -179,6 +182,7 @@ class RunEngine:
                     model=model,
                     provider=provider,
                     tool_mocks=self.tool_mocks,
+                    trace_sink=emitter,
                 ),
                 timeout=self.case_timeout,
             )
@@ -188,6 +192,8 @@ class RunEngine:
             return self._error_result(case, case_id, str(e))
         if output.error:
             return self._error_result(case, case_id, output.error)
+        if output.trajectory is None and len(emitter):
+            output.trajectory = emitter.trajectory
         self._spend(output.usage)
         result = await self._evaluate_metrics(case, output, case_id)
         self._spend(result.judge_usage)

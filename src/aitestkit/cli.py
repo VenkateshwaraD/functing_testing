@@ -85,6 +85,7 @@ gates:
 
 
 def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
+    import aitestkit.metrics.agentic  # noqa: F401 — registers metrics
     import aitestkit.metrics.deterministic  # noqa: F401 — registers metrics
     import aitestkit.metrics.llm_judge  # noqa: F401
     from aitestkit.metrics.registry import build_metric

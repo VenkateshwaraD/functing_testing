@@ -224,7 +224,7 @@ def load_suite(path: str | Path) -> SuiteConfig:
 def _validate_suite(suite: SuiteConfig, path: Path) -> None:
     if not suite.datasets and not suite.target:
         raise ConfigError(f"{path}: suite needs at least one of 'datasets' or 'target'")
-    if suite.target and suite.target.type not in {"python", "http", "command"}:
+    if suite.target and suite.target.type not in {"python", "http", "command", "langgraph"}:
         raise ConfigError(f"{path}: unknown target type {suite.target.type!r}")
     if suite.target and suite.target.type == "python" and not suite.target.function:
         raise ConfigError(f"{path}: python target requires 'function: module:func'")

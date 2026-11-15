@@ -44,6 +44,20 @@ def build_target(
             timeout_seconds=config.kwargs.get("timeout_seconds", 60.0),
             method=config.kwargs.get("method", "POST"),
         )
+    if config.type == "langgraph":
+        if not allow_python_targets:
+            raise ConfigError(
+                "langgraph targets execute project code — re-run with "
+                "--allow-python-targets"
+            )
+        if not config.function:
+            raise ConfigError("langgraph target requires 'function: module:graph'")
+        from aitestkit.targets.langgraph_target import LangGraphTarget
+
+        return LangGraphTarget(
+            spec=config.function,
+            input_key=config.kwargs.get("input_key", "input"),
+        )
     if config.type == "command":
         if not config.command:
             raise ConfigError("command target requires 'command: [argv, ...]'")
