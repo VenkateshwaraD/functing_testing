@@ -136,7 +136,7 @@ Look at the suite's `metrics:` list:
 | Metrics in the suite | What they do | API key needed? |
 |---|---|---|
 | `prompt_sim`, `exact_match`, `contains`, `regex_match`, `json_schema`, `latency` | check the output on your machine (string compare, regex, prompt linting) | **No** — nothing calls an API |
-| `correctness`, `custom_rubric`, `faithfulness`, `answer_relevancy`, `deepeval`, `ragas` | an LLM "judge" reads the output and grades it | **Yes** — the judge calls a provider and costs money |
+| `correctness`, `custom_rubric`, `faithfulness`, `answer_relevancy`, `deepeval`, `ragas` | an LLM "judge" reads the output and grades it | **Yes** — plus an explicit judge pick (below) |
 
 `prompt_testing_suite.yaml` only uses the first kind, so it just runs.
 

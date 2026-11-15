@@ -124,7 +124,18 @@ metrics:
   - {name: contains, substrings: ["4"], threshold: 0.0}
   - {name: correctness, threshold: 0.7}   # judge metric, 0–1
 
+# --- PER-CASE assertions (optional) ------------------------------------------
+# In datasets/*.yaml a case may pin its own metrics with `assert:` —
+# overrides the suite list for that case only:
+#   - {id: cheap, input: "...", assert: [exact_match]}
+#   - {id: judged, input: "...", assert: [{name: correctness, threshold: 0.8}]}
+# Unknown names fail at load; a case asserting a judge metric still gets a
+# judge even if the suite's metric list is all-deterministic.
+
 # --- WHO judges -------------------------------------------------------------
+# Required (non-empty) whenever any metric needs a judge — suite YAML,
+# AITESTKIT_JUDGE_PROVIDER + AITESTKIT_JUDGE_MODEL, or --judge/--judge-model.
+# Must differ from every `models:` entry (same pair = self-grading → error).
 judge:
   provider: openai          # openai|anthropic|gemini|litellm|azure|ollama|
                             # bedrock|groq|mistral|vertex|fake

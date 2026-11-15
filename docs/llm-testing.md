@@ -145,7 +145,7 @@ metrics:
     banned: ["ignore previous", "jailbreak"]
     max_tokens: 500
 
-  # --- judge-based (needs provider key) ----------------------------------
+  # --- judge-based (needs provider key + explicit judge config) ------------
   - name: correctness                      # semantic match vs expected
     threshold: 0.7
   - name: custom_rubric                    # free-form grading rubric

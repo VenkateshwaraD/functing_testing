@@ -41,8 +41,13 @@ uv run pytest tests/
 
 ## Provider / judge configuration
 
-Precedence: **CLI flag > suite YAML > env var > shipped default**
-(default judge = `openai`/`gpt-4o-mini`).
+Precedence: **CLI flag > suite YAML > env var > shipped default**.
+
+Judge metrics (`requires_judge = True` on the metric class) require an
+**explicit** judge — set `AITESTKIT_JUDGE_PROVIDER` + `AITESTKIT_JUDGE_MODEL`
+(non-empty), a `judge:` block, or `--judge`/`--judge-model`; the run errors
+otherwise. Judge provider+model must differ from every `models:` SUT entry
+(same pair = self-grading → ConfigError).
 
 ```bash
 aitestkit run X.yaml --judge openai --judge-model gpt-4o-mini
@@ -65,6 +70,9 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
   `type: custom`, metrics via `@register`.
 - Prompt variants accept `file:` (relative to suite) or inline `template:`.
 - `ToolCall` args key is `args:` (not `arguments:` — silently ignored).
+- Per-case `assert:` in datasets overrides suite `metrics:` for that case —
+  bare names reuse suite config, `{name, threshold, ...params}` dicts build
+  fresh; unknown names fail at load.
 - Don't commit `tests/`, `examples/`, `scratch/`, `.env`, `results` —
   gitignored on purpose.
 - Exit codes: `0` gates pass, `1` metric/gate failure, `2` config error.
