@@ -23,11 +23,10 @@ htmlcov/
 tests/
 examples/
 
-# Local scratch / run output
-scratch/
+# Run output — evidence/ is tracked (committed evidence), root strays are not
 .aitestkit/
-results.json
-results.jsonl
+/results.json
+/results.jsonl
 aitestkit-report.html
 junit.xml
 

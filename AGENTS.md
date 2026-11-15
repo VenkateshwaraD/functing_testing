@@ -9,13 +9,15 @@ memory, reliability testing). Promptfoo-style workspace layout at repo root.
 
 ```
 src/aitestkit/        framework code (the package)
-suites/               tracked suite YAMLs — target + datasets + metrics + gates
-dataset_testcases/    tracked test-case YAMLs
+suites/               tracked suite YAMLs, grouped by pillar — agent/, ab/,
+                      api/, banking/, llm/, mcp/, memory/, prompt/, rag/,
+                      reliability/, schema/ (datasets resolve ../../dataset_testcases/)
+dataset_testcases/    tracked test-case datasets (.yaml/.json/.jsonl)
 prompts/              tracked prompt .txt files (version by filename)
 docs/                 standalone per-module guides
 tests/                gitignored — local unit tests only
-examples/             gitignored — bundled demo apps + corpus (local only)
-scratch/              gitignored — run output
+examples/             gitignored — bundled demo apps, golden + meta-eval sets (local only)
+evidence/             run output — tracked (committed evidence)
 ```
 
 Suite paths are relative to the suite file: `../dataset_testcases/`,
@@ -25,11 +27,11 @@ Suite paths are relative to the suite file: `../dataset_testcases/`,
 
 ```bash
 # run a suite (repo root)
-aitestkit run suites/prompt_testing_suite.yaml
+aitestkit run suites/prompt/prompt_testing_suite.yaml
 # or: uv run aitestkit run ... / python -m aitestkit.cli run ...
 
 # demo suites import bundled apps — they need the path:
-PYTHONPATH=examples aitestkit run suites/banking_suite.yaml
+PYTHONPATH=examples aitestkit run suites/banking/banking_suite.yaml
 
 # lint / typecheck (must stay clean)
 uv run ruff check src/
@@ -73,7 +75,8 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
 - Per-case `assert:` in datasets overrides suite `metrics:` for that case —
   bare names reuse suite config, `{name, threshold, ...params}` dicts build
   fresh; unknown names fail at load.
-- Don't commit `tests/`, `examples/`, `scratch/`, `.env`, `results` —
-  gitignored on purpose.
+- Don't commit `tests/`, `examples/`, `.env`, `results` —
+  gitignored on purpose. `evidence/` IS committed — it's the run-evidence
+  trail reviewers look at.
 - Exit codes: `0` gates pass, `1` metric/gate failure, `2` config error.
 - Commit style: conventional commits (`feat:`, `fix:`, `docs:`, `chore:`).
