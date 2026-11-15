@@ -57,6 +57,7 @@ dev = [
     "mypy>=1.11",
     "respx>=0.22",
     "types-pyyaml>=6.0",
+    "numpy>=2.5.4",
 ]
 
 [project.scripts]

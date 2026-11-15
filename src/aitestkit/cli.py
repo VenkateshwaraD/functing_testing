@@ -582,7 +582,11 @@ def report(
     test_run = load_results(results_path)
     redactor = Redactor()
     out_dir.mkdir(parents=True, exist_ok=True)
-    formats = report or ["html"]
+    formats = (
+        {part.strip() for value in report for part in value.split(",")}
+        if report
+        else {"html"}
+    )
     if "html" in formats:
         write_html(test_run, out_dir / "aitestkit-report.html", redactor=redactor)
     if "junit" in formats:

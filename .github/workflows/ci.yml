@@ -37,8 +37,14 @@ jobs:
 
       # Replay-only: fake providers + cassettes, zero secrets needed.
       # Works on forks — no repository secrets are required.
+      # NOTE: `coverage run -m pytest` (not pytest-cov) — the aitestkit
+      # pytest plugin autoloads via entry point before pytest-cov starts
+      # tracing, which would misreport import-time lines as uncovered.
       - name: Tests (replay-only)
-        run: uv run pytest tests/ --cov=aitestkit --cov-report=xml -m "not live"
+        run: |
+          uv run coverage run -m pytest tests/ -m "not live"
+          uv run coverage xml
+          uv run coverage report --fail-under=80
         env:
           OPENAI_API_KEY: ""
           ANTHROPIC_API_KEY: ""

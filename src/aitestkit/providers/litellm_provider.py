@@ -99,11 +99,11 @@ class LiteLLMProvider:
             raise error_for_status(429, str(e)) from e
         except (litellm.Timeout, litellm.APIConnectionError) as e:
             raise TransientProviderError(str(e)) from e
+        except litellm.AuthenticationError as e:
+            raise PermanentProviderError(str(e)) from e
         except litellm.APIError as e:
             status = getattr(e, "status_code", 500) or 500
             raise error_for_status(status, str(e)) from e
-        except litellm.AuthenticationError as e:
-            raise PermanentProviderError(str(e)) from e
 
 
 class LiteLLMEmbedder:
@@ -155,11 +155,11 @@ class LiteLLMEmbedder:
             raise error_for_status(429, str(e)) from e
         except (litellm.Timeout, litellm.APIConnectionError) as e:
             raise TransientProviderError(str(e)) from e
+        except litellm.AuthenticationError as e:
+            raise PermanentProviderError(str(e)) from e
         except litellm.APIError as e:
             status = getattr(e, "status_code", 500) or 500
             raise error_for_status(status, str(e)) from e
-        except litellm.AuthenticationError as e:
-            raise PermanentProviderError(str(e)) from e
 
 
 _NO_KEY = {"ollama"}
