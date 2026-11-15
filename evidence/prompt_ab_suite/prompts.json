@@ -1,0 +1,26 @@
+{
+  "digest": "9c8bb6a030edec7e",
+  "prompts": {
+    "ach-limit": {
+      "casual": "Friendly bank bot here. Answer: what is the daily ach limit",
+      "formal": "You are a formal banking assistant. Answer: what is the daily ach limit"
+    },
+    "balance-inquiry": {
+      "casual": "Friendly bank bot here. Answer: what is my checking balance",
+      "formal": "You are a formal banking assistant. Answer: what is my checking balance"
+    },
+    "dispute-guidance": {
+      "casual": "Friendly bank bot here. Answer: how do i dispute a charge",
+      "formal": "You are a formal banking assistant. Answer: how do i dispute a charge"
+    },
+    "out-of-domain": {
+      "casual": "Friendly bank bot here. Answer: what is the weather today",
+      "formal": "You are a formal banking assistant. Answer: what is the weather today"
+    },
+    "wire-cutoff": {
+      "casual": "Friendly bank bot here. Answer: what is the wire transfer cutoff",
+      "formal": "You are a formal banking assistant. Answer: what is the wire transfer cutoff"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1dec1a3e0-beb04a36d8",
-  "suite_name": "llm-demo",
+  "run_id": "001a1dee59049-5be4e58f19",
+  "suite_name": "payments-llm",
   "metadata": {
-    "git_sha": "af4d042",
+    "git_sha": "9ff470d",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -11,22 +11,25 @@
       "pydantic": "2.14.3",
       "tiktoken": "0.14.0"
     },
-    "judge": "openai:gpt-4o-mini",
+    "judge": "openai:GPT-4",
     "embedder": "None:text-embedding-3-small",
-    "model_versions": {},
+    "region": "QA",
+    "model_versions": {
+      "model": "GPT-6 Luna"
+    },
     "seed": null,
-    "config_hash": "acf7080bb38a3712",
+    "config_hash": "b3ae4551e990fb91",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794738594.9796238,
+    "started_at": 1794740949.25359,
     "finished_at": null
   },
   "results": [
     {
-      "case_id": "greeting",
+      "case_id": "dispute-guidance",
       "status": "passed",
-      "input": "say hello",
-      "actual_output": "hello",
+      "input": "how do i dispute a charge",
+      "actual_output": "file a dispute within 60 days of the statement date",
       "error": null,
       "metrics": [
         {
@@ -36,8 +39,8 @@
           "passed": true,
           "reason": "exact match",
           "details": {
-            "expected": "hello",
-            "actual": "hello"
+            "expected": "file a dispute within 60 days of the statement date",
+            "actual": "file a dispute within 60 days of the statement date"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -71,7 +74,80 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.7214250001416076,
+      "latency_ms": 1.3733800005866215,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "disputes"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "balance-inquiry",
+      "status": "passed",
+      "input": "what is my checking balance",
+      "actual_output": "your checking balance is $1250.00",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
+          "details": {
+            "expected": "your checking balance is $1250.00",
+            "actual": "your checking balance is $1250.00"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 0.0,
+          "passed": true,
+          "reason": "0/1 substrings present",
+          "details": {
+            "found": [],
+            "missing": [
+              "!"
+            ]
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.3796250020968728,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -89,17 +165,18 @@
       "attribution": null,
       "tags": [
         "smoke",
-        "llm"
+        "banking",
+        "read"
       ],
       "repeat": {},
       "session_id": null,
       "metadata": {}
     },
     {
-      "case_id": "capital",
+      "case_id": "ach-limit",
       "status": "passed",
-      "input": "capital of france",
-      "actual_output": "Paris",
+      "input": "what is the daily ach limit",
+      "actual_output": "$25000",
       "error": null,
       "metrics": [
         {
@@ -109,8 +186,8 @@
           "passed": true,
           "reason": "exact match",
           "details": {
-            "expected": "Paris",
-            "actual": "Paris"
+            "expected": "$25000",
+            "actual": "$25000"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -144,7 +221,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.49347700041835196,
+      "latency_ms": 2.4119250010699034,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -161,18 +238,18 @@
       },
       "attribution": null,
       "tags": [
-        "llm",
-        "facts"
+        "banking",
+        "limits"
       ],
       "repeat": {},
       "session_id": null,
       "metadata": {}
     },
     {
-      "case_id": "arithmetic",
+      "case_id": "wire-cutoff",
       "status": "passed",
-      "input": "what is 2+2",
-      "actual_output": "4",
+      "input": "what is the wire transfer cutoff",
+      "actual_output": "3:00 pm et",
       "error": null,
       "metrics": [
         {
@@ -182,8 +259,8 @@
           "passed": true,
           "reason": "exact match",
           "details": {
-            "expected": "4",
-            "actual": "4"
+            "expected": "3:00 pm et",
+            "actual": "3:00 pm et"
           },
           "usage": {
             "prompt_tokens": 0,
@@ -217,7 +294,7 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.5763330011395738,
+      "latency_ms": 1.383239999995567,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -234,8 +311,82 @@
       },
       "attribution": null,
       "tags": [
-        "smoke",
-        "llm"
+        "banking",
+        "policy"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "out-of-domain",
+      "status": "passed",
+      "input": "what is the weather today",
+      "actual_output": "I don't know",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
+          "details": {
+            "expected": "I don't know",
+            "actual": "I don't know"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 0.0,
+          "passed": true,
+          "reason": "0/1 substrings present",
+          "details": {
+            "found": [],
+            "missing": [
+              "!"
+            ]
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.0505200009210967,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "banking",
+        "negative",
+        "edge"
       ],
       "repeat": {},
       "session_id": null,
@@ -249,7 +400,7 @@
       "passed": true,
       "actual": 1.0,
       "expected": ">= 0.66",
-      "detail": "3 judged cases"
+      "detail": "5 judged cases"
     }
   ],
   "baseline_tag": null

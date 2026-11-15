@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "run_id": "001a1dee5a210-d33e28ec11",
+  "suite_name": "payments-json-dataset",
+  "metadata": {
+    "git_sha": "9ff470d",
+    "aitestkit_version": "0.1.0",
+    "dependency_versions": {
+      "aitestkit": "0.1.0",
+      "openai": "3.51.0",
+      "pydantic": "2.14.3",
+      "tiktoken": "0.14.0"
+    },
+    "judge": "openai:GPT-4",
+    "embedder": "None:text-embedding-3-small",
+    "region": "QA",
+    "model_versions": {
+      "model": "GPT-6 Luna"
+    },
+    "seed": null,
+    "config_hash": "d6b0128f916967fe",
+    "python_version": "3.15.2",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "started_at": 1794740953.817158,
+    "finished_at": null
+  },
+  "results": [
+    {
+      "case_id": "recall-seeded",
+      "status": "passed",
+      "input": "what is my account number",
+      "actual_output": "your account number is chk-8841",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
+          "details": {
+            "expected": "your account number is chk-8841",
+            "actual": "your account number is chk-8841"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_retention",
+          "status": "skipped",
+          "score": null,
+          "passed": null,
+          "reason": "no must_remember metadata",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 2.0652399980463088,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "memory",
+        "banking",
+        "json-dataset"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "plant-account",
+      "status": "passed",
+      "input": "my account number is 9876",
+      "actual_output": "noted: 9876",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "exact match",
+          "details": {
+            "expected": "noted: 9876",
+            "actual": "noted: 9876"
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_retention",
+          "status": "skipped",
+          "score": null,
+          "passed": null,
+          "reason": "no must_remember metadata",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.2643580012081657,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "smoke",
+        "banking",
+        "json-dataset"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "account-remember-json/turn-0",
+      "status": "passed",
+      "input": "my account number is 4521",
+      "actual_output": "noted: 4521",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "skipped",
+          "score": null,
+          "passed": null,
+          "reason": "case missing required fields: expected_output",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_retention",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "retained 1/1 facts",
+          "details": {
+            "retained": [
+              "4521"
+            ],
+            "lost": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.3086750002694316,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "memory",
+        "banking",
+        "json-dataset"
+      ],
+      "repeat": {},
+      "session_id": "sess-json-1",
+      "metadata": {}
+    },
+    {
+      "case_id": "account-remember-json/turn-1",
+      "status": "passed",
+      "input": "what is my account number",
+      "actual_output": "your account number is 4521",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "exact_match",
+          "status": "skipped",
+          "score": null,
+          "passed": null,
+          "reason": "case missing required fields: expected_output",
+          "details": {},
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "context_retention",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "retained 1/1 facts",
+          "details": {
+            "retained": [
+              "4521"
+            ],
+            "lost": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 0.2108229964505881,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "memory",
+        "banking",
+        "json-dataset"
+      ],
+      "repeat": {},
+      "session_id": "sess-json-1",
+      "metadata": {}
+    }
+  ],
+  "summary": {},
+  "gates": [
+    {
+      "name": "min_pass_rate",
+      "passed": true,
+      "actual": 1.0,
+      "expected": ">= 1.0",
+      "detail": "4 judged cases"
+    }
+  ],
+  "baseline_tag": null
+}

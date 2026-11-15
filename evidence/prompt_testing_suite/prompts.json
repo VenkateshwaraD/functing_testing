@@ -1,0 +1,18 @@
+{
+  "digest": "0f19fd0dd441b0bf",
+  "prompts": {
+    "balance-query": {
+      "casual": "Friendly bank bot here. Answer: check my checking balance",
+      "formal": "You are a formal banking assistant. Answer: check my checking balance"
+    },
+    "transfer-inquiry": {
+      "casual": "Friendly bank bot here. Answer: transfer $500 to savings",
+      "formal": "You are a formal banking assistant. Answer: transfer $500 to savings"
+    },
+    "with-metadata": {
+      "casual": "Friendly bank bot here. Answer: explain overdraft fees",
+      "formal": "You are a formal banking assistant. Answer: explain overdraft fees"
+    }
+  },
+  "schema_version": 1
+}

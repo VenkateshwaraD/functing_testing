@@ -1,0 +1,26 @@
+{
+  "digest": "6d0d1e948d0bb16f",
+  "prompts": {
+    "ach-limit": {
+      "terse": "Answer in one word: what is the daily ach limit",
+      "verbose": "You are a thorough assistant. Explain: what is the daily ach limit"
+    },
+    "balance-inquiry": {
+      "terse": "Answer in one word: what is my checking balance",
+      "verbose": "You are a thorough assistant. Explain: what is my checking balance"
+    },
+    "dispute-guidance": {
+      "terse": "Answer in one word: how do i dispute a charge",
+      "verbose": "You are a thorough assistant. Explain: how do i dispute a charge"
+    },
+    "out-of-domain": {
+      "terse": "Answer in one word: what is the weather today",
+      "verbose": "You are a thorough assistant. Explain: what is the weather today"
+    },
+    "wire-cutoff": {
+      "terse": "Answer in one word: what is the wire transfer cutoff",
+      "verbose": "You are a thorough assistant. Explain: what is the wire transfer cutoff"
+    }
+  },
+  "schema_version": 1
+}
