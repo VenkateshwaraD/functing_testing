@@ -119,14 +119,21 @@ well-formed.
 
 ## 5. Run
 
-Option 1: 
+**Option 1 — `.env` at repo root** (auto-loaded, gitignored):
 
-set .env file at repo root 
+```bash
+# .env — the variable name must match your provider:
+OPENAI_API_KEY=sk-...          # provider: openai
+# ANTHROPIC_API_KEY=sk-ant-... # provider: anthropic
+# GEMINI_API_KEY=...           # provider: gemini
+```
 
-# .env  
-PROVIDER_API_KEY=sk-your-key-here (use can select any provider key)
+```bash
 aitestkit run suites/prompt_testing_suite.yaml
+```
 
+**Option 2 — no key needed.** This suite only has deterministic metrics
+(`prompt_sim`, `exact_match`, `contains`) — it runs fully offline.
 
 **One command** — copy-paste this from the repo root:
 
