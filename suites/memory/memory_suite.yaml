@@ -1,0 +1,23 @@
+# Memory suite — multi-turn conversation + memory inspection metrics.
+name: payments-memory
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.memory_app:chat"
+
+memory:
+  store: "apps.memory_app:store"   # inspectable MemoryStore instance
+
+datasets:
+  - ../../dataset_testcases/memory_cases.yaml
+
+metrics:
+  - name: context_retention
+  - name: forgetting_check
+  - name: contradiction_resolution
+
+gates:
+  min_pass_rate: 0.7

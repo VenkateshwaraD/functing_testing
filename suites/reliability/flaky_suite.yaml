@@ -1,0 +1,20 @@
+# Determinism demo — stochastic SUT + repeat: 5 -> flaky detection.
+name: payments-flaky
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:flaky_answer"
+
+datasets:
+  - ../../dataset_testcases/llm_cases.yaml
+
+repeat: 5
+
+metrics:
+  - name: exact_match
+
+gates:
+  min_pass_rate: 0.0   # let flaky surface without gate noise

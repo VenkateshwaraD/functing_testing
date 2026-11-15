@@ -1,0 +1,12 @@
+# HTTP/API cases — request_template maps input → {"q": ...}; the endpoint
+# reports the tool calls it made, so expected_tools pins both name + args.
+cases:
+  - id: payment-status
+    input: "payment status TX-78231"
+    expected_tools: [{name: lookup, args: {q: "payment status TX-78231"}}]
+    tags: [api, banking, payments]
+
+  - id: fx-quote
+    input: "exchange rate eur"
+    expected_tools: [{name: lookup, args: {q: "exchange rate eur"}}]
+    tags: [api, banking, fx]

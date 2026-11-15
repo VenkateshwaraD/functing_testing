@@ -245,6 +245,26 @@ matrix, custom adapters get `trace_sink`/`tool_registry`/`prompt` kwargs
 like built-in targets, and both are checked at suite load — a malformed
 class never makes it past `ConfigError`.
 
+### Validating results
+
+Same artifacts as any suite — `results.json` / `results.jsonl` /
+`aitestkit-report.html` in `-o <dir>`. To confirm your adapter surfaces
+what you returned:
+
+- `actual_output` ← your `TargetOutput.output`
+- `trajectory.events[]` ← your `trace_sink` emissions (`payload.name`/
+  `args`/`result` on `tool_call` events) — agentic metrics score these
+- `usage` / `judge_usage` ← your provider's `Usage` accounting (cost
+  columns split SUT vs judge)
+- `status: error` + `error` field ← an exception out of `invoke()` —
+  infra failure, not a metric failure
+
+Common wiring bugs to check in `details`/`trajectory`: empty
+`actual_output` → your dict used a key other than `output`/`text`; no
+trajectory → you didn't emit to `trace_sink` (or didn't declare the
+kwarg); missing tool args → events carried `arguments:` where the model
+expects `args:`.
+
 ### Minimal offline verification
 
 A do-nothing custom provider + adapter proves the wiring with zero keys:

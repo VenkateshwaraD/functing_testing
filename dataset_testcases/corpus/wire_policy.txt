@@ -1,0 +1,3 @@
+Wire transfers submitted after 3:00 PM ET settle the next business day.
+International wires require a SWIFT/BIC code and beneficiary address.
+Domestic wire fees are $25 outgoing and $12 incoming.

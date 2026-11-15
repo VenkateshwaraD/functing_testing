@@ -1,0 +1,33 @@
+# Multi-agent workflow suite — router → worker delegation scored via
+# handoff events + per-agent trajectory tags. Fully offline (deterministic
+# metrics only). Run:
+#   PYTHONPATH=examples uv run aitestkit run suites/multi_agent_suite.yaml \
+#       -o evidence/multi_agent_demo
+name: payments-multi-agent
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.multi_agent_app:run"
+
+datasets:
+  - ../../dataset_testcases/multi_agent_cases.yaml
+
+metrics:
+  - name: contains
+    threshold: 1.0
+  - name: handoff_correctness
+    threshold: 1.0
+  - name: tool_sequence
+    threshold: 1.0
+  - name: tool_args_correct
+    threshold: 1.0
+  - name: termination_check
+    threshold: 1.0
+  - name: loop_detection
+    threshold: 1.0
+
+gates:
+  min_pass_rate: 1.0

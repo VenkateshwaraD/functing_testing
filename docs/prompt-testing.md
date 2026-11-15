@@ -72,7 +72,7 @@ cases:
 
 ## 4. Write the suite
 
-`suites/prompt_testing_suite.yaml`:
+`suites/prompt/prompt_testing_suite.yaml`:
 
 ```yaml
 name: prompt-testing
@@ -122,7 +122,7 @@ well-formed.
 From the repo root, one command:
 
 ```bash
-aitestkit run suites/prompt_testing_suite.yaml
+aitestkit run suites/prompt/prompt_testing_suite.yaml
 ```
 
 That's it for this suite — no API key, no cost. The command loads the suite,
@@ -170,7 +170,7 @@ AITESTKIT_JUDGE_MODEL=gpt-4o-mini
 Other useful flags:
 
 ```bash
-aitestkit run suites/X.yaml -o results/my-run   # where results go (default: scratch/)
+aitestkit run suites/X.yaml -o results/my-run   # default: evidence/<timestamp>-<suite>/
 ```
 
 Console output:
@@ -188,7 +188,7 @@ Exit code `0` = gates pass, `1` = gate/metric failures, `2` = config error.
 
 ## 6. Read results
 
-`results.json` (written to `-o` dir, default `scratch/`):
+`results.json` (written to `-o` dir, default `evidence/<timestamp>-<suite>/`:
 
 ```json
 {
@@ -212,7 +212,7 @@ Exit code `0` = gates pass, `1` = gate/metric failures, `2` = config error.
 
 ## 7. Adversarial prompt testing
 
-`suites/prompt_adversarial_suite.yaml` + `dataset_testcases/prompt_adversarial_cases.yaml`
+`suites/prompt/prompt_adversarial_suite.yaml` + `dataset_testcases/prompt_adversarial_cases.yaml`
 — cases *designed to trip* `prompt_sim`:
 
 ```yaml

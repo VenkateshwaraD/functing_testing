@@ -25,14 +25,14 @@ Requires Python 3.13+.
 ```bash
 # run the bundled demo suites — no keys needed
 cd examples
-PYTHONPATH=. aitestkit run suites/llm_suite.yaml
-PYTHONPATH=. aitestkit run suites/rag_suite.yaml
-PYTHONPATH=. aitestkit run suites/agentic_suite.yaml
-PYTHONPATH=. aitestkit run suites/memory_suite.yaml
-PYTHONPATH=. aitestkit run suites/prompt_matrix_suite.yaml
+PYTHONPATH=. aitestkit run suites/llm/llm_suite.yaml
+PYTHONPATH=. aitestkit run suites/rag/rag_suite.yaml
+PYTHONPATH=. aitestkit run suites/agent/agentic_suite.yaml
+PYTHONPATH=. aitestkit run suites/memory/memory_suite.yaml
+PYTHONPATH=. aitestkit run suites/a_b_testing/prompt_matrix_suite.yaml
 
 # compare chunking strategies on a golden set
-PYTHONPATH=. aitestkit chunk-compare corpus golden/retrieval.yaml \
+PYTHONPATH=. aitestkit chunk-compare dataset_testcases/corpus dataset_testcases/golden/retrieval.yaml \
     --strategies fixed,hierarchical --embedder fake:fake
 ```
 
@@ -109,7 +109,7 @@ cases:
     expected_output: "refunds within 30 days"
     context: ["Refund policy: full refund within 30 days of purchase."]
     expected_retrieval_ids: ["policy:0"]
-    expected_tools: [{name: search, arguments: {query: "refund"}}]
+    expected_tools: [{name: get_balance, args: {account: checking}}]
     tags: [rag, policy]
 
 conversations:
@@ -187,6 +187,34 @@ All persisted output is redacted by default (`--no-redact` to disable).
   PII) + Great Expectations bridge
 - **External backends**: any deepeval or ragas metric via the adapter
   metrics
+
+## Docs
+
+Standalone guides under `docs/` — each covers config → run → validating
+`results.json`:
+
+| Guide | Covers |
+|---|---|
+| `docs/getting-started.md` | install, suite anatomy, metrics list, CLI flags |
+| `docs/harness-overview.md` | trajectory replay, tool mocks/faults, prompt sim |
+| `docs/response-testing.md` | output metrics (exact/contains/regex/json/latency) + judge |
+| `docs/schema-testing.md` | `json_schema` + `data_quality` expectations |
+| `docs/prompt-testing.md` | prompt variants, `prompt_sim`, injection/adversarial probes |
+| `docs/llm-testing.md` | model/prompt matrices, cassettes, baselines, judges |
+| `docs/ab-testing.md` | prompt/model variant matrices, pairwise judge |
+| `docs/judge-testing.md` | LLM judge: providers, self-consistency, bias guards |
+| `docs/python-assertions.md` | `assertions/` package — imperative `.py` checks for pytest |
+| `docs/rag-testing.md` | retrieval + generation + ingestion metrics, chunk-compare |
+| `docs/vectordb-testing.md` | index integrity, embedding drift, retrieval consistency |
+| `docs/agent-testing.md` | trajectories, tool calls, guardrails, handoffs |
+| `docs/memory-testing.md` | multi-turn conversations, MemoryStore inspection |
+| `docs/api-testing.md` | REST endpoints via `type: http` |
+| `docs/mcp-testing.md` | MCP servers via `type: mcp` |
+| `docs/reliability-testing.md` | flaky detection, fault injection, baselines, drift |
+| `docs/regression-testing.md` | behavioral drift across model/prompt/KB versions |
+| `docs/banking-testing.md` | worked example: funds-transfer agent end-to-end |
+| `docs/custom-adapters.md` | custom providers + `type: custom` target adapters |
+| `docs/ci-cd.md` | GitLab pipeline, artifacts, release process |
 
 ## pytest
 

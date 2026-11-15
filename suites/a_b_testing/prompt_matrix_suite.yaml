@@ -1,12 +1,15 @@
 # Prompt matrix — every case runs once per prompt variant (offline).
-name: prompt-matrix-demo
+name: payments-prompt-matrix
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
 
 target:
   type: python
-  function: "dummy.demo_app:prompt_echo"
+  function: "apps.demo_app:prompt_echo"
 
 datasets:
-  - ../dataset_testcases/llm_cases.yaml
+  - ../../dataset_testcases/llm_cases.yaml
 
 prompts:
   - name: terse

@@ -88,7 +88,7 @@ name: my-suite
 
 # --- WHAT to run against (pick one) ---------------------------------------
 target:
-  type: python | http | command | langgraph
+  type: python | http | command | langgraph | custom | mcp
 
   # python: a callable in your code — signature
   #   (input: str, *, tools, context, prompt) -> str | dict
@@ -105,6 +105,10 @@ target:
 
   # command: an argv list (never a shell) — needs --allow-command-targets
   command: ["python", "agent.py", "--ask", "{input}"]
+
+  # mcp: call a tool on an MCP server — command: [argv] for stdio (same
+  # --allow-command-targets gate) or url: for streamable HTTP
+  # kwargs: {tool: search, args_template: {query: "{input}"}}
 
   # langgraph: a compiled graph object
   # function: "mygraph:graph"
@@ -202,15 +206,19 @@ version_tags: {prompt: v3, kb: "2025-11"}  # stamped into run metadata
 
 ### Dataset format
 
+Files may be `.yaml`/`.yml`, `.json`, or `.jsonl` (one case object per
+line) — same `cases:` / `conversations:` shapes in each. A `.json` file
+can carry both keys at once:
+
 ```yaml
 # datasets/cases.yaml
 cases:
-  - id: greeting
-    input: "say hello"
-    expected_output: "hello"
+  - id: balance-inquiry
+    input: "what is my checking balance"
+    expected_output: "your checking balance is $1250.00"
     context: ["optional retrieved context for RAG metrics"]
-    tools: [search]              # expected tool calls (agentic metrics)
-    tags: [smoke, llm]
+    tools: [get_balance]         # expected tool calls (agentic metrics)
+    tags: [smoke, banking, llm]
 ```
 
 ### Available metrics
@@ -245,11 +253,11 @@ Everything under `examples/` runs with **zero API keys**:
 cd examples
 export PYTHONPATH=.            # lets python targets import the bundled example apps
 
-aitestkit run suites/llm_suite.yaml        -o /tmp/out-llm
-aitestkit run suites/rag_suite.yaml        -o /tmp/out-rag
-aitestkit run suites/agentic_suite.yaml    -o /tmp/out-agentic
-aitestkit run suites/memory_suite.yaml     -o /tmp/out-memory
-aitestkit run suites/prompt_matrix_suite.yaml -o /tmp/out-prompts
+aitestkit run suites/llm/llm_suite.yaml        -o /tmp/out-llm
+aitestkit run suites/rag/rag_suite.yaml        -o /tmp/out-rag
+aitestkit run suites/agent/agentic_suite.yaml    -o /tmp/out-agentic
+aitestkit run suites/memory/memory_suite.yaml     -o /tmp/out-memory
+aitestkit run suites/a_b_testing/prompt_matrix_suite.yaml -o /tmp/out-prompts
 ```
 
 ### Step 2 — run your own suite
@@ -261,6 +269,35 @@ aitestkit run path/to/suite.yaml -o results/
 Reports written to `results/`: `results.json` + `results.jsonl`
 (raw per-case), `aitestkit-report.html`, plus console output. Choose
 formats with `--report console,json,html,junit`.
+
+### Reading the results
+
+Each case in `results.json` carries the input, the SUT's `actual_output`,
+a `status` (`passed|failed|error|skipped|flaky`), per-metric verdicts
+(`score`, `passed`, `reason`, `details` — the evidence payload), plus
+`latency_ms`, `usage`, and the `trajectory` when the target emits one:
+
+```json
+{
+  "case_id": "balance-inquiry",
+  "status": "passed",
+  "actual_output": "your checking balance is $1250.00",
+  "metrics": [
+    {"metric": "exact_match", "score": 1.0, "passed": true,
+     "reason": "exact match",
+     "details": {"expected": "your checking balance is $1250.00", "actual": "your checking balance is $1250.00"}}
+  ]
+}
+```
+
+Dig with `jq` or open `aitestkit-report.html` — per-guide "read the
+results" sections cover the metric-specific `details` shapes:
+
+```bash
+jq '.results[] | select(.status!="passed") | {case_id, status,
+    failures: [.metrics[] | select(.passed==false) | .metric]}' \
+    results/results.json
+```
 
 ### Step 3 — useful run flags
 

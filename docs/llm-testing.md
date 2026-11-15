@@ -61,15 +61,15 @@ def answer(input: str, *, prompt: str | None = None, **kw) -> str:
 ```yaml
 # datasets/llm_cases.yaml
 cases:
-  - id: greeting
-    input: "say hello"
-    expected_output: "hello"
-    tags: [smoke, llm]
+  - id: balance-inquiry
+    input: "what is my checking balance"
+    expected_output: "your checking balance is $1250.00"
+    tags: [smoke, banking, llm]
 
-  - id: arithmetic
-    input: "what is 2+2"
-    expected_output: "4"
-    tags: [llm]
+  - id: ach-limit
+    input: "what is the daily ach limit"
+    expected_output: "$25000"
+    tags: [banking, limits]
 
   - id: json-mode
     input: "return {\"ok\": true} as json"
@@ -130,7 +130,7 @@ metrics:
     substrings: ["4"]
     threshold: 0.0                         # informational scoring
   - name: regex_match
-    pattern: '\b(Paris|4|hello)\b'         # re.search, DOTALL
+    pattern: '\$\d+'                      # re.search, DOTALL — any amount
   - name: json_schema                      # output is valid JSON per schema
     schema:
       type: object
@@ -224,10 +224,10 @@ guardrail · `5` gate failure.
 cd examples && export PYTHONPATH=.
 
 # basic LLM assertions, offline
-uv run aitestkit run suites/llm_suite.yaml -o /tmp/llm-out
+uv run aitestkit run suites/llm/llm_suite.yaml -o /tmp/llm-out
 
 # prompt matrix — terse vs verbose variants, offline
-uv run aitestkit run suites/prompt_matrix_suite.yaml -o /tmp/pm-out
+uv run aitestkit run suites/a_b_testing/prompt_matrix_suite.yaml -o /tmp/pm-out
 
 # live-provider smoke (needs OPENAI_API_KEY, $0.50 cap)
 uv run aitestkit run ../ci/live_suite.yaml -o /tmp/live-out --report console,json
@@ -239,6 +239,6 @@ ready-made templates — repoint `target.function` at your app
 (`support_chat.app:answer`) and run with your judge:
 
 ```bash
-OPENAI_API_KEY=sk-... aitestkit run suites/llm_suite.yaml \
+OPENAI_API_KEY=sk-... aitestkit run suites/llm/llm_suite.yaml \
   --judge openai --judge-model gpt-4o-mini
 ```

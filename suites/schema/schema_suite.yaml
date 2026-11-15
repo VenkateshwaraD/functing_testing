@@ -1,0 +1,28 @@
+# Schema-testing suite — offline demo of json_schema (response shape)
+# and data_quality (row/column expectations). Command target prints
+# canned JSON when the input says "json", prose otherwise — so
+# 'structured-response' validates and 'freeform-response' is detected.
+# Needs --allow-command-targets (or AITESTKIT_ALLOW_COMMAND_TARGETS=1).
+name: payments-schema
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: command
+  command:
+    - python3
+    - -c
+    - "import sys, json; c = json.load(sys.stdin); print(json.dumps({'status': 'approved', 'amount': 42.5, 'currency': 'USD', 'endToEndId': 'E2E-TX-78231', 'iban': 'DE89370400440532013000'})) if 'json' in c['input'] else print('payment approved — see ticket TX-78231')"
+
+datasets:
+  - ../../dataset_testcases/schema_cases.yaml
+
+metrics:
+  - name: data_quality                  # runs on cases with metadata rows
+  - name: latency
+    max_ms: 5000
+
+gates:
+  min_pass_rate: 1.0                    # detection cases are informational
+  max_error_cases: 0                    #   (threshold 0.0) — run stays green

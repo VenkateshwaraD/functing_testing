@@ -1,12 +1,15 @@
 # Agentic suite — trajectory metrics over a demo ReAct agent (offline).
-name: agentic-demo
+name: payments-agentic
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
 
 target:
   type: python
-  function: "dummy.agent_app:run"
+  function: "apps.agent_app:run"
 
 datasets:
-  - ../dataset_testcases/agentic_cases.yaml
+  - ../../dataset_testcases/agentic_cases.yaml
 
 # judge: unset on purpose — resolves AITESTKIT_JUDGE_PROVIDER /
 # AITESTKIT_JUDGE_MODEL > shipped defaults (openai/gpt-4o-mini).

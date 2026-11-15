@@ -56,7 +56,7 @@ Steps, in order:
 2. `uv sync --frozen --python $PY` — install deps from `uv.lock`.
 3. `uv run ruff check src examples` — lint (rule set in `pyproject.toml`).
 4. `uv run mypy` — typecheck `src/aitestkit` (config in `pyproject.toml`).
-5. Runs every suite in `suites/*.yaml` through
+5. Runs every suite in `suites/*/*.yaml` through
    `uv run aitestkit run <suite>` with `PYTHONPATH=.` set from `examples/`.
    These suites are replay-only — they use fake providers and cassettes, so
    they need **no secrets** and work on forks.
@@ -134,6 +134,23 @@ maintainers can cut releases — this also gates `publish-pypi`.
 | Live smoke                | Create a pipeline schedule, or **Build → Pipelines → Run pipeline** then play the manual `live-smoke` job. |
 | Release                   | `git tag v0.2.0 && git push origin v0.2.0` — `build` runs automatically; play `publish-pypi` manually to upload to PyPI; `release` creates the GitLab release. |
 
+## Validating results
+
+Suite runs in CI are gated by exit code — `0` passes the job, anything
+non-zero fails it (`1` case failures, `2` config, `3` budget, `4`
+guardrail, `5` gate). To diagnose a failure:
+
+- **`example-out/` / `live-out/` artifacts** — uploaded on every run
+  (`when: always`, 1-week expiry). Open `aitestkit-report.html` for
+  per-case metric detail, or `results.json` for raw verdicts
+  (`metrics[].reason` + `details` carry the evidence).
+- **`junit.xml`** — consumed by GitLab's test report UI on MRs.
+- **Job log** — the console report prints `PASS`/`FAIL` per case plus the
+  gate verdicts (`gate FAIL min_pass_rate: 0.8 (< 0.9)`).
+
+A `2` exit means the suite never ran — check for missing CI variables or
+bad YAML before chasing metric scores.
+
 ## Local equivalents
 
 Everything the pipeline does can be reproduced locally:
@@ -145,7 +162,7 @@ uv sync --frozen
 uv run ruff check src examples
 uv run mypy
 cd examples && PYTHONPATH=. sh -c \
-  'for s in suites/*.yaml; do uv run aitestkit run "$s" -o /tmp/out || exit $?; done'
+  'for s in suites/*/*.yaml; do uv run aitestkit run "$s" -o /tmp/out || exit $?; done'
 
 # audit
 uvx pip-audit --strict

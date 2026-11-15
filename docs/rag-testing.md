@@ -85,14 +85,14 @@ generation regressions.
 ```yaml
 # datasets/rag_cases.yaml
 cases:
-  - id: paris-rag
-    input: "capital of france"
-    expected_output: "Paris is the capital of France."
-    expected_retrieval_ids: ["paris:0"]        # golden chunk ids — enables
+  - id: overdraft-fee
+    input: "what is the overdraft fee"
+    expected_output: "Overdrafts incur a $35 fee per paid item, assessed nightly."
+    expected_retrieval_ids: ["doc1:0"]         # golden chunk ids — enables
     context:                                  # exact (non-approximate) scoring
-      - "Paris is the capital of France."
-      - "Tokyo is the capital of Japan."
-    tags: [rag, retrieval]
+      - "Overdrafts incur a $35 fee per paid item, assessed nightly."
+      - "Wire transfers submitted after 3:00 PM ET settle the next business day."
+    tags: [rag, retrieval, banking]
 
   - id: unanswerable
     input: "price of a manned mars flight"
@@ -191,13 +191,13 @@ full RAGAS / DeepEval metric suites via the `ragas` / `deepeval` metrics.
 Before tuning metrics, compare how chunking affects retrieval:
 
 ```bash
-# golden set — examples/golden/queries.yaml format:
+# golden set — dataset_testcases/golden/retrieval.yaml format:
 #   schema_version: 1
-#   corpus_id: capitals
+#   corpus_id: payments_policies
 #   queries:
-#     - {id: q1, query: "capital of France", relevant_ids: ["paris:0"]}
+#     - {id: q1, query: "overdraft fee", relevant_ids: ["overdraft_policy:0"]}
 
-aitestkit chunk-compare docs/corpus/ golden/queries.yaml \
+aitestkit chunk-compare dataset_testcases/corpus golden/queries.yaml \
     --strategies fixed,semantic,hierarchical \
     --embedder openai:text-embedding-3-small \
     --top-k 5 --chunk-size 512 --chunk-overlap 64
@@ -255,11 +255,11 @@ faithfulness regressions automatically.
 
 ```bash
 # point the suite's target.function at your RAG entry point, then:
-OPENAI_API_KEY=sk-... aitestkit run suites/rag_suite.yaml \
+OPENAI_API_KEY=sk-... aitestkit run suites/rag/rag_suite.yaml \
   --judge openai --judge-model gpt-4o-mini -o /tmp/rag-out
 ```
 
-`suites/rag_suite.yaml` scores `recall_at_k`, `hit_rate`, `context_window`,
+`suites/rag/rag_suite.yaml` scores `recall_at_k`, `hit_rate`, `context_window`,
 `ingestion_parse`, `ingestion_dedup` against `dataset_testcases/rag_cases.yaml`.
 For stage isolation, add a second suite whose `target.function` points at
 your retriever alone (e.g. `support_chat.retriever:search`).

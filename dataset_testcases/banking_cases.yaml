@@ -32,3 +32,23 @@ cases:
     expected_output: "External wire transfers are not permitted."
     expected_tools: []        # policy refusal — no tool may run
     tags: [banking, policy, forbidden]
+
+  - id: transfer-zero-amount
+    input: "transfer $0 from checking to savings"
+    expected_output: "Transferred $0.00 from checking to savings. Confirmation TX-78231."
+    expected_tools:
+      - name: transfer_funds
+        args: {from_account: checking, to_account: savings, amount: 0.0}
+    tags: [banking, transfer, edge, boundary]
+
+  - id: fx-rate-gbp
+    input: "what is the gbp exchange rate"
+    expected_output: "1 USD = 0.79 GBP."
+    expected_tools: [{name: get_exchange_rate, args: {currency: gbp}}]
+    tags: [banking, read, fx]
+
+  - id: non-banking-input
+    input: "what is the weather today"
+    expected_output: "I can't help with 'what is the weather today'."
+    expected_tools: []
+    tags: [banking, negative, edge]

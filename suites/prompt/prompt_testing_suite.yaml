@@ -1,19 +1,22 @@
 # Prompt matrix + prompt_sim lint — positive path, fully offline.
 name: prompt-testing
 
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
 target:
   type: python
-  function: "dummy.demo_app:prompt_echo"   # echoes input, records variant
+  function: "apps.demo_app:prompt_echo"   # echoes input, records variant
 
 datasets:
-  - ../dataset_testcases/prompt_cases.yaml
+  - ../../dataset_testcases/prompt_cases.yaml
 
 # Every case runs once per variant — results tagged by prompt_name.
 # Prompts live as files under <repo>/prompts/ — versioning is file-based
 # (v1/v2 etc.); paths resolve relative to this suite file.
 prompts:
-  - {name: formal, file: ../prompts/customer_support_v1.txt}
-  - {name: casual, file: ../prompts/customer_support_v2.txt}
+  - {name: formal, file: ../../prompts/customer_support_v1.txt}
+  - {name: casual, file: ../../prompts/customer_support_v2.txt}
 
 metrics:
   - name: prompt_sim                       # lint the rendered prompt

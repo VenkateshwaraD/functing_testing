@@ -2,12 +2,15 @@
 # Swap function:/tools: entries for your real funds-transfer agent module.
 name: banking-funds-transfer
 
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
 target:
   type: python
-  function: "dummy.banking_app:run"
+  function: "apps.banking_app:run"
 
 datasets:
-  - ../dataset_testcases/banking_cases.yaml
+  - ../../dataset_testcases/banking_cases.yaml
 
 # judge: unset on purpose — resolves AITESTKIT_JUDGE_PROVIDER /
 # AITESTKIT_JUDGE_MODEL > shipped defaults (openai/gpt-4o-mini).
@@ -16,14 +19,14 @@ datasets:
 # The agent's tool surface — must mirror what the real agent can call.
 tools:
   get_balance:
-    function: "dummy.banking_app:get_balance"
+    function: "apps.banking_app:get_balance"
   get_exchange_rate:
-    function: "dummy.banking_app:get_exchange_rate"
+    function: "apps.banking_app:get_exchange_rate"
   transfer_funds:
-    function: "dummy.banking_app:transfer_funds"
+    function: "apps.banking_app:transfer_funds"
     requires_confirmation: true        # money movement = human-gated
   wire_external:
-    function: "dummy.banking_app:wire_external"   # registered but policy-forbidden
+    function: "apps.banking_app:wire_external"   # registered but policy-forbidden
 
 metrics:
   - exact_match                                # deterministic answer text

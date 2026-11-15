@@ -1,0 +1,23 @@
+# Regression-demo suite — identical to llm_suite except the target is the
+# "v2 model" (answer_v2). Used to demonstrate `aitestkit compare` catching
+# behavioral drift after a model/prompt change.
+name: payments-llm-v2
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:answer_v2"
+
+datasets:
+  - ../../dataset_testcases/llm_cases.yaml
+
+metrics:
+  - name: exact_match
+  - name: contains
+    substrings: ["!"]
+    threshold: 0.0  # informational — shows per-case metric detail
+
+gates:
+  min_pass_rate: 0.66

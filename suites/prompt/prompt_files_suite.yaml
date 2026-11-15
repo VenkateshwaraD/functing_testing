@@ -1,0 +1,27 @@
+# Prompt-file coverage — renders the unused assistant prompts under
+# prompts/ so a bad edit (broken placeholder, policy line deleted) is
+# caught in CI. prompts.json snapshots what each file produced per case.
+name: payments-prompt-files
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:prompt_echo"
+
+datasets:
+  - ../../dataset_testcases/llm_cases.yaml
+
+prompts:
+  - {name: payments, file: ../../prompts/payment_assistant.txt}
+  - {name: loans,    file: ../../prompts/loan_assistant.txt}
+
+metrics:
+  - {name: contains, substrings: ["echo"]}
+  - name: prompt_sim                       # lint each rendered file prompt:
+    template: "{input}"                    #   unresolved {placeholders} fail
+    max_tokens: 500
+
+gates:
+  min_pass_rate: 1.0

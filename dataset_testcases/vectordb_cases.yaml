@@ -1,0 +1,6 @@
+# vectordb validation cases — target output is irrelevant to vectordb_*
+# metrics; they inspect the store via the suite's vectordb: block.
+cases:
+  - id: payments-index-health
+    input: "validate the payments document index"
+    tags: [vectordb, banking]

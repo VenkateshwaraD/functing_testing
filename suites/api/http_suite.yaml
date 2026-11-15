@@ -1,0 +1,32 @@
+# HTTP/API suite — demo of the http target against a JSON endpoint.
+# Point url: at any POST endpoint that echoes {"data": {"answer": ...,
+# "tool_calls": [...]}} — docs/api-testing.md has a 12-line local stub.
+name: payments-api
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: http
+  url: "http://127.0.0.1:8791/query"        # ${ENV_VAR} expands here too
+  method: POST
+  headers: {X-Demo-Key: "${DEMO_API_KEY}"}  # secrets stay out of the file
+  request_template: {q: "{input}", session: "{session_id}"}
+  response_path: "data.answer"              # dotted-path → output text
+  tools_path: "data.tool_calls"             # → trajectory tool_call events
+  kwargs: {timeout_seconds: 10}
+
+datasets:
+  - ../../dataset_testcases/http_cases.yaml
+
+metrics:
+  - name: contains                          # response text assertions
+    substrings: ["answer for"]
+  - name: tool_sequence                     # tools_path → trajectory
+  - name: tool_args_correct                 # args carried over the wire
+  - name: latency
+    max_ms: 2000                            # API responsiveness gate
+
+gates:
+  min_pass_rate: 1.0
+  max_error_cases: 0                        # ≥400 statuses land as errors

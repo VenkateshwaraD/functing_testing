@@ -67,6 +67,19 @@ model version — `--judge-model` and `models:` entries are pinned per suite,
 so a provider-side silent upgrade shows up as a baseline diff, not mystery
 drift.
 
+**Shipped demo** — `suites/reliability/flaky_suite.yaml` points at
+`apps.demo_app:flaky_answer`, a deliberately stochastic SUT (50/50
+correct), with `repeat: 5`:
+
+```bash
+PYTHONPATH=examples uv run aitestkit run \
+    suites/reliability/flaky_suite.yaml -o evidence/flaky_suite
+```
+
+Every case lands `flaky`, and `results.json` records the full picture:
+`repeat: {runs: 5, pass_rate: 0.2, statuses: [failed, passed, …]}` —
+the reproducibility evidence for stochastic LLM decisions.
+
 ## Step 2 — Resilience: inject faults into tools
 
 Declare the agent's tools in the suite; the registry can break them on
@@ -205,6 +218,58 @@ gates:
   max_error_cases: 0
   max_regression_vs_baseline: 0.05
 ```
+
+## Shipped demo — run it
+
+`suites/banking/banking_resilience_suite.yaml` injects `fault: {error:
+"core-banking 503"}` on `transfer_funds` and asserts *graceful
+degradation* — fully offline:
+
+```bash
+PYTHONPATH=examples uv run aitestkit run \
+    suites/banking/banking_resilience_suite.yaml -o evidence/resilience
+```
+
+```
+PASS transfer-degraded   → "The payment service is unavailable — please
+                            retry shortly."   (no fabricated confirmation)
+PASS balance-unaffected  → "Your checking balance is $1250.00."
+```
+
+The interesting part is in `results.json`: the degraded case's trajectory
+shows `action → observation(tool error: …) → message` with **no**
+`tool_call` event — the registry raised before the call completed —
+while `termination_check` and `loop_detection` confirm it finished
+cleanly instead of retry-storming. `dataset_testcases/
+banking_resilience_cases.yaml` is the template: expected output is the
+*degradation message*, not the happy path.
+
+## Validate the results
+
+`results.json` per case: a `status` plus per-repeat attempts and the
+trajectory — the fields that matter for reliability reading:
+
+- `status: flaky` — mixed pass/fail across `repeat:` runs (counts toward
+  `max_flaky`, not `min_pass_rate`)
+- `status: error` — infra failure (provider 5xx, timeout, tool
+  `TargetError`); never a quality failure — `max_error_cases` gates it
+- `trajectory.finish_reason` — `done` vs `max_steps`/`timeout`/`error`
+  tells you *which* guardrail fired
+- `trajectory.events[]` — tool calls show `payload.error`, so a resilience
+  case shows the injected `503` right next to the agent's recovery step
+
+```bash
+# flaky + error cases — the two reliability statuses
+jq '.results[] | select(.status=="flaky" or .status=="error")
+    | {case_id, status, finish: .trajectory.finish_reason}' \
+    out/results.json
+```
+
+Long-run validation lives outside the run dir: `.aitestkit/history.jsonl`
+accumulates per-metric means (`aitestkit trends .` summarizes drift), and
+`aitestkit compare baseline.json results.json --tolerance 0.05` exits `1`
+on regression — the same verdict the `max_regression_vs_baseline` gate
+applies in-suite.
 
 ## Exit codes
 

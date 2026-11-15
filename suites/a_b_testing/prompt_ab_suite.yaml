@@ -1,0 +1,27 @@
+# A/B demo — the SAME banking cases run under two different prompt FILES
+# (version-by-file). banking_reply styles its answer by variant, so A and
+# B outputs genuinely diverge; prompts.json snapshots rendered prompts.
+name: payments-prompt-ab
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:banking_reply"
+
+datasets:
+  - ../../dataset_testcases/llm_cases.yaml
+
+prompts:
+  - {name: formal, file: ../../prompts/customer_support_v1.txt}   # variant A
+  - {name: casual, file: ../../prompts/customer_support_v2.txt}   # variant B
+
+metrics:
+  - name: regex_match                      # every reply carries a number
+    pattern: "\\d|don't know"              #   or the refusal — both variants
+  - name: latency
+    max_ms: 2000
+
+gates:
+  min_pass_rate: 1.0

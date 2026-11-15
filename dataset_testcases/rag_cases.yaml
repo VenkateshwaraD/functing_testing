@@ -1,18 +1,28 @@
+# RAG cases — banking policy docs via apps.demo_app:rag.
+# expected_retrieval_ids are golden labels ({doc_id}:{chunk_index}).
 cases:
-  - id: paris-rag
-    input: "capital of france"
-    expected_output: "Paris is the capital of France."
+  - id: overdraft-fee
+    input: "what is the overdraft fee"
+    expected_output: "Overdrafts incur a $35 fee per paid item, assessed nightly."
     expected_retrieval_ids: ["doc1:0"]
     context:
-      - "Paris is the capital of France."
-      - "Tokyo is the capital of Japan."
-    tags: [rag, retrieval]
+      - "Overdrafts incur a $35 fee per paid item, assessed nightly."
+      - "Wire transfers submitted after 3:00 PM ET settle the next business day."
+    tags: [rag, retrieval, banking]
 
-  - id: tokyo-rag
-    input: "capital of japan"
-    expected_output: "Tokyo is the capital of Japan."
+  - id: wire-settlement
+    input: "when do wire transfers settle"
+    expected_output: "Wire transfers submitted after 3:00 PM ET settle the next business day."
     expected_retrieval_ids: ["doc2:0"]
     context:
-      - "Paris is the capital of France."
-      - "Tokyo is the capital of Japan."
-    tags: [rag, retrieval]
+      - "Overdrafts incur a $35 fee per paid item, assessed nightly."
+      - "Wire transfers submitted after 3:00 PM ET settle the next business day."
+    tags: [rag, retrieval, banking]
+
+  - id: unanswerable
+    input: "what is the mortgage rate forecast"
+    expected_output: "I don't know."       # neither keyword present → no hits
+    expected_retrieval_ids: []             # retrieval metrics skip (no labels)
+    context:
+      - "Overdrafts incur a $35 fee per paid item, assessed nightly."
+    tags: [rag, edge, unanswerable]

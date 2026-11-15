@@ -112,29 +112,29 @@ final answer:
 
 ```yaml
 cases:
-  - id: weather-query
-    input: "what's the weather in Paris"
+  - id: balance-lookup
+    input: "check my checking balance"
     expected_tools:                          # scored by tool_sequence /
-      - {name: search, arguments: {query: "weather"}}   # tool_args_correct
-    tags: [agentic, tools]
+      - {name: account_lookup, args: {query: "check my checking balance"}}
+    tags: [agentic, banking, tools]
 
-  - id: no-tool-needed
-    input: "say hi"
+  - id: policy-question
+    input: "what is a routing number"
     expected_tools: []                       # must NOT call tools
-    tags: [agentic]
+    tags: [agentic, banking, edge]
 
   - id: handoff-flow
-    input: "refund my order"
+    input: "wire $5000 to vendor"
     metadata:
-      expected_handoffs: ["billing-agent"]   # scored by handoff_correctness
-    tags: [agentic, multi-agent]
+      expected_handoffs: ["payments-agent"]  # scored by handoff_correctness
+    tags: [agentic, multi-agent, banking]
 
   - id: replay-check
-    input: "book the flight"
+    input: "transfer $200 to savings"
     expected_trajectory:                     # scored by trajectory_match —
       events:                                # full step-by-step golden trace
-        - {type: thought,   payload: {text: "plan booking"}}
-        - {type: tool_call, payload: {name: search}}
+        - {type: thought,   payload: {text: "internal transfer"}}
+        - {type: tool_call, payload: {name: transfer_funds}}
         - {type: message,   payload: {role: assistant}}
 ```
 
@@ -259,7 +259,7 @@ python targets in locked-down CI with `--no-allow-python-targets`.
 
 ## Step 5 — Read the results
 
-Output dir (`-o`, default `scratch/`):
+Output dir (`-o`, default `evidence/<timestamp>-<suite>/`):
 
 ```
 out/
@@ -311,10 +311,10 @@ schedule with a `max_cost_usd` cap like `live-smoke` does.
 ## Worked example
 
 The repo ships a runnable one — a small ReAct-style agent (`agent_app.py`)
-that thinks, calls a `search` tool, observes, and answers:
+that thinks, calls an `account_lookup` tool, observes, and answers:
 
 ```bash
-aitestkit run suites/agentic_suite.yaml \
+aitestkit run suites/agent/agentic_suite.yaml \
   --judge openai --judge-model gpt-4o-mini -o /tmp/agentic-out
 ```
 
@@ -322,3 +322,30 @@ It scores `tool_sequence`, `forbidden_tools`, `loop_detection`,
 `termination_check`, `task_completion` against `datasets/agentic_cases.yaml`
 fully offline (fake judge) — a good template to copy before wiring up your
 own agent.
+
+### Multi-agent worked example
+
+`suites/agent/multi_agent_suite.yaml` runs `apps.multi_agent_app:run` — a
+router agent that delegates to `billing-agent` and `fulfillment-agent`
+workers, tagging every event with `agent_id` and emitting `handoff`
+events:
+
+```bash
+PYTHONPATH=examples uv run aitestkit run \
+    suites/agent/multi_agent_suite.yaml -o evidence/multi_agent
+```
+
+Fully offline — scores `handoff_correctness` (expected delegation order
+from `metadata.expected_handoffs`), `tool_sequence`/`tool_args_correct`
+(per-agent tool calls across the workflow), `termination_check`,
+`loop_detection`. `results.json` shows the per-agent trajectory:
+
+```
+[router]            thought → handoff → handoff → message
+[billing-agent]     thought → tool_call(issue_refund) → message
+[fulfillment-agent] thought → tool_call(cancel_shipment) → message
+```
+
+Note: the framework doesn't orchestrate the agents — your target owns the
+workflow; the trajectory makes delegation observable and scoreable. For
+per-agent isolation, point a separate suite at each agent callable.

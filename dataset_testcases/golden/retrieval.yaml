@@ -1,0 +1,12 @@
+schema_version: 1
+corpus_id: payments_policies
+queries:
+  - id: q-overdraft
+    query: "what is the overdraft fee"
+    # chunk ids are {doc_id}:{index} — deterministic per strategy
+    relevant_ids: ["overdraft_policy:0"]
+    tags: [banking, overdraft]
+  - id: q-wire
+    query: "when do wire transfers settle"
+    relevant_ids: ["wire_policy:0"]
+    tags: [banking, wire]

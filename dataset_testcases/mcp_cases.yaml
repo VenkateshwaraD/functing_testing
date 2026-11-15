@@ -1,0 +1,12 @@
+# MCP cases — the suite's args_template maps {input} into the tool's
+# `query` arg, so expected_tools pins both the call and its arguments.
+cases:
+  - id: transaction-search
+    input: "october transaction history"
+    expected_tools: [{name: transaction_search, args: {query: "october transaction history"}}]
+    tags: [mcp, banking, tools]
+
+  - id: fee-schedule
+    input: "overdraft fee schedule"
+    expected_tools: [{name: transaction_search, args: {query: "overdraft fee schedule"}}]
+    tags: [mcp, banking, tools]

@@ -1,0 +1,33 @@
+# Vector DB validation demo — index count + embedding drift against a
+# persisted FAISS index (evidence/vectordb_demo/index.*), fully offline
+# with the fake embedder. Requires: uv sync --extra faiss
+name: payments-vectordb
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.demo_app:answer"
+
+datasets:
+  - ../../dataset_testcases/vectordb_cases.yaml
+
+embedder:
+  provider: fake
+  model: fake
+
+vectordb:
+  type: faiss
+  dims: 8
+  path: evidence/vectordb_demo/index   # path is a stem → index.faiss + index.json
+
+metrics:
+  - name: vectordb_count
+    expected: 5
+  - name: embedding_drift
+    sample_fraction: 1.0
+    threshold: 0.95
+
+gates:
+  min_pass_rate: 1.0

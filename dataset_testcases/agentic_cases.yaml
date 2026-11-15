@@ -1,10 +1,17 @@
+# Agentic cases — banking ReAct agent (apps.agent_app:run).
+# expected_tools pins the lookup name + args; no-tool case is an edge test.
 cases:
-  - id: weather-query
-    input: "what's the weather like"
-    expected_tools: [{name: search, arguments: {query: "what's the weather like"}}]
-    tags: [agentic, tools]
+  - id: balance-lookup
+    input: "check my checking balance"
+    expected_tools: [{name: account_lookup, args: {query: "check my checking balance"}}]
+    tags: [agentic, banking, tools]
 
-  - id: hotel-query
-    input: "find me a hotel"
-    expected_tools: [{name: search, arguments: {query: "find me a hotel"}}]
-    tags: [agentic, tools]
+  - id: transfer-status
+    input: "status of my transfer"
+    expected_tools: [{name: account_lookup, args: {query: "status of my transfer"}}]
+    tags: [agentic, banking, tools]
+
+  - id: policy-question
+    input: "what is a routing number"
+    expected_tools: []                 # no account lookup for policy Qs
+    tags: [agentic, banking, edge]

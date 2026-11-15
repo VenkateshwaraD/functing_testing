@@ -1,0 +1,22 @@
+# JSON dataset suite — same TestCase/ConversationCase shapes as YAML but
+# loaded from a .json file (both keys in one file work). Target is the
+# memory chat app so the conversation's session recall is exercised too.
+# Fully offline.
+name: payments-json-dataset
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
+target:
+  type: python
+  function: "apps.memory_app:chat"
+
+datasets:
+  - ../../dataset_testcases/json_cases.json    # .json suffix → JSON loader
+
+metrics:
+  - exact_match
+  - name: context_retention                 # scores the conversation turns
+
+gates:
+  min_pass_rate: 1.0

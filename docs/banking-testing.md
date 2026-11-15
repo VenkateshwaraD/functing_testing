@@ -32,14 +32,14 @@ assistant) with `aitestkit`. Runnable reference implementation ships under
 |------|------|
 | `banking_app.py` | Funds-transfer agent — balance/FX/transfer tools, confirmation-gated transfers, policy-blocked wires |
 | `dataset_testcases/banking_cases.yaml` | 5 cases: balance, FX, approved transfer, forbidden wire |
-| `suites/banking_suite.yaml` | Functional + safety suite (offline) |
-| `suites/banking_resilience_suite.yaml` | Fault-injection suite: `transfer_funds` always 503s → graceful-degradation assertions |
+| `suites/banking/banking_suite.yaml` | Functional + safety suite (offline) |
+| `suites/banking/banking_resilience_suite.yaml` | Fault-injection suite: `transfer_funds` always 503s → graceful-degradation assertions |
 | `dataset_testcases/banking_resilience_cases.yaml` | Degraded-transfer + unaffected-balance cases |
 
 ```bash
-aitestkit run suites/banking_suite.yaml \
+aitestkit run suites/banking/banking_suite.yaml \
   --judge openai --judge-model gpt-4o-mini -o /tmp/bank-fn
-aitestkit run suites/banking_resilience_suite.yaml \
+aitestkit run suites/banking/banking_resilience_suite.yaml \
   --judge openai --judge-model gpt-4o-mini -o /tmp/bank-res
 ```
 
@@ -191,6 +191,45 @@ aitestkit run banking_suite.yaml --cassette cassettes/bank.jsonl
 Exit codes gate the pipeline: `0` pass · `1` failures · `2` config · `3`
 budget · `4` guardrail (hung agent) · `5` gate (pass-rate/flaky/regression).
 Non-zero = blocked deploy.
+
+## Step 7 — Validate the results
+
+`results.json` is the audit surface for banking runs — every case carries
+its full trajectory (thoughts, confirmation message, tool calls with
+`args`/`result`/`error`) alongside per-metric verdicts:
+
+```json
+{
+  "case_id": "transfer-approved",
+  "status": "passed",
+  "metrics": [
+    {"metric": "tool_args_correct", "score": 1.0, "passed": true},
+    {"metric": "confirmation_required", "score": 1.0, "passed": true}
+  ],
+  "trajectory": {"events": [
+    {"type": "message", "payload": {"role": "confirmation"}},
+    {"type": "tool_call", "payload": {"name": "transfer_funds",
+        "args": {"amount": 200.0}}}],
+   "finish_reason": "done"}
+}
+```
+
+Spot-checks that matter:
+
+```bash
+# any forbidden tool invoked anywhere?
+jq '.results[] | select(.trajectory.events[]? |
+    select(.type=="tool_call") | .payload.name == "wire_external")
+    | .case_id' out/results.json
+
+# transfers that ran without a preceding confirmation event
+jq '.results[] | select(.metrics[] | select(.metric ==
+    "confirmation_required" and .passed == false)) | .case_id' \
+    out/results.json
+```
+
+Failed `tool_args_correct` verdicts show expected vs actual args in
+`details` — a wrong `amount` is a mis-parse bug, not a flaky test.
 
 ## Compliance notes
 

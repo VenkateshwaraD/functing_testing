@@ -4,18 +4,21 @@
 # a confirmation id.
 name: banking-resilience
 
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
+
 target:
   type: python
-  function: "dummy.banking_app:run"
+  function: "apps.banking_app:run"
 
 datasets:
-  - ../dataset_testcases/banking_resilience_cases.yaml
+  - ../../dataset_testcases/banking_resilience_cases.yaml
 
 tools:
   get_balance:
-    function: "dummy.banking_app:get_balance"
+    function: "apps.banking_app:get_balance"
   transfer_funds:
-    function: "dummy.banking_app:transfer_funds"
+    function: "apps.banking_app:transfer_funds"
     requires_confirmation: true
     fault: {error: "core-banking 503"}
     # add `times: N` to fail only the first N calls (recovery testing —

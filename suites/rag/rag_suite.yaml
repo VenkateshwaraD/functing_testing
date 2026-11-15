@@ -1,13 +1,16 @@
 # RAG suite — retrieval + generation + ingestion metrics, offline.
-# dummy.demo_app:rag returns canned retrieval_context so everything replays.
-name: rag-demo
+# apps.demo_app:rag returns canned retrieval_context so everything replays.
+name: payments-rag
+
+judge: {provider: openai, model: GPT-4}
+version_tags: {model: "GPT-6 Luna"}
 
 target:
   type: python
-  function: "dummy.demo_app:rag"
+  function: "apps.demo_app:rag"
 
 datasets:
-  - ../dataset_testcases/rag_cases.yaml
+  - ../../dataset_testcases/rag_cases.yaml
 
 embedder:
   provider: fake
