@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Local scratch / run output
+scratch/
+.aitestkit/
+results.json
+results.jsonl
+aitestkit-report.html
+junit.xml
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

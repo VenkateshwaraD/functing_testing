@@ -1,0 +1,69 @@
+"""Dataset loaders: YAML and JSONL files of test cases.
+
+Case files contain a list of case mappings (or a top-level ``cases:`` list).
+Loaded lazily per-file so large datasets don't all sit in memory at once.
+"""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Iterator
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from aitestkit.exceptions import DatasetError
+from aitestkit.models import TestCase
+
+
+def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
+    with path.open() as fh:
+        payload = yaml.safe_load(fh)
+    if isinstance(payload, dict) and "cases" in payload:
+        payload = payload["cases"]
+    if not isinstance(payload, list):
+        raise DatasetError(f"{path}: expected a list of cases or a 'cases:' mapping")
+    for index, item in enumerate(payload):
+        if not isinstance(item, dict):
+            raise DatasetError(f"{path}: case #{index} is not a mapping")
+        yield item
+
+
+def _iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
+    with path.open() as fh:
+        for line_number, line in enumerate(fh, start=1):
+            if not line.strip():
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError as e:
+                raise DatasetError(f"{path}:{line_number}: invalid JSON") from e
+
+
+def load_cases(path: str | Path) -> list[TestCase]:
+    """Load a dataset file into ``TestCase`` objects (validated by pydantic)."""
+    path = Path(path)
+    if not path.exists():
+        raise DatasetError(f"dataset not found: {path}")
+    if path.suffix in (".yaml", ".yml"):
+        raw_cases = _iter_yaml(path)
+    elif path.suffix == ".jsonl":
+        raw_cases = _iter_jsonl(path)
+    else:
+        raise DatasetError(f"{path}: unsupported extension {path.suffix} (use .yaml/.jsonl)")
+    cases: list[TestCase] = []
+    for index, raw in enumerate(raw_cases):
+        try:
+            case = TestCase.model_validate(raw)
+        except Exception as e:
+            raise DatasetError(f"{path}: case #{index} invalid: {e}") from e
+        if case.id is None:
+            case.id = f"{path.stem}-{index}"
+        cases.append(case)
+    return cases
+
+
+def iter_cases(path: str | Path) -> Iterator[TestCase]:
+    """Lazily iterate cases from a dataset file."""
+    yield from load_cases(path)

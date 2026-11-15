@@ -1,0 +1,142 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aitestkit"
+version = "0.1.0"
+description = "Functional testing framework for agentic AI, RAG pipelines, and LLM applications"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+authors = [{ name = "aitestkit contributors" }]
+keywords = ["llm", "testing", "rag", "agents", "evaluation", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "pydantic>=2.9",
+    "openai>=1.50",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "httpx>=0.27",
+    "jinja2>=3.1",
+    "tiktoken>=0.8",
+    "jsonschema>=4.23",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.39"]
+gemini = ["google-genai>=1.0"]
+litellm = ["litellm>=1.50"]
+langgraph = ["langgraph>=0.2", "langchain-core>=0.3"]
+chroma = ["chromadb>=0.5"]
+faiss = ["faiss-cpu>=1.8"]
+qdrant = ["qdrant-client>=1.11"]
+pgvector = ["pgvector>=0.3", "psycopg[binary]>=3.2"]
+pinecone = ["pinecone>=5.0"]
+gx = ["great-expectations>=1.0"]
+deepeval = ["deepeval>=2.0"]
+ragas = ["ragas>=0.2"]
+otel = ["opentelemetry-sdk>=1.27", "opentelemetry-exporter-otlp-proto-http>=1.27"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=5.0",
+    "ruff>=0.8",
+    "mypy>=1.11",
+    "respx>=0.22",
+    "types-pyyaml>=6.0",
+]
+
+[project.scripts]
+aitestkit = "aitestkit.cli:app"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aitestkit"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/aitestkit/defaults.yaml" = "aitestkit/defaults.yaml"
+"src/aitestkit/tiktoken_data" = "aitestkit/tiktoken_data"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # naming
+    "B",   # bugbear
+    "BLE", # blind except
+    "S",   # bandit
+    "T20", # print
+    "G",   # logging format (f-strings)
+    "PT",  # pytest style
+    "UP",  # pyupgrade (legacy typing)
+    "SIM", # simplify
+    "ASYNC",
+]
+ignore = [
+    "S101", # asserts are fine in tests
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["aitestkit"]
+
+[tool.mypy]
+python_version = "3.13"
+mypy_path = "src"
+packages = ["aitestkit"]
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["yaml.*", "jsonschema.*", "respx.*", "chromadb.*", "faiss.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "langgraph.*", "langchain_core.*", "google.genai.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q"
+markers = [
+    "live: tests that call real provider APIs (require keys)",
+    "integration: tests needing external services (e.g. pgvector)",
+]
+
+[tool.coverage.run]
+source = ["src/aitestkit"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+]

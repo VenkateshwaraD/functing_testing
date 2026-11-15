@@ -1,0 +1,50 @@
+# aitestkit shipped defaults — overridable per-suite and per-invocation.
+# Resolution order: CLI flag > suite config > environment variable > this file.
+
+judge:
+  provider: openai
+  model: gpt-4o-mini
+  temperature: 0.0
+  max_retries: 3
+  timeout_seconds: 60
+  self_consistency: 1
+
+embedder:
+  provider: openai
+  model: text-embedding-3-small
+
+runner:
+  concurrency: 8
+  case_timeout_seconds: 300
+  repeat: 1
+  continue_on_fail: true
+
+guardrails:
+  max_steps: 50
+  wall_clock_seconds: 600
+
+redact:
+  enabled: true
+  patterns:
+    - 'sk-[A-Za-z0-9_-]{20,}'
+    - 'ghp_[A-Za-z0-9]{20,}'
+    - 'github_pat_[A-Za-z0-9_]{20,}'
+    - 'Bearer [A-Za-z0-9._-]{10,}'
+    - '-----BEGIN [A-Z ]+PRIVATE KEY-----'
+
+regression:
+  tolerance: 0.05
+  alpha: 0.05
+
+# Approximate USD per 1M tokens (input/output). Prices change; treat as
+# estimates used for --max-cost-usd budgeting, not billing.
+prices:
+  openai:
+    gpt-4o-mini: {input: 0.15, output: 0.60}
+    gpt-4o: {input: 2.50, output: 10.00}
+    text-embedding-3-small: {input: 0.02, output: 0.0}
+  anthropic:
+    claude-sonnet-4-5: {input: 3.00, output: 15.00}
+    claude-haiku-4-5: {input: 1.00, output: 5.00}
+  gemini:
+    gemini-2.0-flash: {input: 0.10, output: 0.40}
