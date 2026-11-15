@@ -54,6 +54,8 @@ class CommandTarget:
         session_id: str | None = None,
         trace_sink: Any | None = None,
         tool_registry: Any | None = None,
+        prompt: str | None = None,
+        prompt_name: str | None = None,
     ) -> TargetOutput:
         payload = json.dumps(
             {

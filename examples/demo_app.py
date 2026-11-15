@@ -12,3 +12,17 @@ ANSWERS = {
 def answer(input: str, **kwargs: object) -> str:
     """Return a canned answer — stands in for a real AI app."""
     return ANSWERS.get(input.strip().lower(), "I don't know")
+
+
+SEEN_PROMPTS: list[tuple[str | None, str | None]] = []
+
+
+def prompt_echo(
+    input: str,
+    *,
+    prompt: str | None = None,
+    prompt_name: str | None = None,
+) -> str:
+    """Record which prompt variant each call received (matrix tests)."""
+    SEEN_PROMPTS.append((prompt_name, prompt))
+    return f"echo {input}"

@@ -91,6 +91,7 @@ def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     import aitestkit.metrics.ingestion  # noqa: F401
     import aitestkit.metrics.llm_judge  # noqa: F401
     import aitestkit.metrics.memory  # noqa: F401
+    import aitestkit.metrics.prompts  # noqa: F401
     import aitestkit.metrics.rag  # noqa: F401
     import aitestkit.metrics.retrieval  # noqa: F401
     from aitestkit.metrics.registry import build_metric
@@ -340,6 +341,7 @@ async def _run_suite(
         models=suite.models or None,
         conversations=conversations,
         tool_registry=_build_tool_registry(suite),
+        prompts=suite.prompts or None,
     )
     _install_sigint(engine)
     test_run, budget_hit = await engine.run(
@@ -381,6 +383,13 @@ async def _run_suite(
         write_html(test_run, out_dir / "aitestkit-report.html", redactor=redactor)
     if baseline_save:
         save_baseline(test_run, out_dir / f"baseline-{baseline_save}.json", tag=baseline_save)
+    if suite.prompts:
+        from aitestkit.prompts import save_prompt_snapshot, snapshot_prompts
+
+        save_prompt_snapshot(
+            snapshot_prompts(cases, suite.prompts),
+            out_dir / "prompts.json",
+        )
     record_run(test_run, project_dir=suite_path.parent)
     github_actions.emit(test_run, redactor=redactor, suite_path=suite_path)
     return test_run, budget_hit, suite

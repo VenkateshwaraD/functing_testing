@@ -33,7 +33,7 @@ from aitestkit.models import (
 from aitestkit.targets.base import TargetAdapter
 
 if TYPE_CHECKING:
-    pass
+    from aitestkit.config import PromptVariant
 
 logger = get_logger(__name__)
 
@@ -57,6 +57,7 @@ class RunEngine:
         tool_mocks: dict[str, Any] | None = None,
         conversations: list[ConversationCase] | None = None,
         tool_registry: Any | None = None,
+        prompts: list[PromptVariant] | None = None,
     ) -> None:
         self.target = target
         self.metrics = metrics
@@ -69,6 +70,9 @@ class RunEngine:
         self.tool_mocks = tool_mocks
         self.conversations = conversations or []
         self.tool_registry = tool_registry
+        self.prompts: list[PromptVariant | None] = (
+            list(prompts) if prompts else [None]
+        )
         self._spent = Usage()
         self._budget_hit = False
         self._cancelled = False
@@ -92,14 +96,18 @@ class RunEngine:
         semaphore = asyncio.Semaphore(self.concurrency)
         test_run = TestRun(run_id="", results=[])
 
-        async def worker(case: TestCase, model_spec: str | None) -> list[CaseResult]:
+        async def worker(
+            case: TestCase, model_spec: str | None, prompt: PromptVariant | None
+        ) -> list[CaseResult]:
             async with semaphore:
                 if self._cancelled:
                     return [self._skipped_result(case, "run cancelled (SIGINT)")]
                 if self._budget_hit:
                     return [self._skipped_result(case, "budget cap reached earlier")]
                 try:
-                    return await self._run_case(case, model_spec=model_spec)
+                    return await self._run_case(
+                        case, model_spec=model_spec, prompt=prompt
+                    )
                 except BudgetExceededError:
                     self._budget_hit = True
                     return [
@@ -109,10 +117,11 @@ class RunEngine:
                     ]
 
         tasks = [
-            worker(case, model_spec)
+            worker(case, model_spec, prompt)
             for case in cases
             for model_spec in self.models
-            if _effective_id(case, model_spec) not in skip_ids
+            for prompt in self.prompts
+            if _effective_id(case, model_spec, _prompt_name(prompt)) not in skip_ids
         ]
         for gathered in asyncio.as_completed(tasks):
             for result in await gathered:
@@ -187,13 +196,23 @@ class RunEngine:
             tags=case.tags,
         )
 
-    async def _run_case(self, case: TestCase, *, model_spec: str | None) -> list[CaseResult]:
+    async def _run_case(
+        self,
+        case: TestCase,
+        *,
+        model_spec: str | None,
+        prompt: PromptVariant | None = None,
+    ) -> list[CaseResult]:
         provider, model = (
             (model_spec.split(":", 1) + [None])[:2] if model_spec else (None, None)
         )
         outcomes: list[CaseResult] = []
         for _ in range(self.repeat):
-            outcomes.append(await self._run_once(case, provider=provider, model=model))
+            outcomes.append(
+                await self._run_once(
+                    case, provider=provider, model=model, prompt=prompt
+                )
+            )
         if self.repeat == 1:
             return outcomes
         return [self._collapse_repeats(case, outcomes, model_spec)]
@@ -229,12 +248,24 @@ class RunEngine:
         return base
 
     async def _run_once(
-        self, case: TestCase, *, provider: str | None, model: str | None
+        self,
+        case: TestCase,
+        *,
+        provider: str | None,
+        model: str | None,
+        prompt: PromptVariant | None = None,
     ) -> CaseResult:
-        case_id = _effective_id(case, f"{provider}:{model}" if model else None)
+        case_id = _effective_id(
+            case,
+            f"{provider}:{model}" if model else None,
+            _prompt_name(prompt),
+        )
         from aitestkit.tracing.emitter import TraceEmitter
 
         emitter = TraceEmitter()
+        rendered_prompt = (
+            _render_prompt(prompt, case.input) if prompt is not None else None
+        )
         try:
             output = await asyncio.wait_for(
                 self.target.invoke(
@@ -245,6 +276,8 @@ class RunEngine:
                     session_id=case.metadata.get("session_id"),
                     trace_sink=emitter,
                     tool_registry=self.tool_registry,
+                    prompt=rendered_prompt,
+                    prompt_name=_prompt_name(prompt),
                 ),
                 timeout=self.case_timeout,
             )
@@ -258,6 +291,9 @@ class RunEngine:
             output.trajectory = emitter.trajectory
         self._spend(output.usage)
         result = await self._evaluate_metrics(case, output, case_id)
+        if prompt is not None:
+            result.metadata["prompt_name"] = _prompt_name(prompt)
+            result.metadata["rendered_prompt"] = rendered_prompt
         self._spend(result.judge_usage)
         return result
 
@@ -322,7 +358,26 @@ def _sum_usage(usages: Any) -> Usage:
     return total
 
 
-def _effective_id(case: TestCase, model_spec: str | None) -> str:
+def _prompt_name(prompt: PromptVariant | None) -> str | None:
+    return prompt.name if prompt is not None else None
+
+
+def _render_prompt(prompt: PromptVariant, input_text: str) -> str:
+    """Substitute ``{input}`` in a PromptVariant template."""
+    try:
+        return prompt.template.format(input=input_text)
+    except (KeyError, IndexError) as e:
+        raise TargetError(
+            f"prompt {prompt.name!r}: bad template placeholder: {e}"
+        ) from e
+
+
+def _effective_id(
+    case: TestCase, model_spec: str | None, prompt_name: str | None = None
+) -> str:
     """The case_id used in results — matches what resume skips on."""
     base = case.id or "case"
-    return f"{base}[{model_spec}]" if model_spec else base
+    suffix = "".join(
+        f"[{part}]" for part in (model_spec, prompt_name) if part
+    )
+    return f"{base}{suffix}"

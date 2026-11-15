@@ -92,6 +92,17 @@ class MetricSpec(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
 
 
+class PromptVariant(BaseModel):
+    """One named prompt template in the prompt matrix.
+
+    ``{input}`` inside ``template`` is substituted with the case input;
+    targets that accept a ``prompt`` kwarg receive the rendered text.
+    """
+
+    name: str
+    template: str
+
+
 class SuiteConfig(BaseModel):
     """Validated suite definition."""
 
@@ -118,6 +129,8 @@ class SuiteConfig(BaseModel):
     # ^ {store: "module:store"} — inspectable MemoryStore for memory metrics
     tools: dict[str, Any] = Field(default_factory=dict)
     # ^ tool registry spec: name -> {function, requires_confirmation, fault, mock}
+    prompts: list[PromptVariant] = Field(default_factory=list)
+    # ^ prompt matrix — each case runs once per variant (like models:)
     seed: int | None = None
 
     @property

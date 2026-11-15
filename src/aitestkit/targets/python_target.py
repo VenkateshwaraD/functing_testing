@@ -76,6 +76,8 @@ class PythonTarget:
         session_id: str | None = None,
         trace_sink: Any | None = None,
         tool_registry: Any | None = None,
+        prompt: str | None = None,
+        prompt_name: str | None = None,
     ) -> TargetOutput:
         kwargs = self._build_kwargs(
             case,
@@ -85,6 +87,8 @@ class PythonTarget:
             session_id=session_id,
             trace_sink=trace_sink,
             tool_registry=tool_registry,
+            prompt=prompt,
+            prompt_name=prompt_name,
         )
         start = time.perf_counter()
         try:
@@ -109,6 +113,8 @@ class PythonTarget:
         session_id: str | None,
         trace_sink: Any | None,
         tool_registry: Any | None,
+        prompt: str | None,
+        prompt_name: str | None,
     ) -> dict[str, Any]:
         """Pass only kwargs the callable actually accepts (plus input always)."""
         signature = inspect.signature(self._func)
@@ -121,6 +127,8 @@ class PythonTarget:
             "session_id": session_id,
             "trace_sink": trace_sink,
             "tool_registry": tool_registry,
+            "prompt": prompt,
+            "prompt_name": prompt_name,
             **self._extra_kwargs,
         }
         kwargs = {"input": case.input}
