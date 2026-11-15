@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel, Field
 
 from aitestkit.exceptions import ConfigError
@@ -225,6 +226,9 @@ def _normalize_metrics(raw: Any) -> list[MetricSpec]:
 
 def load_suite(path: str | Path) -> SuiteConfig:
     """Load and validate a suite YAML file."""
+    # .env feeds env vars (AITESTKIT_*, API keys); shell env wins. usecwd →
+    # search upward from the working directory, not this module's location.
+    load_dotenv(find_dotenv(usecwd=True))
     path = Path(path)
     if not path.exists():
         raise ConfigError(f"suite file not found: {path}")
