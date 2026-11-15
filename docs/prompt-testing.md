@@ -119,7 +119,31 @@ well-formed.
 
 ## 5. Run
 
-**Option 1 — `.env` at repo root** (auto-loaded, gitignored):
+From the repo root, one command:
+
+```bash
+aitestkit run suites/prompt_testing_suite.yaml
+```
+
+That's it for this suite — no API key, no cost. The command loads the suite,
+runs every test case once per prompt variant, scores each result, and checks
+the gates.
+
+### Do I need an API key?
+
+Look at the suite's `metrics:` list:
+
+| Metrics in the suite | What they do | API key needed? |
+|---|---|---|
+| `prompt_sim`, `exact_match`, `contains`, `regex_match`, `json_schema`, `latency` | check the output on your machine (string compare, regex, prompt linting) | **No** — nothing calls an API |
+| `correctness`, `custom_rubric`, `faithfulness`, `answer_relevancy`, `deepeval`, `ragas` | an LLM "judge" reads the output and grades it | **Yes** — the judge calls a provider and costs money |
+
+`prompt_testing_suite.yaml` only uses the first kind, so it just runs.
+
+### When you DO need a key
+
+Put it in `.env` at the repo root (auto-loaded, gitignored) — one line,
+named after your provider:
 
 ```bash
 # .env — set the key for whichever provider you use:
@@ -130,46 +154,24 @@ AZURE_OPENAI_API_KEY=...          # azure
 # any other provider: <NAME>_API_KEY  e.g. GROQ_API_KEY, MISTRAL_API_KEY
 ```
 
-Any provider works — pick it per run or set a default:
+Then tell the suite which provider/model should judge — per run:
 
 ```bash
-aitestkit run suites/prompt_testing_suite.yaml --judge openai --judge-model gpt-4o-mini
-# or via env:  AITESTKIT_JUDGE_PROVIDER=anthropic AITESTKIT_JUDGE_MODEL=claude-haiku-4-5
+aitestkit run suites/X.yaml --judge openai --judge-model gpt-4o-mini
 ```
 
-**Option 2 — no key needed.** This suite only has deterministic metrics
-(`prompt_sim`, `exact_match`, `contains`) — it runs fully offline.
-
-**One command** — copy-paste this from the repo root:
+…or as defaults in `.env`:
 
 ```bash
-aitestkit run suites/prompt_testing_suite.yaml
+AITESTKIT_JUDGE_PROVIDER=openai
+AITESTKIT_JUDGE_MODEL=gpt-4o-mini
 ```
 
-What each piece means:
-
-| Piece | What it does |
-|---|---|
-| `PYTHONPATH=...` | adds the dir holding your `function:` module — skip it when the app is already installed on the path |
-| `uv run` | runs aitestkit inside the project env (or use `aitestkit` directly / `python -m aitestkit.cli`) |
-| `aitestkit run` | the command — load suite → run cases × prompt variants → score → check gates |
-| `suites/prompt_testing_suite.yaml` | which suite file to run |
-
-**Other forms you may need:**
+Other useful flags:
 
 ```bash
-# choose where results go (default: scratch/)
-aitestkit run suites/X.yaml -o results/my-run
-
-# use an LLM judge — needed when the suite has judge metrics
-# (correctness, custom_rubric, faithfulness...)
-OPENAI_API_KEY=sk-... aitestkit run suites/X.yaml \
-  --judge openai --judge-model gpt-4o-mini
+aitestkit run suites/X.yaml -o results/my-run   # where results go (default: scratch/)
 ```
-
-Not sure which to use? If the suite's `metrics:` list only has
-`prompt_sim`/`exact_match`/`contains`/`regex_match`, the first command is all
-you need — nothing calls an API, nothing costs money.
 
 Console output:
 
