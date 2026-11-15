@@ -247,7 +247,7 @@ Same outputs as any suite (`results.json`, `results.jsonl`,
 
 Exit codes: `0` pass · `1` failures · `2` config · `3` budget · `4`
 guardrail abort · `5` gate failure — so CI fails the job on retrieval or
-faithfulness regressions automatically (see [ci-cd.md](ci-cd.md)).
+faithfulness regressions automatically.
 
 ---
 

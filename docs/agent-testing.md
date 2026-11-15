@@ -302,7 +302,7 @@ aitestkit trends .
 ### In CI
 
 Gate the pipeline on the exit code — the GitLab `check` job runs every
-`suites/*.yaml` the same way (see [ci-cd.md](ci-cd.md)). Keep a cassette +
+`suites/*.yaml` the same way. Keep a cassette +
 `fake` judge for deterministic CI, and run real-LLM agent suites only on a
 schedule with a `max_cost_usd` cap like `live-smoke` does.
 
