@@ -1,4 +1,4 @@
-"""Dataset loaders: YAML and JSONL files of test cases.
+"""Dataset loaders: YAML, JSON, and JSONL files of test cases.
 
 Case files contain a list of case mappings (or a top-level ``cases:`` list).
 Loaded lazily per-file so large datasets don't all sit in memory at once.
@@ -17,9 +17,7 @@ from aitestkit.exceptions import DatasetError
 from aitestkit.models import ConversationCase, TestCase
 
 
-def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
-    with path.open() as fh:
-        payload = yaml.safe_load(fh)
+def _iter_payload(payload: Any, path: Path) -> Iterator[dict[str, Any]]:
     if isinstance(payload, dict) and "cases" in payload:
         payload = payload["cases"]
     elif isinstance(payload, dict) and "conversations" in payload:
@@ -30,6 +28,20 @@ def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
         if not isinstance(item, dict):
             raise DatasetError(f"{path}: case #{index} is not a mapping")
         yield item
+
+
+def _iter_yaml(path: Path) -> Iterator[dict[str, Any]]:
+    with path.open() as fh:
+        payload = yaml.safe_load(fh)
+    yield from _iter_payload(payload, path)
+
+
+def _iter_json(path: Path) -> Iterator[dict[str, Any]]:
+    try:
+        payload = json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        raise DatasetError(f"{path}: invalid JSON: {e}") from e
+    yield from _iter_payload(payload, path)
 
 
 def _iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
@@ -50,10 +62,14 @@ def load_cases(path: str | Path) -> list[TestCase]:
         raise DatasetError(f"dataset not found: {path}")
     if path.suffix in (".yaml", ".yml"):
         raw_cases = _iter_yaml(path)
+    elif path.suffix == ".json":
+        raw_cases = _iter_json(path)
     elif path.suffix == ".jsonl":
         raw_cases = _iter_jsonl(path)
     else:
-        raise DatasetError(f"{path}: unsupported extension {path.suffix} (use .yaml/.jsonl)")
+        raise DatasetError(
+            f"{path}: unsupported extension {path.suffix} (use .yaml/.json/.jsonl)"
+        )
     cases: list[TestCase] = []
     for index, raw in enumerate(raw_cases):
         try:
@@ -69,9 +85,16 @@ def load_cases(path: str | Path) -> list[TestCase]:
 def load_conversations(path: str | Path) -> list[ConversationCase]:
     """Load multi-turn conversation cases from the ``conversations:`` key."""
     path = Path(path)
-    if not path.exists() or path.suffix not in (".yaml", ".yml"):
+    if not path.exists() or path.suffix not in (".yaml", ".yml", ".json"):
         return []
-    payload = yaml.safe_load(path.read_text())
+    try:
+        payload = (
+            json.loads(path.read_text())
+            if path.suffix == ".json"
+            else yaml.safe_load(path.read_text())
+        )
+    except (json.JSONDecodeError, yaml.YAMLError) as e:
+        raise DatasetError(f"{path}: invalid dataset file: {e}") from e
     if not isinstance(payload, dict) or "conversations" not in payload:
         return []
     raw = payload["conversations"]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import os
 import platform
 import shutil
 import subprocess
@@ -76,6 +77,7 @@ def collect_metadata(
         dependency_versions=_dep_versions(),
         judge=judge,
         embedder=embedder,
+        region=os.environ.get("REGION"),
         model_versions=version_tags or {},
         seed=seed,
         config_hash=config_hash,

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import html
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -117,14 +118,35 @@ def _header(test_run: TestRun) -> str:
         f"<span class='badge b-{status}'>{status}: {count}</span>"
         for status, count in sorted(counts.items())
     )
+    sut_model = meta.model_versions.get("model")
     meta_bits = [
+        f"model under test: {_esc(sut_model or 'unset')}",
+        f"judge model: {_esc(meta.judge or 'none')}",
+        f"execution region: {_esc(meta.region or 'unset')}",
+        "execution time: "
+        + _esc(datetime.fromtimestamp(meta.started_at).strftime("%Y-%m-%d %H:%M:%S")),
+        f"execution platform: {_esc(meta.platform.split('-', 1)[0] or '?')}",
         f"run {_esc(test_run.run_id)}",
         f"git {_esc(meta.git_sha or '?')}",
         f"aitestkit {_esc(meta.aitestkit_version)}",
         f"python {_esc(meta.python_version)}",
-        f"judge {_esc(meta.judge or 'none')}",
-        f"config {_esc(meta.config_hash or '?')}",
     ]
+    if meta.embedder:
+        meta_bits.append(f"embedder {_esc(meta.embedder)}")
+    for key, value in sorted(meta.model_versions.items()):
+        if key != "model":
+            meta_bits.append(f"{_esc(key)} {_esc(value)}")
+    if meta.seed is not None:
+        meta_bits.append(f"seed {_esc(meta.seed)}")
+    if meta.dependency_versions:
+        deps = " ".join(
+            f"{name}=={ver}"
+            for name, ver in sorted(meta.dependency_versions.items())
+            if name != "aitestkit"
+        )
+        if deps:
+            meta_bits.append(f"deps {_esc(deps)}")
+    meta_bits.append(f"config {_esc(meta.config_hash or '?')}")
     return (
         f"<header><h1>aitestkit report — {_esc(test_run.suite_name)}</h1>"
         f"<div class='meta'>{' · '.join(meta_bits)}</div>"

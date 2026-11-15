@@ -86,3 +86,8 @@ class TraceEmitter:
 
     def __len__(self) -> int:
         return len(self._events)
+
+    def __bool__(self) -> bool:
+        """A present emitter is truthy even with zero events — keeps the
+        ``trace_sink or _NullSink()`` / ``if trace_sink:`` idiom working."""
+        return True

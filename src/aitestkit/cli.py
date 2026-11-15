@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import sys
 import time
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
 
@@ -230,10 +232,17 @@ def _install_sigint(engine: RunEngine) -> None:
         asyncio.get_running_loop().add_signal_handler(signal.SIGINT, engine.cancel)
 
 
+def _default_out_dir(name: str) -> Path:
+    """Timestamped default output dir: evidence/<YYYYMMDD-HHMMSS>-<slug>."""
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "run"
+    return Path("evidence") / f"{stamp}-{slug}"
+
+
 async def _run_suite(
     suite_path: Path,
     *,
-    out_dir: Path,
+    out_dir: Path | None,
     report_formats: set[str],
     judge_provider: str | None,
     judge_model: str | None,
@@ -264,6 +273,9 @@ async def _run_suite(
     from aitestkit.targets.factory import build_target
 
     suite = load_suite(suite_path)
+    if out_dir is None:
+        out_dir = _default_out_dir(suite.name)
+    out_dir = Path(out_dir)
     cassette = None
     if cassette_file is not None:
         cassette = Cassette(
@@ -504,8 +516,12 @@ def _exit_for(test_run: TestRun, budget_hit: bool) -> ExitCode:
 def run(
     suite_path: Annotated[Path, typer.Argument(help="Path to suite.yaml")],
     out_dir: Annotated[
-        Path, typer.Option("--out", "-o", help="Output directory for reports")
-    ] = Path("scratch"),
+        Path | None,
+        typer.Option(
+            "--out", "-o",
+            help="Output dir (default: evidence/<timestamp>-<suite>)",
+        ),
+    ] = None,
     report: Annotated[
         list[str] | None,
         typer.Option("--report", help="Report formats: console,json,junit,html"),
@@ -567,6 +583,7 @@ def run(
     """Run a test suite."""
     configure_logging(verbose=verbose)
     run_id_var.set(_make_run_id())
+    out_dir = out_dir or _default_out_dir(suite_path.stem)
     try:
         test_run, budget_hit, _suite = asyncio.run(
             _run_suite(
@@ -623,7 +640,7 @@ def _run_exporters(
 @app.command()
 def report(
     results_path: Annotated[Path, typer.Argument(help="Path to results.json")],
-    out_dir: Annotated[Path, typer.Option("--out", "-o")] = Path("scratch"),
+    out_dir: Annotated[Path | None, typer.Option("--out", "-o")] = None,
     report: Annotated[
         list[str] | None, typer.Option("--report")
     ] = None,
@@ -636,6 +653,7 @@ def report(
 
     test_run = load_results(results_path)
     redactor = Redactor()
+    out_dir = out_dir or _default_out_dir(test_run.suite_name or "report")
     out_dir.mkdir(parents=True, exist_ok=True)
     formats = (
         {part.strip() for value in report for part in value.split(",")}

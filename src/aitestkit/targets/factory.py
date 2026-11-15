@@ -69,6 +69,18 @@ def build_target(
             timeout_seconds=config.kwargs.get("timeout_seconds", 120.0),
             env=config.kwargs.get("env"),
         )
+    if config.type == "mcp":
+        from aitestkit.targets.mcp_target import McpTarget
+
+        return McpTarget(
+            command=config.command,
+            url=config.url,
+            allowed=allow_command_targets,
+            tool=config.kwargs.get("tool"),
+            args_template=config.kwargs.get("args_template"),
+            timeout_seconds=config.kwargs.get("timeout_seconds", 60.0),
+            env=config.kwargs.get("env"),
+        )
     if config.type == "custom":
         if not allow_python_targets:
             raise ConfigError(

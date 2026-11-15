@@ -154,7 +154,16 @@ def _tools_to_trajectory(tools: Any) -> Any:
     if not isinstance(tools, list):
         return None
     events = [
-        TraceEvent(type="tool_call", payload={"tool_call": t}, step_index=i)
+        TraceEvent(
+            type="tool_call",
+            payload={
+                "name": t.get("name", ""),
+                "args": t.get("args") or t.get("arguments") or {},
+                "result": t.get("result"),
+            },
+            step_index=i,
+        )
         for i, t in enumerate(tools)
+        if isinstance(t, dict)
     ]
     return Trajectory(events=events)

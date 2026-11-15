@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from aitestkit.rag.chunking import Chunk, _cosine
 
@@ -32,7 +32,7 @@ class FaissVectorStore:
 
         self._np = np
         self._faiss = faiss
-        self._index = faiss.IndexFlatIP(dims)
+        self._index: Any = faiss.IndexFlatIP(dims)
         self._chunks: list[Chunk] = []
         self.embedder = embedder
         self.model = model

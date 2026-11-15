@@ -49,7 +49,7 @@ class EmbedderConfig(BaseModel):
 
 
 class TargetConfig(BaseModel):
-    type: str  # python|http|command
+    type: str  # python|http|command|langgraph|custom|mcp
     function: str | None = None          # python target: module:function
     url: str | None = None               # http target
     method: str = "POST"
@@ -296,7 +296,7 @@ def _validate_suite(suite: SuiteConfig, path: Path) -> None:
     if not suite.datasets and not suite.target:
         raise ConfigError(f"{path}: suite needs at least one of 'datasets' or 'target'")
     if suite.target and suite.target.type not in {
-        "python", "http", "command", "langgraph", "custom",
+        "python", "http", "command", "langgraph", "custom", "mcp",
     }:
         raise ConfigError(f"{path}: unknown target type {suite.target.type!r}")
     if suite.target and suite.target.type == "python" and not suite.target.function:
@@ -307,6 +307,10 @@ def _validate_suite(suite: SuiteConfig, path: Path) -> None:
         raise ConfigError(f"{path}: command target requires 'command: [argv, ...]'")
     if suite.target and suite.target.type == "http" and not suite.target.url:
         raise ConfigError(f"{path}: http target requires 'url'")
+    if suite.target and suite.target.type == "mcp" and not (
+        suite.target.command or suite.target.url
+    ):
+        raise ConfigError(f"{path}: mcp target requires 'command: [argv, ...]' or 'url:'")
     for model_entry in suite.models:
         if ":" not in model_entry:
             raise ConfigError(

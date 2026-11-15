@@ -47,6 +47,9 @@ gx = ["great-expectations>=1.0"]
 deepeval = ["deepeval>=2.0"]
 ragas = ["ragas>=0.2"]
 otel = ["opentelemetry-sdk>=1.27", "opentelemetry-exporter-otlp-proto-http>=1.27"]
+mcp = [
+    "mcp>=1.9",
+]
 
 [dependency-groups]
 dev = [
@@ -115,7 +118,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["yaml.*", "jsonschema.*", "chromadb.*", "faiss.*", "numpy.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "pandas.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
+module = ["yaml.*", "jsonschema.*", "chromadb.*", "faiss.*", "numpy.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "pandas.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*", "mcp.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

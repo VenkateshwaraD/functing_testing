@@ -218,6 +218,7 @@ class RunMetadata(BaseModel):
     dependency_versions: dict[str, str] = Field(default_factory=dict)
     judge: str | None = None
     embedder: str | None = None
+    region: str | None = None  # execution region, e.g. REGION env (qa/uat)
     model_versions: dict[str, str] = Field(default_factory=dict)  # prompt/kb/chunker/embedder
     seed: int | None = None
     config_hash: str | None = None
