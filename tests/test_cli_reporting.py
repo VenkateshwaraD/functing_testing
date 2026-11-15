@@ -18,8 +18,8 @@ from aitestkit.redact import Redactor
 from aitestkit.reporting import attribution, console, coverage, github_actions
 
 
-def _suite_files(tmp_path: Path) -> Path:
-    (tmp_path / "datasets").mkdir()
+def _suite_files(tmp_path: Path, *, min_pass_rate: float = 0.9) -> Path:
+    (tmp_path / "datasets").mkdir(exist_ok=True)
     (tmp_path / "datasets" / "cases.yaml").write_text(
         """cases:
   - id: ok
@@ -32,9 +32,9 @@ def _suite_files(tmp_path: Path) -> Path:
     tags: [banking]
 """
     )
-    suite = tmp_path / "suite.yaml"
+    suite = tmp_path / f"suite-{min_pass_rate}.yaml"
     suite.write_text(
-        """name: cli-e2e
+        f"""name: cli-e2e
 target:
   type: python
   function: demo_app:answer
@@ -46,7 +46,7 @@ judge:
   provider: fake
   model: fake
 gates:
-  min_pass_rate: 0.4
+  min_pass_rate: {min_pass_rate}
 """
     )
     return suite
@@ -62,8 +62,8 @@ def test_cli_run_produces_all_artifacts(tmp_path: Path) -> None:
     result = CliRunner().invoke(
         app, ["run", str(suite), "--out", str(out_dir), "--report", "json,junit,html"]
     )
-    # exit code 1 = test failures (case 'bad' fails) — expected, not a crash
-    assert result.exit_code == 1, result.output
+    # 1/2 pass (0.5) < min_pass_rate 0.9 → gate fails → exit 5 (GATE_FAILURE)
+    assert result.exit_code == 5, result.output
     assert (out_dir / "results.jsonl").exists()
     assert (out_dir / "results.json").exists()
     assert (out_dir / "junit.xml").exists()
@@ -74,6 +74,20 @@ def test_cli_run_produces_all_artifacts(tmp_path: Path) -> None:
     assert statuses["ok"] == "passed"
     assert statuses["bad"] == "failed"
     assert "PASS ok" in result.output
+    assert "FAIL bad" in result.output
+
+
+def test_cli_gate_tolerated_failures_exit_ok(tmp_path: Path) -> None:
+    """A failed case inside the declared tolerance exits 0 — gates are
+    authoritative, not raw case outcomes."""
+    from typer.testing import CliRunner
+
+    from aitestkit.cli import app
+
+    suite = _suite_files(tmp_path, min_pass_rate=0.4)
+    result = CliRunner().invoke(app, ["run", str(suite), "--out", str(tmp_path / "out")])
+    # 0.5 >= 0.4 → the gate tolerates the 'bad' failure
+    assert result.exit_code == 0, result.output
     assert "FAIL bad" in result.output
 
 

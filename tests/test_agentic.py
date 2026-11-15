@@ -101,17 +101,30 @@ async def test_forbidden_tools() -> None:
 
 async def test_confirmation_required() -> None:
     metric = ConfirmationRequired(tools=["delete"])
-    # flagged via ToolCall.requires_confirmation — passes
+    # requires_confirmation is policy metadata, not approval evidence —
+    # without a confirmation event or confirmed flag it now FAILS.
     flagged = TargetOutput(
         tool_calls=[ToolCall(name="delete", requires_confirmation=True)]
     )
-    assert (await metric.measure(_case(), flagged, MetricContext())).passed is True
+    result = await metric.measure(_case(), flagged, MetricContext())
+    assert result.passed is False
+    # explicit per-call approval evidence — passes
+    approved = TargetOutput(tool_calls=[ToolCall(name="delete", confirmed=True)])
+    assert (await metric.measure(_case(), approved, MetricContext())).passed is True
     # confirmation event before call — passes
     emitter = TraceEmitter()
     emitter.emit("confirmation", prompt="delete all?")
     emitter.tool_call("delete")
     confirmed = TargetOutput(trajectory=emitter.trajectory)
     assert (await metric.measure(_case(), confirmed, MetricContext())).passed is True
+    # one confirmation covers only the next call — a repeat is unconfirmed
+    repeat = TraceEmitter()
+    repeat.emit("confirmation", prompt="once?")
+    repeat.tool_call("delete")
+    repeat.tool_call("delete")
+    twice = TargetOutput(trajectory=repeat.trajectory)
+    result = await metric.measure(_case(), twice, MetricContext())
+    assert result.passed is False
     # bare call — fails
     bare = TargetOutput(tool_calls=[ToolCall(name="delete")])
     result = await metric.measure(_case(), bare, MetricContext())
@@ -125,9 +138,29 @@ async def test_loop_detection() -> None:
     output = TargetOutput(trajectory=emitter.trajectory)
     result = await LoopDetection().measure(_case(), output, MetricContext())
     assert result.passed is False
-    assert result.details["loop"]["signature"].endswith(":search")
+    assert "search" in result.details["loop"]["signature"]
     ok = TargetOutput(trajectory=_trajectory(["a", "b", "c"]))
     assert (await LoopDetection().measure(_case(), ok, MetricContext())).passed is True
+
+
+async def test_loop_detection_abab_cycle() -> None:
+    emitter = TraceEmitter()
+    for _ in range(3):
+        emitter.tool_call("search", args={"q": "a"})
+        emitter.tool_call("fetch", args={"id": 1})
+    output = TargetOutput(trajectory=emitter.trajectory)
+    result = await LoopDetection().measure(_case(), output, MetricContext())
+    assert result.passed is False
+    assert result.details["loop"]["period"] == 2
+
+
+async def test_loop_detection_pagination_not_flagged() -> None:
+    emitter = TraceEmitter()
+    for page in range(4):
+        emitter.tool_call("list_txns", args={"page": page})
+    output = TargetOutput(trajectory=emitter.trajectory)
+    result = await LoopDetection().measure(_case(), output, MetricContext())
+    assert result.passed is True
 
 
 async def test_termination_check() -> None:

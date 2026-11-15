@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1d84c8-ed2fe282f7",
+  "run_id": "001a1df426d2c-64b266a869",
   "suite_name": "payments-multi-agent",
   "metadata": {
-    "git_sha": "fdfffc9",
+    "git_sha": "72bb254",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -12,20 +12,465 @@
       "anthropic": "2.8.0",
       "tiktoken": "0.14.0"
     },
-    "judge": "openai:GPT-4",
+    "judge": "fake:fake",
     "embedder": null,
     "region": null,
     "model_versions": {
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "77fe9cfae90e58b4",
+    "config_hash": "d5165af49589780b",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794744616.3367202,
+    "started_at": 1794747035.1492975,
     "finished_at": null
   },
   "results": [
+    {
+      "case_id": "fraud-dispute",
+      "status": "passed",
+      "input": "dispute a fraudulent charge",
+      "actual_output": "flagged for review",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 substrings present",
+          "details": {
+            "found": [
+              "flagged"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "not_contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "0/1 forbidden substrings leaked",
+          "details": {
+            "leaked": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "handoff_correctness",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "handoffs ['fraud-agent'] vs expected ['fraud-agent']",
+          "details": {
+            "expected": [
+              "fraud-agent"
+            ],
+            "actual": [
+              "fraud-agent"
+            ],
+            "missing": [],
+            "unexpected": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_sequence",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 expected tools in order",
+          "details": {
+            "tool_call_diff": {
+              "expected": [
+                "flag_transaction"
+              ],
+              "actual": [
+                "flag_transaction"
+              ],
+              "missing": [],
+              "unexpected": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_args_correct",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "args correct",
+          "details": {
+            "tool_call_diff": {
+              "mismatches": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "termination_check",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "finish_reason=done",
+          "details": {
+            "finish_reason": "done",
+            "steps": 4
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "loop_detection",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "4 steps, no loop",
+          "details": {
+            "loop": null,
+            "steps": 4,
+            "max_steps": 50
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": {
+        "schema_version": 1,
+        "events": [
+          {
+            "type": "thought",
+            "agent_id": "router",
+            "step_index": 0,
+            "timestamp": 1794747035.1280158,
+            "payload": {
+              "text": "routing: dispute a fraudulent charge"
+            }
+          },
+          {
+            "type": "handoff",
+            "agent_id": "router",
+            "step_index": 1,
+            "timestamp": 1794747035.1280572,
+            "payload": {
+              "to_agent": "fraud-agent"
+            }
+          },
+          {
+            "type": "tool_call",
+            "agent_id": "fraud-agent",
+            "step_index": 2,
+            "timestamp": 1794747035.1280665,
+            "payload": {
+              "name": "flag_transaction",
+              "args": {
+                "reason": "dispute a fraudulent charge"
+              },
+              "result": null,
+              "error": null
+            }
+          },
+          {
+            "type": "message",
+            "agent_id": "router",
+            "step_index": 3,
+            "timestamp": 1794747035.128078,
+            "payload": {
+              "role": "assistant",
+              "content": "flagged for review"
+            }
+          }
+        ],
+        "finish_reason": "done"
+      },
+      "latency_ms": 1.5279819999705069,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "multi-agent",
+        "banking",
+        "fraud"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "wire-request",
+      "status": "passed",
+      "input": "wire $5000 to vendor",
+      "actual_output": "wire initiated: $5000",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "contains",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "2/2 substrings present",
+          "details": {
+            "found": [
+              "wire initiated",
+              "$5000"
+            ],
+            "missing": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "handoff_correctness",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "handoffs ['payments-agent'] vs expected ['payments-agent']",
+          "details": {
+            "expected": [
+              "payments-agent"
+            ],
+            "actual": [
+              "payments-agent"
+            ],
+            "missing": [],
+            "unexpected": []
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_sequence",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "1/1 expected tools in order",
+          "details": {
+            "tool_call_diff": {
+              "expected": [
+                "initiate_wire"
+              ],
+              "actual": [
+                "initiate_wire"
+              ],
+              "missing": [],
+              "unexpected": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "tool_args_correct",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "args correct",
+          "details": {
+            "tool_call_diff": {
+              "mismatches": []
+            }
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "termination_check",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "finish_reason=done",
+          "details": {
+            "finish_reason": "done",
+            "steps": 4
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        },
+        {
+          "metric": "loop_detection",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "4 steps, no loop",
+          "details": {
+            "loop": null,
+            "steps": 4,
+            "max_steps": 50
+          },
+          "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": 0.0,
+            "provider": null,
+            "model": null
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": {
+        "schema_version": 1,
+        "events": [
+          {
+            "type": "thought",
+            "agent_id": "router",
+            "step_index": 0,
+            "timestamp": 1794747035.1301157,
+            "payload": {
+              "text": "routing: wire $5000 to vendor"
+            }
+          },
+          {
+            "type": "handoff",
+            "agent_id": "router",
+            "step_index": 1,
+            "timestamp": 1794747035.1301413,
+            "payload": {
+              "to_agent": "payments-agent"
+            }
+          },
+          {
+            "type": "tool_call",
+            "agent_id": "payments-agent",
+            "step_index": 2,
+            "timestamp": 1794747035.13016,
+            "payload": {
+              "name": "initiate_wire",
+              "args": {
+                "amount": 5000.0
+              },
+              "result": null,
+              "error": null
+            }
+          },
+          {
+            "type": "message",
+            "agent_id": "router",
+            "step_index": 3,
+            "timestamp": 1794747035.13017,
+            "payload": {
+              "role": "assistant",
+              "content": "wire initiated: $5000"
+            }
+          }
+        ],
+        "finish_reason": "done"
+      },
+      "latency_ms": 1.0957860031339806,
+      "judge_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "multi-agent",
+        "banking",
+        "wire"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
     {
       "case_id": "fraudulent-wire",
       "status": "passed",
@@ -70,7 +515,8 @@
               "payments-agent",
               "fraud-agent"
             ],
-            "missing": []
+            "missing": [],
+            "unexpected": []
           },
           "usage": {
             "prompt_tokens": 0,
@@ -177,7 +623,7 @@
             "type": "thought",
             "agent_id": "router",
             "step_index": 0,
-            "timestamp": 1794744616.313299,
+            "timestamp": 1794747035.1294296,
             "payload": {
               "text": "routing: a fraudulent wire appeared on my statement"
             }
@@ -186,7 +632,7 @@
             "type": "handoff",
             "agent_id": "router",
             "step_index": 1,
-            "timestamp": 1794744616.3133335,
+            "timestamp": 1794747035.1294477,
             "payload": {
               "to_agent": "payments-agent"
             }
@@ -195,7 +641,7 @@
             "type": "tool_call",
             "agent_id": "payments-agent",
             "step_index": 2,
-            "timestamp": 1794744616.313344,
+            "timestamp": 1794747035.1294591,
             "payload": {
               "name": "initiate_wire",
               "args": {
@@ -209,7 +655,7 @@
             "type": "handoff",
             "agent_id": "router",
             "step_index": 3,
-            "timestamp": 1794744616.313358,
+            "timestamp": 1794747035.1299238,
             "payload": {
               "to_agent": "fraud-agent"
             }
@@ -218,7 +664,7 @@
             "type": "tool_call",
             "agent_id": "fraud-agent",
             "step_index": 4,
-            "timestamp": 1794744616.3133676,
+            "timestamp": 1794747035.1299355,
             "payload": {
               "name": "flag_transaction",
               "args": {
@@ -232,16 +678,16 @@
             "type": "message",
             "agent_id": "router",
             "step_index": 5,
-            "timestamp": 1794744616.3133738,
+            "timestamp": 1794747035.1299453,
             "payload": {
               "role": "assistant",
               "content": "wire initiated: $0; flagged for review"
             }
           }
         ],
-        "finish_reason": null
+        "finish_reason": "done"
       },
-      "latency_ms": 1.466970999899786,
+      "latency_ms": 3.1169760004559066,
       "judge_usage": {
         "prompt_tokens": 0,
         "completion_tokens": 0,
@@ -262,449 +708,6 @@
         "banking",
         "fraud",
         "edge"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
-    {
-      "case_id": "fraud-dispute",
-      "status": "passed",
-      "input": "dispute a fraudulent charge",
-      "actual_output": "flagged for review",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 substrings present",
-          "details": {
-            "found": [
-              "flagged"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "not_contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "0/1 forbidden substrings leaked",
-          "details": {
-            "leaked": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "handoff_correctness",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "handoffs ['fraud-agent'] vs expected ['fraud-agent']",
-          "details": {
-            "expected": [
-              "fraud-agent"
-            ],
-            "actual": [
-              "fraud-agent"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_sequence",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 expected tools in order",
-          "details": {
-            "tool_call_diff": {
-              "expected": [
-                "flag_transaction"
-              ],
-              "actual": [
-                "flag_transaction"
-              ],
-              "missing": [],
-              "unexpected": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_args_correct",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "args correct",
-          "details": {
-            "tool_call_diff": {
-              "mismatches": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "termination_check",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "finish_reason=done",
-          "details": {
-            "finish_reason": "done",
-            "steps": 4
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "loop_detection",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "4 steps, no loop",
-          "details": {
-            "loop": null,
-            "steps": 4,
-            "max_steps": 50
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": {
-        "schema_version": 1,
-        "events": [
-          {
-            "type": "thought",
-            "agent_id": "router",
-            "step_index": 0,
-            "timestamp": 1794744616.31468,
-            "payload": {
-              "text": "routing: dispute a fraudulent charge"
-            }
-          },
-          {
-            "type": "handoff",
-            "agent_id": "router",
-            "step_index": 1,
-            "timestamp": 1794744616.3146925,
-            "payload": {
-              "to_agent": "fraud-agent"
-            }
-          },
-          {
-            "type": "tool_call",
-            "agent_id": "fraud-agent",
-            "step_index": 2,
-            "timestamp": 1794744616.3147,
-            "payload": {
-              "name": "flag_transaction",
-              "args": {
-                "reason": "dispute a fraudulent charge"
-              },
-              "result": null,
-              "error": null
-            }
-          },
-          {
-            "type": "message",
-            "agent_id": "router",
-            "step_index": 3,
-            "timestamp": 1794744616.3147073,
-            "payload": {
-              "role": "assistant",
-              "content": "flagged for review"
-            }
-          }
-        ],
-        "finish_reason": null
-      },
-      "latency_ms": 0.548838001122931,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "multi-agent",
-        "banking",
-        "fraud"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
-    {
-      "case_id": "wire-request",
-      "status": "passed",
-      "input": "wire $5000 to vendor",
-      "actual_output": "wire initiated: $5000",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "contains",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "2/2 substrings present",
-          "details": {
-            "found": [
-              "wire initiated",
-              "$5000"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "handoff_correctness",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "handoffs ['payments-agent'] vs expected ['payments-agent']",
-          "details": {
-            "expected": [
-              "payments-agent"
-            ],
-            "actual": [
-              "payments-agent"
-            ],
-            "missing": []
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_sequence",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "1/1 expected tools in order",
-          "details": {
-            "tool_call_diff": {
-              "expected": [
-                "initiate_wire"
-              ],
-              "actual": [
-                "initiate_wire"
-              ],
-              "missing": [],
-              "unexpected": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "tool_args_correct",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "args correct",
-          "details": {
-            "tool_call_diff": {
-              "mismatches": []
-            }
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "termination_check",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "finish_reason=done",
-          "details": {
-            "finish_reason": "done",
-            "steps": 4
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        },
-        {
-          "metric": "loop_detection",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "4 steps, no loop",
-          "details": {
-            "loop": null,
-            "steps": 4,
-            "max_steps": 50
-          },
-          "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "provider": null,
-            "model": null
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": {
-        "schema_version": 1,
-        "events": [
-          {
-            "type": "thought",
-            "agent_id": "router",
-            "step_index": 0,
-            "timestamp": 1794744616.3144925,
-            "payload": {
-              "text": "routing: wire $5000 to vendor"
-            }
-          },
-          {
-            "type": "handoff",
-            "agent_id": "router",
-            "step_index": 1,
-            "timestamp": 1794744616.3145492,
-            "payload": {
-              "to_agent": "payments-agent"
-            }
-          },
-          {
-            "type": "tool_call",
-            "agent_id": "payments-agent",
-            "step_index": 2,
-            "timestamp": 1794744616.314575,
-            "payload": {
-              "name": "initiate_wire",
-              "args": {
-                "amount": 5000.0
-              },
-              "result": null,
-              "error": null
-            }
-          },
-          {
-            "type": "message",
-            "agent_id": "router",
-            "step_index": 3,
-            "timestamp": 1794744616.3146064,
-            "payload": {
-              "role": "assistant",
-              "content": "wire initiated: $5000"
-            }
-          }
-        ],
-        "finish_reason": null
-      },
-      "latency_ms": 2.5612770004954655,
-      "judge_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "multi-agent",
-        "banking",
-        "wire"
       ],
       "repeat": {},
       "session_id": null,
@@ -731,7 +734,7 @@
       "name": "max_flaky",
       "passed": true,
       "actual": 0.0,
-      "expected": "<= 0.0",
+      "expected": "<= 0.0 (fraction)",
       "detail": ""
     },
     {

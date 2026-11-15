@@ -155,7 +155,13 @@ def build_registry(
             name, fn, requires_confirmation=tool_cfg.get("requires_confirmation", False)
         )
         if "fault" in tool_cfg:
-            registry.inject_fault(name, ToolFault(**tool_cfg["fault"]))
+            try:
+                registry.inject_fault(name, ToolFault(**tool_cfg["fault"]))
+            except TypeError as e:
+                raise ConfigError(
+                    f"tools.{name}.fault: {e} — valid keys: "
+                    "error, timeout_ms, malformed, times"
+                ) from e
         if "mock" in tool_cfg:
             registry.mock_result(name, tool_cfg["mock"])
     return registry

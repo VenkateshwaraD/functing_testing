@@ -106,7 +106,7 @@ models:
   - "gemini:gemini-2.0-flash"
 
 providers:                                # per-provider knobs
-  openai:    {provider: openai, model: gpt-4o-mini, rpm: 500, tpm: 200000}
+  openai:    {provider: openai, model: gpt-4o-mini, rpm: 500}
   anthropic: {provider: anthropic, model: claude-haiku-4-5, rpm: 50}
   gemini:    {provider: gemini, model: gemini-2.0-flash, rpm: 60}
 

@@ -135,11 +135,13 @@ def _build_ctx(
         provider_cfg = suite.providers.get(provider_name)
         provider: ChatProvider | None = None
         if cassette is None or cassette.mode == "record":
+            api_key = _api_key_for(provider_name, provider_cfg, suite.judge.api_key_env)
             provider = make_chat_provider(
                 provider_name,
                 rpm=provider_cfg.rpm if provider_cfg else None,
                 impl=provider_cfg.impl if provider_cfg else None,
                 allow_custom=allow_python,
+                **({"api_key": api_key} if api_key else {}),
             )
         if cassette is not None:
             provider = CassetteChatProvider(provider, cassette, name=provider_name)
@@ -150,6 +152,9 @@ def _build_ctx(
             model=model,
             temperature=suite.judge.temperature,
             self_consistency=suite.judge.self_consistency,
+            max_retries=suite.judge.max_retries,
+            timeout_seconds=suite.judge.timeout_seconds,
+            seed=suite.seed,
         )
         for entry in suite.models:
             sut_provider, _, sut_model = entry.partition(":")
@@ -168,11 +173,15 @@ def _build_ctx(
         embed_cfg = suite.providers.get(suite.embedder.provider)
         inner = None
         if cassette is None or cassette.mode == "record":
+            api_key = _api_key_for(
+                suite.embedder.provider, embed_cfg, suite.embedder.api_key_env
+            )
             inner = make_embedder(
                 suite.embedder.provider,
                 rpm=embed_cfg.rpm if embed_cfg else None,
                 impl=embed_cfg.impl if embed_cfg else None,
                 allow_custom=allow_python,
+                **({"api_key": api_key} if api_key else {}),
             )
         embedder = (
             CassetteEmbedder(inner, cassette, name=suite.embedder.provider)
@@ -198,6 +207,31 @@ def _build_tool_registry(
     return build_registry(suite.tools or None, allow_python=allow_python)
 
 
+def _api_key_for(
+    provider_name: str,
+    provider_cfg: Any,
+    api_key_env: str | None,
+) -> str | None:
+    """Resolve a non-default key env var for a provider.
+
+    ``judge.api_key_env``/``embedder.api_key_env`` override
+    ``providers.<name>.api_key_env``. Only fires when an env var is
+    explicitly named — otherwise the provider reads its own default.
+    """
+    env_name = api_key_env or (provider_cfg.api_key_env if provider_cfg else None)
+    if not env_name:
+        return None
+    import os
+
+    value = os.environ.get(env_name)
+    if not value:
+        raise ConfigError(
+            f"{provider_name}: api_key_env={env_name} is configured but "
+            "the variable is not set — export it or fix the name"
+        )
+    return value
+
+
 def _reject_python_code_paths(
     suite: SuiteConfig, *, judge_provider: str | None = None
 ) -> None:
@@ -221,12 +255,8 @@ def _reject_python_code_paths(
     ):
         if name and ":" in name:
             paths.append(f"{label}={name!r}")
-    targets = [suite.target, *suite.stage_targets.values()]
-    paths.extend(
-        f"target.type={t.type!r}"
-        for t in targets
-        if t is not None and t.type in {"python", "langgraph", "custom"}
-    )
+    if suite.target and suite.target.type in {"python", "langgraph", "custom"}:
+        paths.append(f"target.type={suite.target.type!r}")
     if paths:
         raise ConfigError(
             "--no-allow-python-targets rejects suite code-loading keys: "
@@ -593,9 +623,12 @@ def _run_metadata(
 def _exit_for(test_run: TestRun, budget_hit: bool) -> ExitCode:
     """Exit code from evaluated gates first, then explicit outcome counts.
 
-    Gate results win (they encode declared tolerances). Ungated outcomes
-    still count: errors abort, and flaky cases with no ``max_flaky`` gate
-    declared are instability, not a pass.
+    Gates are authoritative for what they measure: a run with failed cases
+    exits 0 when its ``min_pass_rate`` gate tolerates them, errors are fine
+    when ``max_error_cases`` allows them, flaky when ``max_flaky``/
+    ``max_flaky_cases`` allows them. Ungated outcomes still count — an
+    error with no error gate declared aborts, instability with no flaky
+    gate fails, and a failed case with no pass-rate gate fails.
     """
     from aitestkit.models import CaseStatus
 
@@ -603,14 +636,23 @@ def _exit_for(test_run: TestRun, budget_hit: bool) -> ExitCode:
         return ExitCode.BUDGET_EXCEEDED
     if any(g.passed is False for g in test_run.gates):
         return ExitCode.GATE_FAILURE
-    errors = sum(r.status == CaseStatus.ERROR for r in test_run.results)
-    if errors:
+    gate_names = {g.name for g in test_run.gates}
+    results = test_run.results
+    if (
+        any(r.status == CaseStatus.ERROR for r in results)
+        and "max_error_cases" not in gate_names
+    ):
         return ExitCode.ENFORCEMENT_ABORT
-    flaky = sum(r.status == CaseStatus.FLAKY for r in test_run.results)
-    flaky_gated = any(g.name == "max_flaky" for g in test_run.gates)
-    if flaky and not flaky_gated:
+    if (
+        any(r.status == CaseStatus.FLAKY for r in results)
+        and "max_flaky" not in gate_names
+        and "max_flaky_cases" not in gate_names
+    ):
         return ExitCode.TEST_FAILURES
-    if any(r.status == CaseStatus.FAILED for r in test_run.results):
+    if (
+        any(r.status == CaseStatus.FAILED for r in results)
+        and "min_pass_rate" not in gate_names
+    ):
         return ExitCode.TEST_FAILURES
     return ExitCode.OK
 

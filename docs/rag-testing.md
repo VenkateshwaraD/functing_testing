@@ -75,8 +75,8 @@ another calls `myapp:generate` with `context` provided in the dataset
 (scored by `faithfulness`). This isolates retrieval regressions from
 generation regressions.
 
-> Note: `stage_targets:` is declared in the config schema but not yet wired
-> into the runner — separate suites per stage is the working approach.
+> Note: separate suites per stage is the working approach — the strict
+> config schema rejects a `stage_targets:` key outright.
 
 ---
 

@@ -13,8 +13,8 @@ other docs required.
  same suite ────────┼─ fault injection ───► recovery behavior scored
  run over time      │   (tool errors, timeouts, malformed results)
                     │
-                    ├─ guardrails ────────► max_steps / wall_clock aborts
-                    │
+                    ├─ loop_detection ────► runaway repetition scored 0
+                    │   + case_timeout_seconds (hung case → ERROR)
                     └─ baseline + trends ─► regression gate → exit code
 ```
 
@@ -24,7 +24,7 @@ machinery:
 1. **Is it consistent?** — same input, same verdict? (`repeat`, `max_flaky`,
    `seed`, `self_consistency`)
 2. **Is it resilient?** — what happens when tools/APIs fail? (fault
-   injection, guardrails)
+   injection, `loop_detection`, `case_timeout_seconds`)
 3. **Is it stable over time?** — did this change make it worse?
    (baselines, `compare`, `trends`, `version_tags`)
 
@@ -116,13 +116,13 @@ metrics:
   - name: task_completion          # still finished the job despite failures
 ```
 
-Guardrails bound the blast radius while you do this:
+Bound the blast radius while you do this:
 
 ```yaml
-guardrails:
-  max_steps: 25                    # runaway loop → abort, exit code 4
-  wall_clock_seconds: 120          # hung agent → abort, exit code 4
-case_timeout_seconds: 60
+metrics:
+  - name: loop_detection           # runaway loops score 0 — not an abort
+    max_steps: 25                  #   (cap + repeated-signature detection)
+case_timeout_seconds: 60           # hung case → ERROR, exit 4 ungated
 max_cost_usd: 1.00                 # retry storms can't drain budget → exit 3
 ```
 
@@ -182,7 +182,7 @@ aitestkit run suite.yaml --cassette cassettes/rel.jsonl   # replay, zero keys
 
 Replay mode + `fake` judge = a fully deterministic reliability gate that
 can run on every commit. Provider-side retries/throttling
-(`max_retries`, per-provider `rpm`/`tpm`) keep real runs stable too.
+(`judge.max_retries`, per-provider `rpm`) keep real runs stable too.
 
 ## Reference suite
 
@@ -197,7 +197,6 @@ concurrency: 4
 case_timeout_seconds: 60
 max_cost_usd: 1.00
 
-guardrails: {max_steps: 25, wall_clock_seconds: 120}
 version_tags: {prompt: v7, agent: "react-v2"}
 
 tools:

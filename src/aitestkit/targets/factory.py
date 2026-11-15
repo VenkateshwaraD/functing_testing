@@ -42,7 +42,7 @@ def build_target(
             context_path=config.context_path,
             tools_path=config.tools_path,
             timeout_seconds=config.kwargs.get("timeout_seconds", 60.0),
-            method=config.kwargs.get("method", "POST"),
+            method=config.kwargs.get("method") or config.method,
         )
     if config.type == "langgraph":
         if not allow_python_targets:

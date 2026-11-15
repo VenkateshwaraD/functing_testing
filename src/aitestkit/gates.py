@@ -35,11 +35,11 @@ def evaluate_gates(
 def _pass_rate_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
     if gates.min_pass_rate is None:
         return []
-    judged = [
-        r
-        for r in test_run.results
-        if r.status in {CaseStatus.PASSED, CaseStatus.FAILED, CaseStatus.XFAIL}
-    ]
+    # Denominator = every case that executed — errors and flaky count as
+    # non-passing so a crashing/unstable SUT can't evade the rate by
+    # shrinking the denominator. Only skipped cases are excluded (they
+    # have their own max_skip_rate gate).
+    judged = [r for r in test_run.results if r.status != CaseStatus.SKIPPED]
     if not judged:
         return [
             GateResult(
@@ -78,19 +78,29 @@ def _error_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
 
 
 def _flaky_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:
-    if gates.max_flaky is None:
-        return []
-    total = len(test_run.results)
+    results: list[GateResult] = []
     flaky = sum(r.status == CaseStatus.FLAKY for r in test_run.results)
-    fraction = flaky / total if total else 0.0
-    return [
-        GateResult(
-            name="max_flaky",
-            passed=fraction <= gates.max_flaky,
-            actual=round(fraction, 4),
-            expected=f"<= {gates.max_flaky}",
+    if gates.max_flaky is not None:
+        total = len(test_run.results)
+        fraction = flaky / total if total else 0.0
+        results.append(
+            GateResult(
+                name="max_flaky",
+                passed=fraction <= gates.max_flaky,
+                actual=round(fraction, 4),
+                expected=f"<= {gates.max_flaky} (fraction)",
+            )
         )
-    ]
+    if gates.max_flaky_cases is not None:
+        results.append(
+            GateResult(
+                name="max_flaky_cases",
+                passed=flaky <= gates.max_flaky_cases,
+                actual=flaky,
+                expected=f"<= {gates.max_flaky_cases} cases",
+            )
+        )
+    return results
 
 
 def _skip_rate_gate(test_run: TestRun, gates: GatesConfig) -> list[GateResult]:

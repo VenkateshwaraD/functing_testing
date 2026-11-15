@@ -11,6 +11,7 @@ memory testing from re-asking the model. Case metadata drives each check:
 
 from __future__ import annotations
 
+from aitestkit.judge.judge import wrap_untrusted
 from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.metrics.deterministic import _result
 from aitestkit.metrics.registry import register
@@ -184,7 +185,10 @@ class MemoryAccuracy(BaseMetric):
         judge = ctx.require_judge(self.name)
         facts_text = "\n".join(f"- {k}: {v}" for k, v in facts.items())
         verdict, usage = await judge.evaluate(
-            _MEMORY_PROMPT.format(facts=facts_text, answer=output.output or "")
+            _MEMORY_PROMPT.format(
+                facts=wrap_untrusted(facts_text, label="MEMORY"),
+                answer=wrap_untrusted(output.output or "", label="ANSWER"),
+            )
         )
         return MetricResult(
             metric=self.name,

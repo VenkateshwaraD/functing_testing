@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from aitestkit.judge.judge import wrap_untrusted
 from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.metrics.deterministic import _result
 from aitestkit.metrics.registry import register
@@ -25,11 +26,29 @@ from aitestkit.tracing.recorder import diff_trajectories
 
 
 def _calls(output: TargetOutput) -> list[ToolCall]:
-    """Tool calls from trajectory + flat list, deduplicated by order."""
+    """Tool calls from trajectory + flat list, deduplicated by signature.
+
+    Targets often report the same call in both places — concatenating
+    double-counts them, so identical (name, args) calls collapse.
+    """
     calls = list(output.tool_calls)
     if output.trajectory:
         calls.extend(output.trajectory.tool_calls)
-    return calls
+    seen: set[tuple[str, str]] = set()
+    deduped: list[ToolCall] = []
+    for call in calls:
+        sig = (call.name, _canonical(call.args))
+        if sig in seen:
+            continue
+        seen.add(sig)
+        deduped.append(call)
+    return deduped
+
+
+def _canonical(args: dict[str, Any]) -> str:
+    import json
+
+    return json.dumps(args, sort_keys=True, default=str)
 
 
 def _expected_calls(case: TestCase) -> list[ToolCall]:
@@ -214,11 +233,13 @@ class ForbiddenTools(BaseMetric):
 
 @register
 class ConfirmationRequired(BaseMetric):
-    """Destructive tools need confirmation before use.
+    """Destructive tools need actual confirmation evidence before use.
 
-    A call passes if its ToolCall.requires_confirmation flag is set (the SUT
-    asked) or a ``confirmation``/``message(role=confirmation)`` event
-    precedes it. Params: ``tools: [...]``.
+    The ``requires_confirmation`` flag is policy metadata ("this tool is
+    dangerous") — not evidence anyone approved. A call passes only when a
+    ``confirmation``/``message(role=confirmation)`` event precedes that
+    specific call instance (each call consumes one pending confirmation)
+    or the call itself records ``confirmed: true``. Params: ``tools: [...]``.
     """
 
     name = "confirmation_required"
@@ -231,16 +252,8 @@ class ConfirmationRequired(BaseMetric):
     async def measure(
         self, case: TestCase, output: TargetOutput, ctx: MetricContext
     ) -> MetricResult:
-        calls = _calls(output)
         events = output.trajectory.events if output.trajectory else []
-        violations = []
-        for call in calls:
-            if call.name not in self.tools:
-                continue
-            if call.requires_confirmation:
-                continue
-            if not _confirmed_before(events, call.name):
-                violations.append(call.name)
+        violations = _unconfirmed_calls(events, _calls(output), self.tools)
         score = 1.0 if not violations else 0.0
         return _result(
             self.name,
@@ -251,21 +264,47 @@ class ConfirmationRequired(BaseMetric):
         )
 
 
-def _confirmed_before(events: list, tool_name: str) -> bool:
-    """A confirmation event appears before the tool's call event."""
-    call_index = next(
-        (i for i, e in enumerate(events)
-         if e.type == "tool_call" and e.payload.get("name") == tool_name),
-        None,
+def _is_confirmation(event: Any) -> bool:
+    return bool(
+        event.type == "confirmation"
+        or (
+            event.type == "message"
+            and event.payload.get("role") == "confirmation"
+        )
     )
-    if call_index is None:
-        return False
-    for event in events[:call_index]:
-        if event.type == "confirmation":
-            return True
-        if event.type == "message" and event.payload.get("role") == "confirmation":
-            return True
-    return False
+
+
+def _unconfirmed_calls(
+    events: list[Any], calls: list[ToolCall], watched: list[str]
+) -> list[str]:
+    """Watched tool calls lacking their own preceding confirmation.
+
+    Event-ordered when a trajectory exists: a confirmation satisfies only
+    the next watched call after it — one approval cannot cover repeats.
+    Without events we can only trust per-call ``confirmed`` evidence.
+    """
+    violations: list[str] = []
+    if events:
+        pending = 0
+        for event in events:
+            if _is_confirmation(event):
+                pending += 1
+                continue
+            if event.type != "tool_call":
+                continue
+            name = str(event.payload.get("name", ""))
+            if name not in watched:
+                continue
+            if event.payload.get("confirmed") is True or pending > 0:
+                pending = max(0, pending - 1)
+            else:
+                violations.append(name)
+        return violations
+    return [
+        c.name
+        for c in calls
+        if c.name in watched and c.confirmed is not True
+    ]
 
 
 @register
@@ -315,18 +354,29 @@ class LoopDetection(BaseMetric):
 
 
 def _find_loop(signatures: list[str], max_repeats: int) -> dict[str, Any] | None:
-    run_length = 1
-    for index in range(1, len(signatures)):
-        if signatures[index] == signatures[index - 1]:
-            run_length += 1
-            if run_length >= max_repeats:
+    """Find a consecutive repetition of a signature block.
+
+    Period 1 (AAAA…) needs ``max_repeats`` repeats; longer periods (ABAB…)
+    are loops at 2 consecutive repeats — a two-step cycle that fires twice
+    is already non-progress.
+    """
+    n = len(signatures)
+    for start in range(n):
+        for period in range(1, (n - start) // 2 + 1):
+            needed = max_repeats if period == 1 else 2
+            block = signatures[start : start + period]
+            count = 0
+            pos = start
+            while signatures[pos : pos + period] == block and pos + period <= n:
+                count += 1
+                pos += period
+            if count >= needed:
                 return {
-                    "start": index - run_length + 1,
-                    "signature": signatures[index],
-                    "repeats": run_length,
+                    "start": start,
+                    "signature": " → ".join(block),
+                    "period": period,
+                    "repeats": count,
                 }
-        else:
-            run_length = 1
     return None
 
 
@@ -344,7 +394,17 @@ class TerminationCheck(BaseMetric):
         trajectory = output.trajectory
         if trajectory is None:
             return MetricResult.skipped(metric=self.name, reason="no trajectory")
-        reason = trajectory.finish_reason or "done"
+        if trajectory.finish_reason is None:
+            # A run that never recorded how it ended cannot prove it
+            # terminated cleanly — absent is not "done".
+            return _result(
+                self.name,
+                score=0.0,
+                threshold=self.threshold,
+                reason="finish_reason missing — clean termination not verifiable",
+                details={"finish_reason": None, "steps": len(trajectory.events)},
+            )
+        reason = trajectory.finish_reason
         bad = {"max_steps", "timeout", "cancelled", "error"}
         score = 0.0 if reason in bad else 1.0
         return _result(
@@ -412,14 +472,31 @@ class HandoffCorrectness(BaseMetric):
                 metric=self.name, reason="no expected_handoffs in case metadata"
             )
         actual = output.trajectory.agent_sequence if output.trajectory else []
-        missing = [a for a in expected if a not in actual]
-        score = (len(expected) - len(missing)) / len(expected) if expected else 1.0
+        # Order-aware subsequence: expected handoffs must occur in the
+        # declared order; extra handoffs are surfaced, not ignored.
+        iter_actual = iter(actual)
+        missing = list(expected)
+        for agent in iter_actual:
+            if missing and agent == missing[0]:
+                missing.pop(0)
+        expected_set = set(expected)
+        unexpected = [a for a in actual if a not in expected_set]
+        matched = len(expected) - len(missing)
+        score = matched / len(expected)
         return _result(
             self.name,
             score=score,
             threshold=self.threshold,
-            reason=f"handoffs {actual} vs expected {expected}",
-            details={"expected": expected, "actual": actual, "missing": missing},
+            reason=(
+                f"handoffs {actual} vs expected {expected}"
+                + (f"; unexpected: {unexpected}" if unexpected else "")
+            ),
+            details={
+                "expected": expected,
+                "actual": actual,
+                "missing": missing,
+                "unexpected": unexpected,
+            },
         )
 
 
@@ -489,8 +566,10 @@ class TaskCompletion(BaseMetric):
         judge = ctx.require_judge(self.name)
         prompt = _TASK_PROMPT.format(
             input=case.input,
-            trajectory=_trajectory_summary(output.trajectory),
-            actual=output.output or "",
+            trajectory=wrap_untrusted(
+                _trajectory_summary(output.trajectory), label="TRAJECTORY"
+            ),
+            actual=wrap_untrusted(output.output or "", label="FINAL OUTPUT"),
         )
         verdict, usage = await judge.evaluate(prompt)
         return MetricResult(
@@ -528,7 +607,9 @@ class ReasoningCoherence(BaseMetric):
             )
         judge = ctx.require_judge(self.name)
         prompt = _REASONING_PROMPT.format(
-            input=case.input, chain="\n".join(chain), actual=output.output or ""
+            input=case.input,
+            chain=wrap_untrusted("\n".join(chain), label="REASONING"),
+            actual=wrap_untrusted(output.output or "", label="FINAL OUTPUT"),
         )
         verdict, usage = await judge.evaluate(prompt)
         return MetricResult(
@@ -569,7 +650,7 @@ class PlanValidity(BaseMetric):
         judge = ctx.require_judge(self.name)
         prompt = _PLAN_PROMPT.format(
             input=case.input,
-            plan="\n".join(plan_steps),
+            plan=wrap_untrusted("\n".join(plan_steps), label="PLAN"),
             tools=", ".join(_names(_calls(output))) or "none",
         )
         verdict, usage = await judge.evaluate(prompt)

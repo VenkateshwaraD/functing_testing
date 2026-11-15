@@ -72,14 +72,15 @@ CLI flag  >  suite YAML  >  environment variable  >  shipped defaults.yaml
 
 - **CLI flags** — `--judge`, `--judge-model`, `--report`, `-o/--out`, etc.
 - **Suite YAML** — everything under `judge:`, `embedder:`, `concurrency:`,
-  `max_cost_usd:`, `redact:`, `guardrails:` …
+  `max_cost_usd:`, `redact:` … (unknown keys are config errors — all config
+  models use `extra="forbid"`)
 - **Env vars** — `AITESTKIT_JUDGE_PROVIDER`, `AITESTKIT_JUDGE_MODEL`,
   `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
   `AITESTKIT_MAX_COST_USD`.
 - **`defaults.yaml`** — shipped inside the package
   (`src/aitestkit/defaults.yaml`): judge/embedder defaults, runner
-  concurrency/timeouts, guardrails, secret-redaction patterns, regression
-  tolerance, and the price table used for `--max-cost-usd` budgeting.
+  concurrency/timeouts, secret-redaction patterns, regression tolerance,
+  and the price table used for `--max-cost-usd` budgeting.
 
 ### Suite YAML — full anatomy
 
@@ -112,11 +113,6 @@ target:
 
   # langgraph: a compiled graph object
   # function: "mygraph:graph"
-
-# Optional: test individual RAG stages instead of end-to-end
-stage_targets:
-  retriever: {type: python, function: "app:retrieve"}
-  generator: {type: python, function: "app:generate"}
 
 # --- TEST DATA -------------------------------------------------------------
 datasets:
@@ -188,11 +184,7 @@ case_timeout_seconds: 300
 max_cost_usd: 0.50          # hard spend cap; breach → exit code 3
 seed: 42
 
-guardrails:                 # agentic loop limits
-  max_steps: 50
-  wall_clock_seconds: 600
-
-redact:                     # secret scrubbing in reports (default on)
+redact:                     # secret + PII scrubbing in reports (default on)
   enabled: true
   patterns: ['sk-[A-Za-z0-9_-]{20,}']
 

@@ -7,10 +7,12 @@ bumps whenever the serialized shape changes; loaders run migrations.
 from __future__ import annotations
 
 import enum
+import hashlib
+import json
 import time
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 SCHEMA_VERSION = 1
 
@@ -57,11 +59,20 @@ class Usage(BaseModel):
 class ToolCall(BaseModel):
     """One tool invocation observed (or expected) in an agent run."""
 
+    model_config = ConfigDict(populate_by_name=True)
+
     name: str
-    args: dict[str, Any] = Field(default_factory=dict)
+    # ``arguments`` is the OpenAI/function-calling spelling — accepted as an
+    # input alias so real agent payloads don't silently drop their args.
+    args: dict[str, Any] = Field(
+        default_factory=dict, validation_alias=AliasChoices("args", "arguments")
+    )
     result: Any | None = None
     error: str | None = None
     requires_confirmation: bool = False
+    # Explicit approval recorded on the call itself — unlike
+    # ``requires_confirmation`` (policy metadata), this is evidence.
+    confirmed: bool | None = None
 
 
 class TraceEvent(BaseModel):
@@ -90,9 +101,17 @@ class Trajectory(BaseModel):
             calls.append(
                 ToolCall(
                     name=str(event.payload.get("name", "")),
-                    args=dict(event.payload.get("args", {})),
+                    args=dict(
+                        event.payload.get("args")
+                        or event.payload.get("arguments")
+                        or {}
+                    ),
                     result=event.payload.get("result"),
                     error=event.payload.get("error"),
+                    requires_confirmation=bool(
+                        event.payload.get("requires_confirmation")
+                    ),
+                    confirmed=event.payload.get("confirmed"),
                 )
             )
         return calls
@@ -111,10 +130,21 @@ class Trajectory(BaseModel):
 
     @property
     def step_signatures(self) -> list[str]:
-        """Hashable per-step signature used for loop detection and replay diffs."""
+        """Hashable per-step signature used for loop detection and replay diffs.
+
+        Tool calls include a canonical-args digest — ``list(page=1)`` and
+        ``list(page=2)`` are different steps, so pagination isn't a loop.
+        """
         signatures = []
         for event in self.events:
             key = event.payload.get("name") or event.payload.get("text") or ""
+            if event.type == "tool_call":
+                args = event.payload.get("args") or event.payload.get("arguments")
+                if args:
+                    digest = hashlib.sha256(
+                        json.dumps(args, sort_keys=True, default=str).encode()
+                    ).hexdigest()[:8]
+                    key = f"{key}({digest})"
             signatures.append(f"{event.type}:{event.agent_id}:{key}")
         return signatures
 

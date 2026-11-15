@@ -9,19 +9,21 @@ whose JSON carries per-claim verdicts into ``details`` for debuggability.
 from __future__ import annotations
 
 import re
+from typing import Any
 
+from aitestkit.judge.judge import wrap_untrusted
 from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.metrics.registry import register
 from aitestkit.models import MetricResult, MetricStatus, TargetOutput, TestCase, Usage
 from aitestkit.rag.token_counting import count_tokens
 
 
-def _judge_payload(raw: dict) -> dict:
-    """Unwrap self-consistency samples to the first raw judge payload."""
+def _judge_payloads(raw: dict) -> list[dict]:
+    """All raw judge payloads — every self-consistency sample, or [raw]."""
     samples = raw.get("samples")
-    if isinstance(samples, list) and samples and isinstance(samples[0], dict):
-        return samples[0]
-    return raw
+    if isinstance(samples, list) and samples:
+        return [s for s in samples if isinstance(s, dict)] or [raw]
+    return [raw]
 
 
 def _context_text(case: TestCase, output: TargetOutput) -> str:
@@ -70,29 +72,67 @@ Return JSON:
             return MetricResult.skipped(
                 metric=self.name, reason="no context or retrieval_context"
             )
+        answer = output.output or ""
+        if not answer.strip():
+            # An empty answer has no claims to be faithful — "trivially
+            # faithful 1.0" would hide a SUT that produced nothing.
+            return MetricResult(
+                metric=self.name,
+                status=MetricStatus.SCORED,
+                score=0.0,
+                passed=False,
+                reason="empty output — no claims to verify against context",
+                details={"claims": [], "unsupported": []},
+            )
         verdict, usage = await judge.evaluate(
-            self._PROMPT.format(context=context, answer=output.output or "")
+            self._PROMPT.format(
+                context=wrap_untrusted(context, label="CONTEXT"),
+                answer=wrap_untrusted(answer, label="ANSWER"),
+            )
         )
-        claims = _judge_payload(verdict.raw).get("claims")
-        if isinstance(claims, list) and claims:
-            supported = [c for c in claims if isinstance(c, dict) and c.get("supported")]
-            score = len(supported) / len(claims)
-        else:
-            score = verdict.score
+        # Aggregate claims across ALL self-consistency samples — using
+        # samples[0] alone makes k>1 a wasted cost.
+        payloads = _judge_payloads(verdict.raw)
+        sample_scores: list[float] = []
+        all_claims: list[dict] = []
+        unsupported: list[str] = []
+        samples_with_claims = 0
+        for payload in payloads:
+            claims = payload.get("claims")
+            if isinstance(claims, list) and claims:
+                samples_with_claims += 1
+                supported = [
+                    c for c in claims if isinstance(c, dict) and c.get("supported")
+                ]
+                sample_scores.append(len(supported) / len(claims))
+                all_claims.extend(c for c in claims if isinstance(c, dict))
+                unsupported.extend(
+                    str(c.get("claim", ""))
+                    for c in claims
+                    if isinstance(c, dict) and not c.get("supported")
+                )
+        # No claims in any sample → the judge's holistic score stands,
+        # flagged in details so reviewers see the fallback.
+        score = (
+            sum(sample_scores) / len(sample_scores)
+            if sample_scores
+            else verdict.score
+        )
+        details: dict[str, Any] = {
+            "claims": all_claims,
+            "unsupported": unsupported,
+            "samples": len(payloads),
+            "samples_with_claims": samples_with_claims,
+        }
+        if not sample_scores:
+            details["no_claims_fallback"] = True
         return MetricResult(
             metric=self.name,
             status=MetricStatus.SCORED,
             score=score,
             passed=score >= self.threshold,
             reason=verdict.reason,
-            details={
-                "claims": claims if isinstance(claims, list) else [],
-                "unsupported": [
-                    c.get("claim", "")
-                    for c in (claims or [])
-                    if isinstance(c, dict) and not c.get("supported")
-                ],
-            },
+            details=details,
             usage=usage,
         )
 
@@ -121,7 +161,8 @@ Return JSON: {{"score": 0.0-1.0, "reason": "..."}}"""
         judge = ctx.require_judge(self.name)
         verdict, usage = await judge.evaluate(
             self._PROMPT.format(
-                question=case.input, answer=output.output or ""
+                question=case.input,
+                answer=wrap_untrusted(output.output or "", label="ANSWER"),
             )
         )
         return MetricResult(
@@ -200,9 +241,15 @@ Return JSON: {{"score": 0.0-1.0, "reason": "...",
             )
         verdict, usage = await judge.evaluate(
             self._PROMPT.format(
-                context=context, expected=case.expected_output or ""
+                context=wrap_untrusted(context, label="CONTEXT"),
+                expected=case.expected_output or "",
             )
         )
+        missing_facts = [
+            f
+            for p in _judge_payloads(verdict.raw)
+            for f in p.get("missing_facts", [])
+        ]
         return MetricResult(
             metric=self.name,
             status=MetricStatus.SCORED,
@@ -210,7 +257,7 @@ Return JSON: {{"score": 0.0-1.0, "reason": "...",
             passed=verdict.score >= self.threshold,
             reason=verdict.reason,
             details={
-                "missing_facts": _judge_payload(verdict.raw).get("missing_facts", []),
+                "missing_facts": missing_facts,
                 "attribution_hint": "retrieval",
             },
             usage=usage,
@@ -251,8 +298,16 @@ Return JSON: {{"score": 0.0-1.0, "reason": "...",
                 metric=self.name, reason="no context or retrieval_context"
             )
         verdict, usage = await judge.evaluate(
-            self._PROMPT.format(question=case.input, context=context)
+            self._PROMPT.format(
+                question=case.input,
+                context=wrap_untrusted(context, label="CONTEXT"),
+            )
         )
+        irrelevant = [
+            r_
+            for p in _judge_payloads(verdict.raw)
+            for r_ in p.get("irrelevant_ranks", [])
+        ]
         return MetricResult(
             metric=self.name,
             status=MetricStatus.SCORED,
@@ -260,7 +315,7 @@ Return JSON: {{"score": 0.0-1.0, "reason": "...",
             passed=verdict.score >= self.threshold,
             reason=verdict.reason,
             details={
-                "irrelevant_ranks": _judge_payload(verdict.raw).get("irrelevant_ranks", []),
+                "irrelevant_ranks": irrelevant,
                 "attribution_hint": "retrieval",
             },
             usage=usage,
@@ -315,7 +370,9 @@ Return JSON: {{"score": 1.0 or 0.0, "reason": "..."}}"""
             if ok:
                 verdict, usage = await judge.evaluate(
                     self._PROMPT.format(
-                        idx=idx + 1, chunk=chunks[idx], claim=claim
+                        idx=idx + 1,
+                        chunk=wrap_untrusted(chunks[idx], label="CHUNK"),
+                        claim=wrap_untrusted(claim, label="CLAIM"),
                     )
                 )
                 usage_total += usage
@@ -417,14 +474,22 @@ Return JSON: {{"score": 0.0-1.0, "reason": "...",
             for t in history
         )
         verdict, usage = await judge.evaluate(
-            self._PROMPT.format(history=rendered, answer=output.output or "")
+            self._PROMPT.format(
+                history=wrap_untrusted(rendered, label="HISTORY"),
+                answer=wrap_untrusted(output.output or "", label="ANSWER"),
+            )
         )
+        contradictions = [
+            c
+            for p in _judge_payloads(verdict.raw)
+            for c in p.get("contradictions", [])
+        ]
         return MetricResult(
             metric=self.name,
             status=MetricStatus.SCORED,
             score=verdict.score,
             passed=verdict.score >= self.threshold,
             reason=verdict.reason,
-            details={"contradictions": _judge_payload(verdict.raw).get("contradictions", [])},
+            details={"contradictions": contradictions},
             usage=usage,
         )

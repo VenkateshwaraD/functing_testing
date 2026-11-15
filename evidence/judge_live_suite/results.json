@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "run_id": "001a1df1e67d4-3efd7f5e43",
+  "run_id": "001a1df42724d-86a0c2b3e4",
   "suite_name": "payments-judge-live",
   "metadata": {
-    "git_sha": "fdfffc9",
+    "git_sha": "72bb254",
     "aitestkit_version": "0.1.0",
     "dependency_versions": {
       "aitestkit": "0.1.0",
@@ -19,65 +19,13 @@
       "model": "GPT-6 Luna"
     },
     "seed": null,
-    "config_hash": "1e9efc09ab2b2dda",
+    "config_hash": "1f083d085430f00b",
     "python_version": "3.15.2",
     "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
-    "started_at": 1794744674.4663296,
+    "started_at": 1794747036.4308069,
     "finished_at": null
   },
   "results": [
-    {
-      "case_id": "dispute-paraphrase",
-      "status": "passed",
-      "input": "how do i dispute a charge",
-      "actual_output": "file a dispute within 60 days of the statement date",
-      "error": null,
-      "metrics": [
-        {
-          "metric": "correctness",
-          "status": "scored",
-          "score": 1.0,
-          "passed": true,
-          "reason": "The actual output conveys the same essential information as the expected output: disputes must be filed within 60 days of the statement date.",
-          "details": {
-            "judge_rationale": "The actual output conveys the same essential information as the expected output: disputes must be filed within 60 days of the statement date."
-          },
-          "usage": {
-            "prompt_tokens": 156,
-            "completion_tokens": 55,
-            "cost_usd": 0.001293,
-            "provider": "anthropic",
-            "model": "global.anthropic.claude-sonnet-4-6"
-          },
-          "duration_ms": 0.0
-        }
-      ],
-      "trajectory": null,
-      "latency_ms": 1.5368229978776071,
-      "judge_usage": {
-        "prompt_tokens": 156,
-        "completion_tokens": 55,
-        "cost_usd": 0.001293,
-        "provider": "anthropic",
-        "model": "global.anthropic.claude-sonnet-4-6"
-      },
-      "sut_usage": {
-        "prompt_tokens": 0,
-        "completion_tokens": 0,
-        "cost_usd": 0.0,
-        "provider": null,
-        "model": null
-      },
-      "attribution": null,
-      "tags": [
-        "judge",
-        "banking",
-        "live"
-      ],
-      "repeat": {},
-      "session_id": null,
-      "metadata": {}
-    },
     {
       "case_id": "wire-cutoff-correct",
       "status": "passed",
@@ -90,14 +38,14 @@
           "status": "scored",
           "score": 0.7,
           "passed": true,
-          "reason": "The actual output correctly identifies the cutoff time of 3:00 PM ET but omits the context that transfers submitted after this time settle the next business day.",
+          "reason": "The actual output correctly identifies the 3:00 PM ET cutoff time but omits the context that transfers submitted after this time settle the next business day.",
           "details": {
-            "judge_rationale": "The actual output correctly identifies the cutoff time of 3:00 PM ET but omits the context that transfers submitted after this time settle the next business day."
+            "judge_rationale": "The actual output correctly identifies the 3:00 PM ET cutoff time but omits the context that transfers submitted after this time settle the next business day."
           },
           "usage": {
-            "prompt_tokens": 153,
-            "completion_tokens": 83,
-            "cost_usd": 0.001704,
+            "prompt_tokens": 208,
+            "completion_tokens": 76,
+            "cost_usd": 0.001764,
             "provider": "anthropic",
             "model": "global.anthropic.claude-sonnet-4-6"
           },
@@ -105,11 +53,11 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 0.3929759986931458,
+      "latency_ms": 1.4053599988983478,
       "judge_usage": {
-        "prompt_tokens": 153,
-        "completion_tokens": 83,
-        "cost_usd": 0.001704,
+        "prompt_tokens": 208,
+        "completion_tokens": 76,
+        "cost_usd": 0.001764,
         "provider": "anthropic",
         "model": "global.anthropic.claude-sonnet-4-6"
       },
@@ -131,10 +79,10 @@
       "metadata": {}
     },
     {
-      "case_id": "balance-correct",
+      "case_id": "dispute-paraphrase",
       "status": "passed",
-      "input": "what is my checking balance",
-      "actual_output": "your checking balance is $1250.00",
+      "input": "how do i dispute a charge",
+      "actual_output": "file a dispute within 60 days of the statement date",
       "error": null,
       "metrics": [
         {
@@ -142,14 +90,14 @@
           "status": "scored",
           "score": 1.0,
           "passed": true,
-          "reason": "The actual output exactly matches the expected output, providing the correct checking balance of $1250.00.",
+          "reason": "The actual output conveys the same information as the expected output: disputes must be filed within 60 days of the statement date.",
           "details": {
-            "judge_rationale": "The actual output exactly matches the expected output, providing the correct checking balance of $1250.00."
+            "judge_rationale": "The actual output conveys the same information as the expected output: disputes must be filed within 60 days of the statement date."
           },
           "usage": {
-            "prompt_tokens": 147,
-            "completion_tokens": 48,
-            "cost_usd": 0.001161,
+            "prompt_tokens": 211,
+            "completion_tokens": 54,
+            "cost_usd": 0.001443,
             "provider": "anthropic",
             "model": "global.anthropic.claude-sonnet-4-6"
           },
@@ -157,11 +105,11 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 2.084569998260122,
+      "latency_ms": 0.48865699864109047,
       "judge_usage": {
-        "prompt_tokens": 147,
-        "completion_tokens": 48,
-        "cost_usd": 0.001161,
+        "prompt_tokens": 211,
+        "completion_tokens": 54,
+        "cost_usd": 0.001443,
         "provider": "anthropic",
         "model": "global.anthropic.claude-sonnet-4-6"
       },
@@ -192,16 +140,16 @@
         {
           "metric": "correctness",
           "status": "scored",
-          "score": 0.1,
+          "score": 0.0,
           "passed": false,
-          "reason": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000).",
+          "reason": "The actual output states $25000 which contradicts the expected daily ACH limit of $5000.",
           "details": {
-            "judge_rationale": "The actual output provides a dollar amount but it is incorrect ($25,000 instead of $5,000)."
+            "judge_rationale": "The actual output states $25000 which contradicts the expected daily ACH limit of $5000."
           },
           "usage": {
-            "prompt_tokens": 143,
-            "completion_tokens": 69,
-            "cost_usd": 0.001464,
+            "prompt_tokens": 198,
+            "completion_tokens": 75,
+            "cost_usd": 0.001719,
             "provider": "anthropic",
             "model": "global.anthropic.claude-sonnet-4-6"
           },
@@ -209,11 +157,11 @@
         }
       ],
       "trajectory": null,
-      "latency_ms": 1.3229489995865151,
+      "latency_ms": 2.4827260021993425,
       "judge_usage": {
-        "prompt_tokens": 143,
-        "completion_tokens": 69,
-        "cost_usd": 0.001464,
+        "prompt_tokens": 198,
+        "completion_tokens": 75,
+        "cost_usd": 0.001719,
         "provider": "anthropic",
         "model": "global.anthropic.claude-sonnet-4-6"
       },
@@ -230,6 +178,58 @@
         "banking",
         "live",
         "failure"
+      ],
+      "repeat": {},
+      "session_id": null,
+      "metadata": {}
+    },
+    {
+      "case_id": "balance-correct",
+      "status": "passed",
+      "input": "what is my checking balance",
+      "actual_output": "your checking balance is $1250.00",
+      "error": null,
+      "metrics": [
+        {
+          "metric": "correctness",
+          "status": "scored",
+          "score": 1.0,
+          "passed": true,
+          "reason": "The actual output exactly matches the expected output, stating the checking balance is $1250.00.",
+          "details": {
+            "judge_rationale": "The actual output exactly matches the expected output, stating the checking balance is $1250.00."
+          },
+          "usage": {
+            "prompt_tokens": 202,
+            "completion_tokens": 47,
+            "cost_usd": 0.001311,
+            "provider": "anthropic",
+            "model": "global.anthropic.claude-sonnet-4-6"
+          },
+          "duration_ms": 0.0
+        }
+      ],
+      "trajectory": null,
+      "latency_ms": 1.8836670024029445,
+      "judge_usage": {
+        "prompt_tokens": 202,
+        "completion_tokens": 47,
+        "cost_usd": 0.001311,
+        "provider": "anthropic",
+        "model": "global.anthropic.claude-sonnet-4-6"
+      },
+      "sut_usage": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "cost_usd": 0.0,
+        "provider": null,
+        "model": null
+      },
+      "attribution": null,
+      "tags": [
+        "judge",
+        "banking",
+        "live"
       ],
       "repeat": {},
       "session_id": null,
@@ -256,7 +256,7 @@
       "name": "max_flaky",
       "passed": true,
       "actual": 0.0,
-      "expected": "<= 0.0",
+      "expected": "<= 0.0 (fraction)",
       "detail": ""
     },
     {

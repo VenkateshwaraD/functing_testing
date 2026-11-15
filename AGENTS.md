@@ -98,5 +98,7 @@ Env vars also: `AITESTKIT_EMBED_PROVIDER`, `AITESTKIT_EMBED_MODEL`,
 - Don't commit `examples/`, `.env`, `results` —
   gitignored on purpose. `evidence/` IS committed — it's the run-evidence
   trail reviewers look at.
-- Exit codes: `0` gates pass, `1` metric/gate failure, `2` config error.
+- Exit codes: `0` all gates pass, `1` ungated test failures, `2` config
+  error, `3` budget cap, `4` ungated errors, `5` a declared gate failed.
+  Gates are authoritative — tolerated failures exit 0.
 - Commit style: conventional commits (`feat:`, `fix:`, `docs:`, `chore:`).

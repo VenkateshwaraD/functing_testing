@@ -78,8 +78,7 @@ class ProviderEntry(BaseModel):
     model: str
     api_key_env: str | None = None
     impl: str | None = None  # "module:Class" — custom ChatProvider/Embedder
-    rpm: int | None = None   # per-provider rate limit
-    tpm: int | None = None
+    rpm: int | None = None   # per-provider request-rate limit
 
 
 class GateMetricRule(BaseModel):
@@ -94,11 +93,14 @@ class GateMetricRule(BaseModel):
 class GatesConfig(BaseModel):
     model_config = _STRICT
 
-    min_pass_rate: float | None = None
+    min_pass_rate: float | None = Field(default=None, ge=0.0, le=1.0)
     per_metric: dict[str, GateMetricRule] = Field(default_factory=dict)
-    max_error_cases: int | None = None
-    max_flaky: float | None = None
-    max_skip_rate: float | None = None  # fraction of metric results skipped
+    max_error_cases: int | None = Field(default=None, ge=0)
+    # Fraction of results flaky (0..1) — NOT a count. `max_flaky: 2` used to
+    # parse as a fraction and silently never fail; it's now a config error.
+    max_flaky: float | None = Field(default=None, ge=0.0, le=1.0)
+    max_flaky_cases: int | None = Field(default=None, ge=0)  # absolute count
+    max_skip_rate: float | None = Field(default=None, ge=0.0, le=1.0)
     max_regression_vs_baseline: float | None = None
     min_coverage: dict[str, int] = Field(default_factory=dict)
 
@@ -143,7 +145,6 @@ class SuiteConfig(BaseModel):
 
     name: str = "suite"
     target: TargetConfig | None = None
-    stage_targets: dict[str, TargetConfig] = Field(default_factory=dict)
     datasets: list[str] = Field(default_factory=list)
     metrics: list[MetricSpec] = Field(default_factory=list)
     judge: JudgeConfig = Field(default_factory=JudgeConfig)
@@ -156,7 +157,6 @@ class SuiteConfig(BaseModel):
     concurrency: int = Field(default=8, ge=1)
     case_timeout_seconds: int = 300
     max_cost_usd: float | None = None
-    guardrails: dict[str, Any] = Field(default_factory=dict)
     redact: dict[str, Any] = Field(default_factory=lambda: {"enabled": True, "patterns": []})
     version_tags: dict[str, str] = Field(default_factory=dict)
     # ^ prompt/kb/chunker/embedder versions

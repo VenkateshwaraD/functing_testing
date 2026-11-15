@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from aitestkit.judge.judge import wrap_untrusted
 from aitestkit.metrics.base import BaseMetric, MetricContext
 from aitestkit.metrics.registry import register
 from aitestkit.models import MetricResult, MetricStatus, TargetOutput, TestCase
@@ -59,7 +60,7 @@ class Correctness(BaseMetric):
         prompt = _CORRECTNESS_PROMPT.format(
             input=case.input,
             expected=case.expected_output,
-            actual=output.output or "",
+            actual=wrap_untrusted(output.output or "", label="ACTUAL OUTPUT"),
         )
         verdict, usage = await judge.evaluate(prompt)
         details: dict[str, Any] = {"judge_rationale": verdict.reason}
@@ -104,7 +105,7 @@ class CustomRubric(BaseMetric):
             rubric=self.rubric,
             criteria=self.criteria or "none",
             input=case.input,
-            actual=output.output or "",
+            actual=wrap_untrusted(output.output or "", label="OUTPUT"),
         )
         verdict, usage = await judge.evaluate(prompt)
         return MetricResult(

@@ -109,7 +109,7 @@ Shipped demos: `suites/a_b_testing/prompt_matrix_suite.yaml`,
 |---|---|
 | `trace_sink` / `TraceEmitter` | SUT emits `thought`/`tool_call`/`handoff`/`message` events → `Trajectory` |
 | `ToolRegistry` | tools + mocks + faults + confirmation flags + call log |
-| `guardrails:` | `max_steps`, `wall_clock_seconds` — runaway-agent kill |
+| `loop_detection` metric | repeated step signatures + step caps — runaway-agent detection |
 | `--resume` | continue a partial run from results.jsonl |
 | `report` / `--export` | HTML, JUnit, JSON, OTel/Allure exports |
 | `fake` providers | judge/embedder with no keys — fully offline harness |

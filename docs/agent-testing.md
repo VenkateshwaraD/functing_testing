@@ -189,22 +189,17 @@ metrics:
     tools: ["delete", "drop"]          # params live under the entry
   - name: confirmation_required        # destructive tools got human OK
   - name: loop_detection
-    max_repeats: 3                     # identical step signature repeats
-  - name: termination_check            # finish_reason is a clean stop
+    max_repeats: 3                     # repeated step signatures (AAAA… or ABAB…)
+  - name: termination_check            # finish_reason must be recorded and clean
   - name: trajectory_match             # exact match vs expected_trajectory
   - name: task_completion              # judge: did it achieve the goal
     threshold: 0.7
   - name: reasoning_coherence          # judge: is the thought chain sound
   - name: plan_validity                # judge: plan precedes + matches acts
 
-# Guardrails — hard aborts for runaway agents ----------------------------
-guardrails:
-  max_steps: 25                        # breach → finish_reason: max_steps
-  wall_clock_seconds: 120              # breach → timeout
-
 # Runtime -----------------------------------------------------------------
 concurrency: 4
-case_timeout_seconds: 60
+case_timeout_seconds: 60               # per-case wall clock — breach → ERROR
 repeat: 2                              # catches non-deterministic agents
 max_cost_usd: 1.00                     # spend cap → exit 3
 
@@ -219,9 +214,12 @@ gates:
 
 ### Safety notes
 
-- `requires_confirmation` tools model **human-approval gates** — the agent
-  must emit a `message` event with `role: confirmation` before calling them,
-  or `confirmation_required` fails.
+- `requires_confirmation` is **policy metadata**, not evidence — the agent
+  must prove approval: emit a `confirmation` event (or a `message` with
+  `role: confirmation`) before *each* protected call, or stamp
+  `confirmed: true` on the call. One confirmation covers only the next
+  watched call — re-approving is required for repeats. A flag set by the
+  tool registry alone does not count.
 - `fault:` fields: `error` (raises), `timeout_ms` (hangs then raises),
   `malformed` (returns a garbage dict), `times: N` (only first N calls,
   omit = always). Lets you test retry/recovery without touching agent code.
@@ -295,12 +293,17 @@ aitestkit trends .
 
 | Code | Meaning |
 |------|---------|
-| 0 | all gates passed |
-| 1 | case failures |
-| 2 | config error (bad YAML, missing env key, unregistered tool) |
+| 0 | every declared gate passed — ungated failures still fail |
+| 1 | ungated test failures / flaky cases (no `min_pass_rate`/`max_flaky*` gate declared) |
+| 2 | config error (bad YAML, unknown keys, missing env key, unregistered tool) |
 | 3 | `max_cost_usd` spend cap hit |
-| 4 | guardrail abort (`max_steps` / `wall_clock_seconds`) |
-| 5 | gate failure (`min_pass_rate`, `per_metric`, coverage…) |
+| 4 | error cases with no `max_error_cases` gate declared |
+| 5 | a declared gate failed (`min_pass_rate`, `per_metric`, `max_error_cases`, `max_flaky*`…) |
+
+Gates are authoritative for what they measure: a `min_pass_rate` that
+tolerates failures exits 0; errors are fine when `max_error_cases` allows
+them. The pass-rate denominator includes failed **and** error/flaky cases —
+a SUT that crashes on most inputs cannot hide behind `min_pass_rate`.
 
 ### In CI
 
