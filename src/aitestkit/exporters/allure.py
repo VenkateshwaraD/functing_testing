@@ -55,7 +55,11 @@ def _case_payload(result: CaseResult) -> dict:
         {
             "name": f"{metric.metric}: {metric.status.value}"
             + (f" score={metric.score:.2f}" if metric.score is not None else ""),
-            "status": "passed" if metric.passed else "failed" if metric.passed is False else "skipped",
+            "status": (
+                "passed" if metric.passed
+                else "failed" if metric.passed is False
+                else "skipped"
+            ),
             "statusDetails": {"message": metric.reason} if metric.reason else {},
             "stage": "finished",
         }

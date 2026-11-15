@@ -75,7 +75,7 @@ def pytest_collect_file(file_path: Path, parent: pytest.Collector) -> Any:
 class AitestkitFile(pytest.File):
     """A YAML file containing target + metrics + cases."""
 
-    def collect(self):
+    def collect(self) -> Any:
         from aitestkit.config import TargetConfig
         from aitestkit.metrics.registry import build_metric
         from aitestkit.targets.factory import build_target
@@ -134,10 +134,10 @@ class AitestkitItem(pytest.Item):
         output = asyncio.run(self.target.invoke(self.case))
         asyncio.run(assert_test(self.case, output, self.metrics))
 
-    def repr_failure(self, excinfo: Any) -> str:
+    def repr_failure(self, excinfo: Any) -> str:  # type: ignore[override]
         if isinstance(excinfo.value, AssertionError):
             return str(excinfo.value)
-        return super().repr_failure(excinfo)
+        return str(super().repr_failure(excinfo))
 
     def reportinfo(self) -> tuple[Path, int, str]:
         return self.path, 0, f"aitestkit: {self.name}"

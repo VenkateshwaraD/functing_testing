@@ -55,7 +55,8 @@ def _run() -> TestRun:
 
 def test_allure_writes_results(tmp_path: Path) -> None:
     note = AllureExporter().export(_run(), tmp_path)
-    assert note and "2 allure results" in note
+    assert note is not None
+    assert "2 allure results" in note
     results_dir = tmp_path / "allure-results"
     files = list(results_dir.glob("*-result.json"))
     assert len(files) == 2
