@@ -232,7 +232,7 @@ Everything under `examples/` runs with **zero API keys**:
 
 ```bash
 cd examples
-export PYTHONPATH=.            # lets python targets import demo_app etc.
+export PYTHONPATH=.            # lets python targets import dummy.* demo apps
 
 aitestkit run suites/llm_suite.yaml        -o /tmp/out-llm
 aitestkit run suites/rag_suite.yaml        -o /tmp/out-rag

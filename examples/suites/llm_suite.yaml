@@ -3,7 +3,7 @@ name: llm-demo
 
 target:
   type: python
-  function: "demo_app:answer"
+  function: "dummy.demo_app:answer"
 
 datasets:
   - ../datasets/llm_cases.yaml

@@ -233,6 +233,6 @@ uv run aitestkit run suites/prompt_matrix_suite.yaml -o /tmp/pm-out
 uv run aitestkit run ../ci/live_suite.yaml -o /tmp/live-out --report console,json
 ```
 
-`llm_suite.yaml` (`demo_app:answer` + `exact_match`/`contains`) and
+`llm_suite.yaml` (`dummy.demo_app:answer` + `exact_match`/`contains`) and
 `prompt_matrix_suite.yaml` (two prompt variants + `prompt_sim`) both run
 with zero API keys — copy them as templates.

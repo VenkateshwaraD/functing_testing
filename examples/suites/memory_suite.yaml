@@ -3,10 +3,10 @@ name: memory-demo
 
 target:
   type: python
-  function: "memory_app:chat"
+  function: "dummy.memory_app:chat"
 
 memory:
-  store: "memory_app:store"   # inspectable MemoryStore instance
+  store: "dummy.memory_app:store"   # inspectable MemoryStore instance
 
 datasets:
   - ../datasets/memory_cases.yaml

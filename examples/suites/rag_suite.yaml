@@ -1,10 +1,10 @@
 # RAG suite — retrieval + generation + ingestion metrics, offline.
-# demo_app:rag returns canned retrieval_context so everything replays.
+# dummy.demo_app:rag returns canned retrieval_context so everything replays.
 name: rag-demo
 
 target:
   type: python
-  function: "demo_app:rag"
+  function: "dummy.demo_app:rag"
 
 datasets:
   - ../datasets/rag_cases.yaml

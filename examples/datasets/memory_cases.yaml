@@ -9,7 +9,7 @@ conversations:
     tags: [memory, conversation]
 
 cases:
-  # memory_app pre-seeds sess-seeded with name=grace, live=paris
+  # dummy.memory_app pre-seeds sess-seeded with name=grace, live=paris
   - id: name-recall
     input: "what is my name"
     metadata:

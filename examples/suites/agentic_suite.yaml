@@ -3,7 +3,7 @@ name: agentic-demo
 
 target:
   type: python
-  function: "agent_app:run"
+  function: "dummy.agent_app:run"
 
 datasets:
   - ../datasets/agentic_cases.yaml

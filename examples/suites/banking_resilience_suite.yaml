@@ -6,7 +6,7 @@ name: banking-resilience
 
 target:
   type: python
-  function: "banking_app:run"
+  function: "dummy.banking_app:run"
 
 datasets:
   - ../datasets/banking_resilience_cases.yaml
@@ -17,9 +17,9 @@ judge:
 
 tools:
   get_balance:
-    function: "banking_app:get_balance"
+    function: "dummy.banking_app:get_balance"
   transfer_funds:
-    function: "banking_app:transfer_funds"
+    function: "dummy.banking_app:transfer_funds"
     requires_confirmation: true
     fault: {error: "core-banking 503"}
     # add `times: N` to fail only the first N calls (recovery testing —

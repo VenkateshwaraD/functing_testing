@@ -259,7 +259,7 @@ export PYTHONPATH=.
 uv run aitestkit run suites/rag_suite.yaml -o /tmp/rag-out
 ```
 
-`suites/rag_suite.yaml` runs `demo_app:rag` (canned retrieval context)
+`suites/rag_suite.yaml` runs `dummy.demo_app:rag` (canned retrieval context)
 against `datasets/rag_cases.yaml` with `recall_at_k`, `hit_rate`,
 `context_window`, `ingestion_parse`, `ingestion_dedup` — fully offline.
 For a real-pipeline template with stage isolation, add a second suite whose

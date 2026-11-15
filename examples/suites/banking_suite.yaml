@@ -4,7 +4,7 @@ name: banking-funds-transfer
 
 target:
   type: python
-  function: "banking_app:run"
+  function: "dummy.banking_app:run"
 
 datasets:
   - ../datasets/banking_cases.yaml
@@ -16,14 +16,14 @@ judge:
 # The agent's tool surface — must mirror what the real agent can call.
 tools:
   get_balance:
-    function: "banking_app:get_balance"
+    function: "dummy.banking_app:get_balance"
   get_exchange_rate:
-    function: "banking_app:get_exchange_rate"
+    function: "dummy.banking_app:get_exchange_rate"
   transfer_funds:
-    function: "banking_app:transfer_funds"
+    function: "dummy.banking_app:transfer_funds"
     requires_confirmation: true        # money movement = human-gated
   wire_external:
-    function: "banking_app:wire_external"   # registered but policy-forbidden
+    function: "dummy.banking_app:wire_external"   # registered but policy-forbidden
 
 metrics:
   - exact_match                                # deterministic answer text

@@ -311,7 +311,7 @@ schedule with a `max_cost_usd` cap like `live-smoke` does.
 ## Worked example
 
 The repo ships a runnable one — a keyword-driven demo "ReAct" agent
-(`examples/agent_app.py`) that thinks, calls a `search` tool, observes, and
+(`examples/dummy/agent_app.py`) that thinks, calls a `search` tool, observes, and
 answers:
 
 ```bash
