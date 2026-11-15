@@ -1,25 +1,16 @@
 """In-memory vector index — reference VectorStore used by chunk-compare
-and tests. Real adapters (Chroma/FAISS/pgvector) arrive with the vector DB
-pillar; this is the baseline scoring implementation."""
+and tests. Real adapters (Chroma/FAISS/pgvector) live in
+``aitestkit.vectordb``; this is the baseline scoring implementation."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 from aitestkit.rag.chunking import Chunk, _cosine
+from aitestkit.vectordb.base import VectorStore  # noqa: F401 — re-export
 
 if TYPE_CHECKING:
     from aitestkit.providers.base import Embedder
-
-
-class VectorStore(Protocol):
-    """Minimal vector store contract for retrieval metrics."""
-
-    async def upsert(self, chunks: list[Chunk]) -> None: ...
-
-    async def query(
-        self, text: str, *, top_k: int = 5
-    ) -> list[tuple[Chunk, float]]: ...
 
 
 class InMemoryVectorStore:
@@ -48,6 +39,9 @@ class InMemoryVectorStore:
         ]
         scored.sort(key=lambda pair: pair[1], reverse=True)
         return scored[:top_k]
+
+    async def count(self) -> int:
+        return len(self._chunks)
 
     async def reembed_sample(
         self, *, fraction: float = 1.0

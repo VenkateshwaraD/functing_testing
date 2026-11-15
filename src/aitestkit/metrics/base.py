@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from aitestkit.judge.judge import Judge
     from aitestkit.providers.base import Embedder
     from aitestkit.redact import Redactor
+    from aitestkit.vectordb.base import VectorStore
 
 
 class MetricContext:
@@ -29,12 +30,14 @@ class MetricContext:
         embed_model: str | None = None,
         redactor: Redactor | None = None,
         memory_store: MemoryStore | None = None,
+        vector_store: VectorStore | None = None,
     ) -> None:
         self.judge = judge
         self.embedder = embedder
         self.embed_model = embed_model
         self.redactor = redactor
         self.memory_store = memory_store
+        self.vector_store = vector_store
 
     def require_judge(self, metric_name: str) -> Judge:
         if self.judge is None:

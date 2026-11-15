@@ -131,6 +131,8 @@ class SuiteConfig(BaseModel):
     # ^ tool registry spec: name -> {function, requires_confirmation, fault, mock}
     prompts: list[PromptVariant] = Field(default_factory=list)
     # ^ prompt matrix — each case runs once per variant (like models:)
+    vectordb: dict[str, Any] = Field(default_factory=dict)
+    # ^ {type: memory|chroma|faiss|qdrant|pgvector|pinecone, ...} store under test
     seed: int | None = None
 
     @property

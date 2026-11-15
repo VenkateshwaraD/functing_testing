@@ -197,6 +197,7 @@ deepeval = [
 ]
 faiss = [
     { name = "faiss-cpu" },
+    { name = "numpy" },
 ]
 gemini = [
     { name = "google-genai" },
@@ -255,6 +256,7 @@ requires-dist = [
     { name = "langchain-core", marker = "extra == 'langgraph'", specifier = ">=0.3" },
     { name = "langgraph", marker = "extra == 'langgraph'", specifier = ">=0.2" },
     { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.50" },
+    { name = "numpy", marker = "extra == 'faiss'", specifier = ">=1.26" },
     { name = "openai", specifier = ">=1.50" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'otel'", specifier = ">=1.27" },
     { name = "opentelemetry-sdk", marker = "extra == 'otel'", specifier = ">=1.27" },

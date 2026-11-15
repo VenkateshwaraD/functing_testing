@@ -39,7 +39,7 @@ gemini = ["google-genai>=1.0"]
 litellm = ["litellm>=1.50"]
 langgraph = ["langgraph>=0.2", "langchain-core>=0.3"]
 chroma = ["chromadb>=0.5"]
-faiss = ["faiss-cpu>=1.8"]
+faiss = ["faiss-cpu>=1.8", "numpy>=1.26"]
 qdrant = ["qdrant-client>=1.11"]
 pgvector = ["pgvector>=0.3", "psycopg[binary]>=3.2"]
 pinecone = ["pinecone>=5.0"]
@@ -115,7 +115,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["yaml.*", "jsonschema.*", "respx.*", "chromadb.*", "faiss.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
+module = ["yaml.*", "jsonschema.*", "respx.*", "chromadb.*", "faiss.*", "numpy.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

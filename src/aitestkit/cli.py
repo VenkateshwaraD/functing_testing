@@ -94,6 +94,7 @@ def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     import aitestkit.metrics.prompts  # noqa: F401
     import aitestkit.metrics.rag  # noqa: F401
     import aitestkit.metrics.retrieval  # noqa: F401
+    import aitestkit.vectordb.checks  # noqa: F401
     from aitestkit.metrics.registry import build_metric
 
     return [
@@ -166,6 +167,7 @@ def _build_ctx(
         embed_model=suite.embedder.model,
         redactor=redactor or _Redactor(enabled=suite.redact.get("enabled", True)),
         memory_store=_build_memory_store(suite),
+        vector_store=_build_vector_store(suite, embedder),
     )
 
 
@@ -185,6 +187,20 @@ def _build_memory_store(suite: SuiteConfig) -> Any:
         return None
     store = load_callable(spec)
     return store() if callable(store) else store
+
+
+def _build_vector_store(suite: SuiteConfig, embedder: Any) -> Any:
+    """Build the configured vector store (requires an embedder)."""
+    if not suite.vectordb:
+        return None
+    if embedder is None:
+        raise ConfigError(
+            "suite.vectordb requires suite.embedder to be configured "
+            "(stores embed via the suite's embedder)"
+        )
+    from aitestkit.vectordb.base import build_vector_store
+
+    return build_vector_store(suite.vectordb, embedder=embedder)
 
 
 def _install_sigint(engine: RunEngine) -> None:
