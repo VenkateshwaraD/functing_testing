@@ -19,6 +19,9 @@ htmlcov/
 .env.*
 !.env.example
 
+# Unit tests — kept local only, not committed
+tests/
+
 # Local scratch / run output
 scratch/
 .aitestkit/

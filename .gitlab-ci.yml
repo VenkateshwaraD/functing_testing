@@ -1,0 +1,116 @@
+# GitLab CI — replaces the former .github/workflows/*.
+# Unit tests are intentionally not in this repo, so there is no pytest
+# job here; run `pytest tests/` locally before pushing.
+
+stages:
+  - check
+  - audit
+  - live
+  - release
+
+default:
+  image: ghcr.io/astral-sh/uv:debian
+
+variables:
+  UV_CACHE_DIR: .uv-cache
+  UV_LINK_MODE: copy
+
+# --- was ci.yml: ruff + mypy + offline example suites, py 3.13–3.15 ---
+check:
+  stage: check
+  parallel:
+    matrix:
+      - PY: ["3.13", "3.14", "3.15"]
+  cache:
+    key: uv-$PY
+    paths:
+      - .uv-cache
+  script:
+    - uv python install "$PY"
+    - uv sync --frozen --python "$PY"
+    - uv run ruff check src examples
+    - uv run mypy
+    - cd examples
+    - export PYTHONPATH=.
+    - for suite in suites/*.yaml; do uv run aitestkit run "$suite" -o "$CI_PROJECT_DIR/example-out" || exit $?; done
+  artifacts:
+    when: always
+    paths:
+      - example-out/
+    expire_in: 1 week
+
+# --- was audit.yml: dependency audit on lockfile/manifest changes ---
+audit:
+  stage: audit
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - uv.lock
+        - pyproject.toml
+    - when: manual
+  script:
+    - uv sync --frozen
+    - uvx pip-audit --strict
+
+# --- was nightly-live.yml: live provider smoke suite ---
+# Set OPENAI_API_KEY (and optionally ANTHROPIC_API_KEY) as masked CI/CD
+# variables; the job no-ops cleanly when they are absent. Schedule the
+# pipeline under Build → Pipeline schedules (cron: 17 3 * * *).
+live-smoke:
+  stage: live
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
+  script:
+    - uv sync --frozen
+    - |
+      if [ -z "$OPENAI_API_KEY" ]; then
+        echo "OPENAI_API_KEY not set — skipping live smoke."
+        exit 0
+      fi
+    - cd examples
+    - export PYTHONPATH=.
+    - uv run aitestkit run ../ci/live_suite.yaml -o "$CI_PROJECT_DIR/live-out" --report console,json
+  artifacts:
+    when: always
+    paths:
+      - live-out/
+    expire_in: 1 week
+
+# --- was release.yml: build + publish on v* tags ---
+build:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - uv build
+    - uvx twine check dist/*
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+publish-pypi:
+  stage: release
+  needs: [build]
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+  # Set PYPI_TOKEN as a masked CI/CD variable.
+  script:
+    - TWINE_USERNAME=__token__ TWINE_PASSWORD="$PYPI_TOKEN" uvx twine upload --non-interactive dist/*
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs: [build]
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "Creating release $CI_COMMIT_TAG"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Release $CI_COMMIT_TAG"
+    description: "Release $CI_COMMIT_TAG"
