@@ -66,19 +66,31 @@ class RunEngine:
         self.tool_mocks = tool_mocks
         self._spent = Usage()
         self._budget_hit = False
+        self._cancelled = False
+
+    def cancel(self) -> None:
+        """Stop scheduling new case work; in-flight cases finish normally."""
+        self._cancelled = True
 
     async def run(
         self,
         cases: list[TestCase],
         *,
         on_case_result: OnCaseResult | None = None,
+        skip_ids: set[str] | None = None,
     ) -> tuple[TestRun, bool]:
-        """Run all cases; returns (run, budget_exceeded)."""
+        """Run all cases; returns (run, budget_exceeded).
+
+        ``skip_ids`` excludes already-completed case ids (``--resume``).
+        """
+        skip_ids = skip_ids or set()
         semaphore = asyncio.Semaphore(self.concurrency)
         test_run = TestRun(run_id="", results=[])
 
         async def worker(case: TestCase, model_spec: str | None) -> list[CaseResult]:
             async with semaphore:
+                if self._cancelled:
+                    return [self._skipped_result(case, "run cancelled (SIGINT)")]
                 if self._budget_hit:
                     return [self._skipped_result(case, "budget cap reached earlier")]
                 try:
@@ -95,6 +107,7 @@ class RunEngine:
             worker(case, model_spec)
             for case in cases
             for model_spec in self.models
+            if _effective_id(case, model_spec) not in skip_ids
         ]
         for gathered in asyncio.as_completed(tasks):
             for result in await gathered:
@@ -115,7 +128,9 @@ class RunEngine:
         )
 
     async def _run_case(self, case: TestCase, *, model_spec: str | None) -> list[CaseResult]:
-        provider, model = (model_spec.split(":", 1) + [None])[:2] if model_spec else (None, None)
+        provider, model = (
+            (model_spec.split(":", 1) + [None])[:2] if model_spec else (None, None)
+        )
         outcomes: list[CaseResult] = []
         for _ in range(self.repeat):
             outcomes.append(await self._run_once(case, provider=provider, model=model))
@@ -156,7 +171,7 @@ class RunEngine:
     async def _run_once(
         self, case: TestCase, *, provider: str | None, model: str | None
     ) -> CaseResult:
-        case_id = f"{case.id or 'case'}[{provider}:{model}]" if model else (case.id or "case")
+        case_id = _effective_id(case, f"{provider}:{model}" if model else None)
         try:
             output = await asyncio.wait_for(
                 self.target.invoke(
@@ -237,3 +252,9 @@ def _sum_usage(usages: Any) -> Usage:
     for usage in usages:
         total += usage
     return total
+
+
+def _effective_id(case: TestCase, model_spec: str | None) -> str:
+    """The case_id used in results — matches what resume skips on."""
+    base = case.id or "case"
+    return f"{base}[{model_spec}]" if model_spec else base

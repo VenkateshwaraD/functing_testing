@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from aitestkit.providers.base import ChatProvider
     from aitestkit.providers.cassette import Cassette
     from aitestkit.redact import Redactor
+    from aitestkit.runner import RunEngine
 
 from aitestkit.exceptions import (
     AitestkitError,
@@ -160,6 +161,15 @@ def _build_ctx(
     )
 
 
+def _install_sigint(engine: RunEngine) -> None:
+    """SIGINT drains in-flight cases; completed results already on disk."""
+    import contextlib
+    import signal
+
+    with contextlib.suppress(NotImplementedError, RuntimeError):
+        asyncio.get_running_loop().add_signal_handler(signal.SIGINT, engine.cancel)
+
+
 _JUDGE_METRICS = {
     "answer_relevancy", "groundedness", "citation_accuracy", "task_completion",
     "reasoning_coherence", "plan_validity", "contextual_precision",
@@ -180,6 +190,7 @@ async def _run_suite(
     redact_enabled: bool,
     cassette_file: Path | None = None,
     cassette_mode: str | None = None,
+    resume_from: Path | None = None,
 ) -> tuple[TestRun, bool, SuiteConfig]:
     from aitestkit.baseline import compare_runs, load_baseline, save_baseline
     from aitestkit.config import load_suite, validate_provider_envs
@@ -194,7 +205,7 @@ async def _run_suite(
     from aitestkit.reporting.html_report import write_html
     from aitestkit.reporting.json_report import write_results
     from aitestkit.reporting.junit import write_junit
-    from aitestkit.reporting.stream import ResultsStream
+    from aitestkit.reporting.stream import ResultsStream, read_stream
     from aitestkit.runner import RunEngine
     from aitestkit.targets.factory import build_target
 
@@ -263,6 +274,17 @@ async def _run_suite(
         console.report_case(result)
         stream.write_case(result)
 
+    previous_results: list[CaseResult] = []
+    skip_ids: set[str] = set()
+    if resume_from is not None:
+        jsonl_path = (
+            resume_from
+            if resume_from.suffix == ".jsonl"
+            else resume_from / "results.jsonl"
+        )
+        _header, previous_results = read_stream(jsonl_path)
+        skip_ids = {r.case_id for r in previous_results}
+        logger.info("resume: skipping %d completed cases", len(skip_ids))
     engine = RunEngine(
         target=target,
         metrics=metrics,
@@ -273,7 +295,12 @@ async def _run_suite(
         max_cost_usd=suite.max_cost_usd,
         models=suite.models or None,
     )
-    test_run, budget_hit = await engine.run(cases, on_case_result=on_case)
+    _install_sigint(engine)
+    test_run, budget_hit = await engine.run(
+        cases, on_case_result=on_case, skip_ids=skip_ids
+    )
+    if previous_results:
+        test_run.results = previous_results + test_run.results
     test_run.run_id = run_id_var.get()
     test_run.suite_name = suite.name
     test_run.metadata = collect_metadata(
@@ -377,6 +404,13 @@ def run(
         str | None,
         typer.Option("--cassette-mode", help="record|replay (default replay)"),
     ] = None,
+    resume: Annotated[
+        Path | None,
+        typer.Option(
+            "--resume",
+            help="Previous results.jsonl (or its directory) — skips finished cases",
+        ),
+    ] = None,
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run a test suite."""
@@ -399,6 +433,7 @@ def run(
                 redact_enabled=redact,
                 cassette_file=cassette,
                 cassette_mode=cassette_mode,
+                resume_from=resume,
             )
         )
     except ConfigError as e:
@@ -471,6 +506,72 @@ def trends(
             f"  {metric}: mean {info['first_mean']:.3f} -> {info['last_mean']:.3f} "
             f"(drift {info['drift']:+.3f}, {info['runs']} runs)"
         )
+
+
+@app.command()
+def doctor(
+    suite_path: Annotated[
+        Path | None, typer.Argument(help="Optional suite.yaml to check")
+    ] = None,
+) -> None:
+    """Diagnostics: env keys, provider connectivity, optional deps, git."""
+    import shutil as _shutil
+
+    ok = True
+
+    def check(label: str, good: bool, hint: str = "") -> None:
+        nonlocal ok
+        ok = ok and good
+        mark = "ok " if good else "MISS"
+        suffix = f" — {hint}" if hint and not good else ""
+        typer.echo(f"  [{mark}] {label}{suffix}")
+
+    typer.echo("== environment")
+    check("git binary", _shutil.which("git") is not None, "needed for run metadata")
+    if suite_path is not None:
+        import os
+
+        from aitestkit.config import default_api_key_env, load_suite
+
+        suite = load_suite(suite_path)
+        providers = {suite.judge.provider, suite.embedder.provider} - {"fake", None}
+        providers.update(m.split(":", 1)[0] for m in suite.models)
+        providers.update(suite.providers.keys())
+        typer.echo(f"== suite providers ({suite.name})")
+        for provider_name in sorted(p for p in providers if p):
+            env = default_api_key_env(provider_name)
+            check(
+                f"{env}",
+                bool(os.environ.get(env)),
+                f"export {env} or use provider: fake / cassettes",
+            )
+    typer.echo("== optional extras")
+    for module_name, extra in _OPTIONAL_DEPS.items():
+        present = _module_present(module_name)
+        check(f"aitestkit[{extra}]", present, f"pip install 'aitestkit[{extra}]'")
+    raise typer.Exit(ExitCode.OK if ok else ExitCode.CONFIG_ERROR)
+
+
+_OPTIONAL_DEPS = {
+    "anthropic": "anthropic",
+    "google.genai": "gemini",
+    "litellm": "litellm",
+    "langgraph": "langgraph",
+    "chromadb": "vectordb",
+    "faiss": "vectordb",
+    "ragas": "ragas",
+    "deepeval": "deepeval",
+    "opentelemetry": "otel",
+}
+
+
+def _module_present(module_name: str) -> bool:
+    import importlib.util
+
+    try:
+        return importlib.util.find_spec(module_name) is not None
+    except ModuleNotFoundError:
+        return False
 
 
 if __name__ == "__main__":
