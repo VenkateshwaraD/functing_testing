@@ -1,0 +1,5 @@
+cases:
+  - id: live-arithmetic
+    input: "What is 2+2? Reply with just the number."
+    expected_output: "4"
+    tags: [live, smoke]

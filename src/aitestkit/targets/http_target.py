@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 import time
 from typing import Any
 
@@ -34,8 +36,8 @@ class HttpTarget:
         timeout_seconds: float = 60.0,
         method: str = "POST",
     ) -> None:
-        self.url = url
-        self.headers = headers or {}
+        self.url = _expand_env(url)
+        self.headers = {k: _expand_env(v) for k, v in (headers or {}).items()}
         self.request_template = request_template or {"input": "{input}"}
         self.response_path = response_path
         self.context_path = context_path
@@ -113,6 +115,14 @@ def _render(template: Any, **values: Any) -> Any:
     if isinstance(template, list):
         return [_render(item, **values) for item in template]
     return template
+
+
+_ENV_RE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+
+def _expand_env(value: str) -> str:
+    """Expand ${VAR} references — keeps secrets out of suite files."""
+    return _ENV_RE.sub(lambda m: os.environ.get(m.group(1), m.group(0)), value)
 
 
 def _dig(payload: Any, path: str) -> Any:

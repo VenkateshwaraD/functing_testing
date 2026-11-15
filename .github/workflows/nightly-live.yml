@@ -1,0 +1,49 @@
+name: nightly-live
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-smoke:
+    runs-on: ubuntu-latest
+    # skip gracefully when no provider keys are configured (forks)
+    if: ${{ vars.LIVE_SMOKE_ENABLED != 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync deps
+        run: uv sync --frozen
+
+      - name: Live smoke suite
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        working-directory: examples
+        run: |
+          export PYTHONPATH=.
+          # spend cap: hard run-level budget, distinct exit code on breach
+          uv run aitestkit run ../ci/live_suite.yaml \
+              -o /tmp/live-out --report console,json
+
+      - name: Meta-eval (metric discrimination)
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: uv run pytest tests/test_meta_eval.py -m live -q
+
+      - name: Upload live results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-live-results
+          path: /tmp/live-out/
+          if-no-files-found: ignore

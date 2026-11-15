@@ -118,7 +118,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["yaml.*", "jsonschema.*", "respx.*", "chromadb.*", "faiss.*", "numpy.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "pandas.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
+module = ["yaml.*", "jsonschema.*", "chromadb.*", "faiss.*", "numpy.*", "qdrant_client.*", "pgvector.*", "pinecone.*", "litellm.*", "deepeval.*", "ragas.*", "great_expectations.*", "opentelemetry.*", "pandas.*", "langgraph.*", "langchain_core.*", "google.genai.*", "google.*", "anthropic.*", "psycopg.*", "allure_commons.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

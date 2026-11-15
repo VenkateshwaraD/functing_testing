@@ -1,0 +1,39 @@
+# Nightly live-provider smoke suite — small by design.
+# max_cost_usd is the spend cap: the runner aborts with exit code 3
+# when cumulative judge+SUT cost exceeds it.
+name: nightly-live-smoke
+
+target:
+  type: http
+  url: "https://api.openai.com/v1/chat/completions"
+  method: POST
+  headers:
+    Authorization: "Bearer ${OPENAI_API_KEY}"
+  request_template:
+    model: "gpt-4o-mini"
+    messages:
+      - {role: user, content: "{input}"}
+    max_tokens: 50
+  response_path: "choices.0.message.content"
+  kwargs: {timeout_seconds: 30}
+
+judge:
+  provider: openai
+  model: gpt-4o-mini
+
+max_cost_usd: 0.50
+case_timeout_seconds: 60
+concurrency: 2
+
+metrics:
+  - name: contains
+    substrings: ["4"]
+  - name: correctness
+    threshold: 0.7
+
+gates:
+  min_pass_rate: 1.0
+  max_error_cases: 0
+
+datasets:
+  - live_cases.yaml
