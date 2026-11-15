@@ -14,7 +14,7 @@ jobs:
     # skip gracefully when no provider keys are configured (forks)
     if: ${{ vars.LIVE_SMOKE_ENABLED != 'false' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
