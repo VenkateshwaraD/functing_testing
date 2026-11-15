@@ -56,6 +56,7 @@ class BaseMetric(ABC):
     name: str = "base"
     required_fields: tuple[str, ...] = ()
     default_threshold: float = 0.5
+    requires_judge: bool = False
 
     def __init__(self, *, threshold: float | None = None) -> None:
         self.threshold = self.default_threshold if threshold is None else threshold

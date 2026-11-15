@@ -101,6 +101,7 @@ def _build_ctx(
     judge_model: str | None = None,
     redactor: Redactor | None = None,
     cassette: Cassette | None = None,
+    needs_judge: bool | None = None,
 ) -> MetricContext:
     from aitestkit.judge.judge import Judge
     from aitestkit.metrics.base import MetricContext
@@ -114,10 +115,12 @@ def _build_ctx(
     provider_name = judge_provider or suite.judge.provider
     model = judge_model or suite.judge.model
     judge = None
-    needs_judge = any(
-        spec.name in {"correctness", "custom_rubric", "faithfulness"} | _JUDGE_METRICS
-        for spec in suite.metrics
-    )
+    if needs_judge is None:
+        from aitestkit.metrics.registry import metric_requires_judge
+
+        needs_judge = any(
+            metric_requires_judge(spec.name) for spec in suite.metrics
+        )
     if needs_judge:
         provider_cfg = suite.providers.get(provider_name)
         provider: ChatProvider | None = None
@@ -138,7 +141,17 @@ def _build_ctx(
             self_consistency=suite.judge.self_consistency,
         )
         for entry in suite.models:
-            judge.warn_if_self_judging(sut_model=entry.split(":", 1)[-1])
+            sut_provider, _, sut_model = entry.partition(":")
+            if not sut_model:  # bare model name — provider unknown
+                sut_provider, sut_model = "", entry
+            if sut_model != model:
+                continue
+            if not sut_provider or sut_provider == provider_name:
+                raise ConfigError(
+                    f"judge {provider_name}:{model} equals SUT model {entry!r} "
+                    "— choose a different judge to avoid self-grading"
+                )
+            judge.warn_if_self_judging(sut_model=sut_model)
     embedder = None
     if suite.embedder.provider:
         embed_cfg = suite.providers.get(suite.embedder.provider)
@@ -217,14 +230,6 @@ def _install_sigint(engine: RunEngine) -> None:
         asyncio.get_running_loop().add_signal_handler(signal.SIGINT, engine.cancel)
 
 
-_JUDGE_METRICS = {
-    "answer_relevancy", "groundedness", "citation_accuracy", "task_completion",
-    "reasoning_coherence", "plan_validity", "contextual_precision",
-    "contextual_recall", "multi_turn_coherence", "tool_args_correct",
-    "memory_accuracy",
-}
-
-
 async def _run_suite(
     suite_path: Path,
     *,
@@ -266,9 +271,38 @@ async def _run_suite(
             mode=cassette_mode or "replay",  # type: ignore[arg-type]
             redactor=None,
         )
+    cases = [
+        case
+        for dataset in suite.datasets
+        for case in load_cases(suite_path.parent / dataset)
+    ]
+    conversations = [
+        conversation
+        for dataset in suite.datasets
+        for conversation in load_conversations(suite_path.parent / dataset)
+    ]
+    if not cases and not conversations:
+        raise ConfigError(f"{suite_path}: no test cases loaded")
+    from aitestkit.metrics.registry import metric_exists, metric_requires_judge
+
+    for case in cases:
+        for spec in case.assert_ or []:
+            name = spec if isinstance(spec, str) else (
+                spec.get("name") if isinstance(spec, dict) else None
+            )
+            if not isinstance(name, str) or not metric_exists(name):
+                raise ConfigError(
+                    f"{suite_path}: case {case.id or case.input!r} "
+                    f"asserts unknown metric {name!r}"
+                )
     judge_needed = any(
-        spec.name in {"correctness", "custom_rubric", "faithfulness"} | _JUDGE_METRICS
-        for spec in suite.metrics
+        metric_requires_judge(spec.name) for spec in suite.metrics
+    ) or any(
+        metric_requires_judge(
+            spec if isinstance(spec, str) else spec.get("name")
+        )
+        for case in cases
+        for spec in (case.assert_ or [])
     )
     providers_used: set[str] = set()
     effective_judge = judge_provider or suite.judge.provider
@@ -308,19 +342,8 @@ async def _run_suite(
         judge_model=judge_model,
         redactor=redactor,
         cassette=cassette,
+        needs_judge=judge_needed,
     )
-    cases = [
-        case
-        for dataset in suite.datasets
-        for case in load_cases(suite_path.parent / dataset)
-    ]
-    conversations = [
-        conversation
-        for dataset in suite.datasets
-        for conversation in load_conversations(suite_path.parent / dataset)
-    ]
-    if not cases and not conversations:
-        raise ConfigError(f"{suite_path}: no test cases loaded")
 
     test_run = TestRun(
         run_id=run_id_var.get(),

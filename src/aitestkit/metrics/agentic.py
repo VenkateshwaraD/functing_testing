@@ -480,6 +480,7 @@ class TaskCompletion(BaseMetric):
     """Judge: did the agent accomplish the task (trajectory + output)."""
 
     name = "task_completion"
+    requires_judge = True
     default_threshold = 0.7
 
     async def measure(
@@ -512,6 +513,7 @@ class ReasoningCoherence(BaseMetric):
     """
 
     name = "reasoning_coherence"
+    requires_judge = True
     default_threshold = 0.6
 
     async def measure(
@@ -545,6 +547,7 @@ class PlanValidity(BaseMetric):
     """Judge: plan quality vs executed tools (Plan-and-Execute pattern)."""
 
     name = "plan_validity"
+    requires_judge = True
     default_threshold = 0.6
 
     async def measure(

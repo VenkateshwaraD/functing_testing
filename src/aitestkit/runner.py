@@ -314,11 +314,34 @@ class RunEngine:
             tags=case.tags,
         )
 
+    def _metrics_for(self, case: TestCase) -> list[BaseMetric]:
+        """Per-case ``assert:`` selects metrics; absent → all suite metrics.
+
+        A bare name reuses the suite's configured instance when present
+        (keeps its threshold/params), otherwise builds one with defaults.
+        Dict entries build a fresh spec — same shape as suite metrics.
+        """
+        if case.assert_ is None:
+            return self.metrics
+        from aitestkit.config import _normalize_metrics
+        from aitestkit.metrics.registry import build_metric
+
+        chosen: list[BaseMetric] = []
+        for spec in _normalize_metrics(case.assert_):
+            match = next((m for m in self.metrics if m.name == spec.name), None)
+            if match is not None and spec.threshold is None and not spec.params:
+                chosen.append(match)  # bare name — reuse configured instance
+            else:
+                chosen.append(
+                    build_metric(spec.name, threshold=spec.threshold, params=spec.params)
+                )
+        return chosen
+
     async def _evaluate_metrics(
         self, case: TestCase, output: TargetOutput, case_id: str
     ) -> CaseResult:
         results: list[MetricResult] = []
-        for metric in self.metrics:
+        for metric in self._metrics_for(case):
             try:
                 metric_result = await metric.evaluate(case, output, self.ctx)
             except MetricError as e:

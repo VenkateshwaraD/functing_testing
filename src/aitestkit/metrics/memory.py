@@ -165,6 +165,7 @@ class MemoryAccuracy(BaseMetric):
     """Judge: final answer is consistent with the store's contents."""
 
     name = "memory_accuracy"
+    requires_judge = True
     default_threshold = 0.7
 
     async def measure(

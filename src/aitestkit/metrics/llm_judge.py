@@ -48,6 +48,7 @@ class Correctness(BaseMetric):
     """Judge-scored semantic correctness against ``expected_output``."""
 
     name = "correctness"
+    requires_judge = True
     required_fields = ("expected_output",)
     default_threshold = 0.7
 
@@ -79,6 +80,7 @@ class CustomRubric(BaseMetric):
     """G-Eval-style metric: score an output against a user rubric/criteria."""
 
     name = "custom_rubric"
+    requires_judge = True
     default_threshold = 0.7
 
     def __init__(

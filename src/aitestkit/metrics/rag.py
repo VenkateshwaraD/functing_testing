@@ -39,6 +39,7 @@ class Faithfulness(BaseMetric):
     """
 
     name = "faithfulness"
+    requires_judge = True
     required_fields = ()
     default_threshold = 0.85
 
@@ -101,6 +102,7 @@ class AnswerRelevancy(BaseMetric):
     """Judge: does the answer address the question (non-committal check)."""
 
     name = "answer_relevancy"
+    requires_judge = True
     default_threshold = 0.7
 
     _PROMPT = """\
@@ -170,6 +172,7 @@ class ContextualRecall(BaseMetric):
     """
 
     name = "contextual_recall"
+    requires_judge = True
     required_fields = ("expected_output",)
     default_threshold = 0.7
 
@@ -223,6 +226,7 @@ class ContextualPrecision(BaseMetric):
     """
 
     name = "contextual_precision"
+    requires_judge = True
     default_threshold = 0.7
 
     _PROMPT = """\
@@ -275,6 +279,7 @@ class CitationAccuracy(BaseMetric):
     """
 
     name = "citation_accuracy"
+    requires_judge = True
     default_threshold = 0.8
 
     _PROMPT = """\
@@ -384,6 +389,7 @@ class MultiTurnCoherence(BaseMetric):
     """
 
     name = "multi_turn_coherence"
+    requires_judge = True
     default_threshold = 0.7
 
     _PROMPT = """\

@@ -131,6 +131,10 @@ class TestCase(BaseModel):
     expected_trajectory: Trajectory | None = None
     tags: list[str] = Field(default_factory=list)  # incl. capability tags for coverage
     metadata: dict[str, Any] = Field(default_factory=dict)
+    # Per-case metric selection — overrides the suite's metrics: list.
+    # YAML `assert:` accepts metric names or {name: ..., params} dicts.
+    assert_: list[Any] | None = Field(default=None, alias="assert")
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ConversationTurn(BaseModel):

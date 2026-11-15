@@ -22,6 +22,19 @@ def metric_names() -> list[str]:
     return sorted(_REGISTRY)
 
 
+def metric_exists(name: str) -> bool:
+    """True when a metric is registered under ``name``."""
+    register_builtins()
+    return name in _REGISTRY
+
+
+def metric_requires_judge(name: str) -> bool:
+    """True when the metric needs an LLM judge to run."""
+    register_builtins()
+    cls = _REGISTRY.get(name)
+    return bool(cls and cls.requires_judge)
+
+
 def register_builtins() -> None:
     """Import every built-in metric module so decorators fire.
 
