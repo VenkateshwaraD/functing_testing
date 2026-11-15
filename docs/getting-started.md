@@ -52,7 +52,7 @@ cp .env.example .env
 
 Keys are validated **eagerly at suite load** — a missing key fails fast
 with a `ConfigError` naming the variable. The `fake` provider needs no key,
-so the `examples/suites/` all run fully offline.
+so the `suites/` all run fully offline.
 
 ### Sanity check
 

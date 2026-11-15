@@ -37,3 +37,4 @@ junit.xml
 .vscode/
 testcases/
 prompts/
+suites/

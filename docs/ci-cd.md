@@ -56,7 +56,7 @@ Steps, in order:
 2. `uv sync --frozen --python $PY` — install deps from `uv.lock`.
 3. `uv run ruff check src examples` — lint (rule set in `pyproject.toml`).
 4. `uv run mypy` — typecheck `src/aitestkit` (config in `pyproject.toml`).
-5. Runs every suite in `examples/suites/*.yaml` through
+5. Runs every suite in `suites/*.yaml` through
    `uv run aitestkit run <suite>` with `PYTHONPATH=.` set from `examples/`.
    These suites are replay-only — they use fake providers and cassettes, so
    they need **no secrets** and work on forks.
