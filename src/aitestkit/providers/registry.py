@@ -44,12 +44,17 @@ def parse_model_spec(spec: str) -> tuple[str, str]:
     return provider, model
 
 
-def make_chat_provider(provider_name: str, **kwargs: Any) -> ChatProvider:
-    """Instantiate a chat provider by name."""
+def make_chat_provider(
+    provider_name: str, *, rpm: int | None = None, **kwargs: Any
+) -> ChatProvider:
+    """Instantiate a chat provider by name (with optional shared rate limit)."""
+    from aitestkit.providers.ratelimit import limiter_for
+
+    kwargs.setdefault("rate_limiter", limiter_for(provider_name, rpm=rpm))
     if provider_name == "fake":
         from aitestkit.providers.fake import FakeChatProvider
 
-        return FakeChatProvider(**kwargs)
+        return FakeChatProvider()
     if provider_name in _CHAT_IMPLS:
         module_name, class_name = _CHAT_IMPLS[provider_name]
         return cast(
@@ -67,12 +72,17 @@ def make_chat_provider(provider_name: str, **kwargs: Any) -> ChatProvider:
     )
 
 
-def make_embedder(provider_name: str, **kwargs: Any) -> Embedder:
-    """Instantiate an embedder by name."""
+def make_embedder(
+    provider_name: str, *, rpm: int | None = None, **kwargs: Any
+) -> Embedder:
+    """Instantiate an embedder by name (with optional shared rate limit)."""
+    from aitestkit.providers.ratelimit import limiter_for
+
+    kwargs.setdefault("rate_limiter", limiter_for(provider_name, rpm=rpm))
     if provider_name == "fake":
         from aitestkit.providers.fake import FakeEmbedder
 
-        return FakeEmbedder(**kwargs)
+        return FakeEmbedder()
     if provider_name in _EMBEDDER_IMPLS:
         module_name, class_name = _EMBEDDER_IMPLS[provider_name]
         return cast(

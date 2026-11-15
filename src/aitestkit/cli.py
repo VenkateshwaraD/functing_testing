@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from aitestkit.config import SuiteConfig
     from aitestkit.metrics.base import BaseMetric, MetricContext
     from aitestkit.models import CaseResult, TestRun
+    from aitestkit.providers.base import ChatProvider
+    from aitestkit.providers.cassette import Cassette
     from aitestkit.redact import Redactor
 
 from aitestkit.exceptions import (
@@ -98,9 +100,14 @@ def _build_ctx(
     judge_provider: str | None = None,
     judge_model: str | None = None,
     redactor: Redactor | None = None,
+    cassette: Cassette | None = None,
 ) -> MetricContext:
     from aitestkit.judge.judge import Judge
     from aitestkit.metrics.base import MetricContext
+    from aitestkit.providers.cassette import (
+        CassetteChatProvider,
+        CassetteEmbedder,
+    )
     from aitestkit.providers.registry import make_chat_provider, make_embedder
     from aitestkit.redact import Redactor as _Redactor
 
@@ -112,14 +119,39 @@ def _build_ctx(
         for spec in suite.metrics
     )
     if needs_judge:
-        provider = make_chat_provider(provider_name)
+        provider_cfg = suite.providers.get(provider_name)
+        provider: ChatProvider | None = None
+        if cassette is None or cassette.mode == "record":
+            provider = make_chat_provider(
+                provider_name, rpm=provider_cfg.rpm if provider_cfg else None
+            )
+        if cassette is not None:
+            provider = CassetteChatProvider(provider, cassette, name=provider_name)
+        if provider is None:
+            raise ConfigError(f"could not build judge provider {provider_name!r}")
         judge = Judge(
             provider,
             model=model,
             temperature=suite.judge.temperature,
             self_consistency=suite.judge.self_consistency,
         )
-    embedder = make_embedder(suite.embedder.provider) if suite.embedder.provider else None
+        for entry in suite.models:
+            judge.warn_if_self_judging(sut_model=entry.split(":", 1)[-1])
+    embedder = None
+    if suite.embedder.provider:
+        embed_rpm = (
+            suite.providers[suite.embedder.provider].rpm
+            if suite.embedder.provider in suite.providers
+            else None
+        )
+        inner = None
+        if cassette is None or cassette.mode == "record":
+            inner = make_embedder(suite.embedder.provider, rpm=embed_rpm)
+        embedder = (
+            CassetteEmbedder(inner, cassette, name=suite.embedder.provider)
+            if cassette is not None
+            else inner
+        )
     return MetricContext(
         judge=judge,
         embedder=embedder,
@@ -146,6 +178,8 @@ async def _run_suite(
     baseline_save: str | None,
     baseline_compare: Path | None,
     redact_enabled: bool,
+    cassette_file: Path | None = None,
+    cassette_mode: str | None = None,
 ) -> tuple[TestRun, bool, SuiteConfig]:
     from aitestkit.baseline import compare_runs, load_baseline, save_baseline
     from aitestkit.config import load_suite, validate_provider_envs
@@ -154,6 +188,7 @@ async def _run_suite(
     from aitestkit.history import record_run
     from aitestkit.metadata import collect_metadata
     from aitestkit.models import TestRun
+    from aitestkit.providers.cassette import Cassette
     from aitestkit.redact import Redactor
     from aitestkit.reporting import attribution, console, github_actions
     from aitestkit.reporting.html_report import write_html
@@ -164,6 +199,13 @@ async def _run_suite(
     from aitestkit.targets.factory import build_target
 
     suite = load_suite(suite_path)
+    cassette = None
+    if cassette_file is not None:
+        cassette = Cassette(
+            cassette_file,
+            mode=cassette_mode or "replay",  # type: ignore[arg-type]
+            redactor=None,
+        )
     judge_needed = any(
         spec.name in {"correctness", "custom_rubric", "faithfulness"} | _JUDGE_METRICS
         for spec in suite.metrics
@@ -177,7 +219,7 @@ async def _run_suite(
     providers_used.update(m.split(":", 1)[0] for m in suite.models)
     providers_used.update(suite.providers.keys())
     providers_used.discard("fake")
-    if providers_used:
+    if providers_used and not (cassette and cassette.mode == "replay"):
         validate_provider_envs(suite, providers=providers_used)
     if not suite.target:
         raise ConfigError(f"{suite_path}: no 'target' configured")
@@ -189,7 +231,11 @@ async def _run_suite(
     target = build_target(suite.target)
     metrics = _build_metrics(suite)
     ctx = _build_ctx(
-        suite, judge_provider=judge_provider, judge_model=judge_model, redactor=redactor
+        suite,
+        judge_provider=judge_provider,
+        judge_model=judge_model,
+        redactor=redactor,
+        cassette=cassette,
     )
     cases = [
         case
@@ -323,6 +369,14 @@ def run(
     redact: Annotated[
         bool, typer.Option("--redact/--no-redact", help="Redact secrets in reports")
     ] = True,
+    cassette: Annotated[
+        Path | None,
+        typer.Option("--cassette", help="Cassette file for record/replay"),
+    ] = None,
+    cassette_mode: Annotated[
+        str | None,
+        typer.Option("--cassette-mode", help="record|replay (default replay)"),
+    ] = None,
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run a test suite."""
@@ -343,6 +397,8 @@ def run(
                 baseline_save=baseline_save,
                 baseline_compare=baseline,
                 redact_enabled=redact,
+                cassette_file=cassette,
+                cassette_mode=cassette_mode,
             )
         )
     except ConfigError as e:
