@@ -191,6 +191,8 @@ async def _run_suite(
     cassette_file: Path | None = None,
     cassette_mode: str | None = None,
     resume_from: Path | None = None,
+    allow_command_targets: bool = False,
+    allow_python_targets: bool = True,
 ) -> tuple[TestRun, bool, SuiteConfig]:
     from aitestkit.baseline import compare_runs, load_baseline, save_baseline
     from aitestkit.config import load_suite, validate_provider_envs
@@ -239,7 +241,19 @@ async def _run_suite(
         enabled=redact_enabled and suite.redact.get("enabled", True),
         extra_patterns=suite.redact.get("patterns") or [],
     )
-    target = build_target(suite.target)
+    import os
+
+    command_allowed = allow_command_targets or bool(
+        os.environ.get("AITESTKIT_ALLOW_COMMAND_TARGETS")
+    )
+    python_allowed = allow_python_targets and not os.environ.get(
+        "AITESTKIT_DISALLOW_PYTHON_TARGETS"
+    )
+    target = build_target(
+        suite.target,
+        allow_python_targets=python_allowed,
+        allow_command_targets=command_allowed,
+    )
     metrics = _build_metrics(suite)
     ctx = _build_ctx(
         suite,
@@ -411,6 +425,20 @@ def run(
             help="Previous results.jsonl (or its directory) — skips finished cases",
         ),
     ] = None,
+    allow_command_targets: Annotated[
+        bool,
+        typer.Option(
+            "--allow-command-targets",
+            help="Permit command: targets (they execute arbitrary argv)",
+        ),
+    ] = False,
+    allow_python_targets: Annotated[
+        bool,
+        typer.Option(
+            "--allow-python-targets/--no-allow-python-targets",
+            help="Permit python: targets (default on; disable for locked-down CI)",
+        ),
+    ] = True,
     verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False,
 ) -> None:
     """Run a test suite."""
@@ -434,6 +462,8 @@ def run(
                 cassette_file=cassette,
                 cassette_mode=cassette_mode,
                 resume_from=resume,
+                allow_command_targets=allow_command_targets,
+                allow_python_targets=allow_python_targets,
             )
         )
     except ConfigError as e:
