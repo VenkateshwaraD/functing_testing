@@ -126,6 +126,7 @@ class TestCase(BaseModel):
     expected_output: str | None = None
     context: list[str] | None = None  # context the case supplies (e.g. seeded docs)
     retrieval_context: list[str] | None = None  # captured retrieved chunks
+    expected_retrieval_ids: list[str] | None = None  # golden labelled ids
     expected_tools: list[ToolCall | str] | None = None
     expected_trajectory: Trajectory | None = None
     tags: list[str] = Field(default_factory=list)  # incl. capability tags for coverage
@@ -157,9 +158,11 @@ class TargetOutput(BaseModel):
     trajectory: Trajectory | None = None
     tool_calls: list[ToolCall] = Field(default_factory=list)
     retrieval_context: list[str] | None = None
+    retrieval_ids: list[str] | None = None  # ids of retrieved chunks, ranked
     usage: Usage = Field(default_factory=Usage)
     latency_ms: float = 0.0
     error: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)  # stage info, e.g. pre_rerank_ids
 
 
 class MetricResult(BaseModel):

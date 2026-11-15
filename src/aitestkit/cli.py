@@ -88,8 +88,11 @@ gates:
 def _build_metrics(suite: SuiteConfig) -> list[BaseMetric]:
     import aitestkit.metrics.agentic  # noqa: F401 — registers metrics
     import aitestkit.metrics.deterministic  # noqa: F401 — registers metrics
+    import aitestkit.metrics.ingestion  # noqa: F401
     import aitestkit.metrics.llm_judge  # noqa: F401
     import aitestkit.metrics.memory  # noqa: F401
+    import aitestkit.metrics.rag  # noqa: F401
+    import aitestkit.metrics.retrieval  # noqa: F401
     from aitestkit.metrics.registry import build_metric
 
     return [
@@ -565,6 +568,112 @@ def trends(
             f"  {metric}: mean {info['first_mean']:.3f} -> {info['last_mean']:.3f} "
             f"(drift {info['drift']:+.3f}, {info['runs']} runs)"
         )
+
+
+@app.command()
+def chunk_compare(
+    corpus: Annotated[Path, typer.Argument(help="Text file or directory of .txt/.md docs")],
+    golden: Annotated[Path, typer.Argument(help="Golden set YAML (query -> relevant_ids)")],
+    strategies: Annotated[
+        str, typer.Option(help="Comma-separated: fixed,semantic,hierarchical")
+    ] = "fixed,hierarchical",
+    embedder: Annotated[str, typer.Option(help="provider:model embedder")] = "fake:fake",
+    top_k: Annotated[int, typer.Option()] = 5,
+    chunk_size: Annotated[int, typer.Option()] = 512,
+    chunk_overlap: Annotated[int, typer.Option()] = 64,
+) -> None:
+    """Re-chunk a corpus per strategy and compare retrieval quality.
+
+    For each strategy: chunk -> embed -> index -> run golden queries ->
+    recall@k / MRR / nDCG. Answers "which chunker should we use" with data
+    instead of vibes.
+    """
+    import asyncio
+
+    from aitestkit.metrics.base import MetricContext
+    from aitestkit.metrics.retrieval import MRR, NDCG, RecallAtK
+    from aitestkit.models import TargetOutput, TestCase
+    from aitestkit.providers.registry import make_embedder
+    from aitestkit.rag.chunking import build_chunker
+    from aitestkit.rag.golden import load_golden
+    from aitestkit.rag.index import InMemoryVectorStore
+
+    provider_name, _, model = embedder.partition(":")
+    embedder_inst = make_embedder(provider_name or "fake")
+
+    async def _run() -> list[dict[str, Any]]:
+        docs = _load_corpus(corpus)
+        golden_set = load_golden(golden)
+        results = []
+        for name in [s.strip() for s in strategies.split(",") if s.strip()]:
+            chunker = build_chunker(
+                name,
+                embedder=embedder_inst,
+                size=chunk_size,
+                overlap=chunk_overlap,
+            )
+            all_chunks = []
+            for doc_id, text in docs.items():
+                if hasattr(chunker, "achunk"):
+                    chunks = await chunker.achunk(text, doc_id=doc_id)
+                else:
+                    chunks = chunker.chunk(text, doc_id=doc_id)
+                all_chunks.extend(chunks)
+            store = InMemoryVectorStore(embedder_inst)
+            await store.upsert(all_chunks)
+            metric_results = []
+            for query in golden_set.queries:
+                hits = await store.query(query.query, top_k=top_k)
+                ids = [c.id for c, _ in hits]
+                case = TestCase(
+                    id=query.id,
+                    input=query.query,
+                    expected_retrieval_ids=query.relevant_ids,
+                )
+                output = TargetOutput(retrieval_ids=ids)
+                for metric in (
+                    RecallAtK(k=top_k, threshold=0.0),
+                    MRR(threshold=0.0),
+                    NDCG(k=top_k, threshold=0.0),
+                ):
+                    metric_results.append(await metric.evaluate(case, output, MetricContext()))
+            by_name: dict[str, list[float]] = {}
+            for r in metric_results:
+                if r.score is not None:
+                    by_name.setdefault(r.metric, []).append(r.score)
+            results.append(
+                {
+                    "strategy": name,
+                    "chunks": len(all_chunks),
+                    **{
+                        m: sum(v) / len(v) if v else 0.0
+                        for m, v in by_name.items()
+                    },
+                }
+            )
+        return results
+
+    rows = asyncio.run(_run())
+    typer.echo(f"{'strategy':<15} {'chunks':>7} {'recall@k':>9} {'mrr':>6} {'ndcg':>6}")
+    for row in rows:
+        typer.echo(
+            f"{row['strategy']:<15} {row['chunks']:>7} "
+            f"{row.get('recall_at_k', 0):>9.3f} {row.get('mrr', 0):>6.3f} "
+            f"{row.get('ndcg', 0):>6.3f}"
+        )
+
+
+def _load_corpus(path: Path) -> dict[str, str]:
+    """Corpus = one .txt/.md file, or a directory of them."""
+    if path.is_file():
+        return {path.stem: path.read_text(errors="replace")}
+    docs = {}
+    for file in sorted(path.glob("**/*")):
+        if file.suffix in {".txt", ".md"} and file.is_file():
+            docs[file.stem] = file.read_text(errors="replace")
+    if not docs:
+        raise ConfigError(f"no .txt/.md documents under {path}")
+    return docs
 
 
 @app.command()
