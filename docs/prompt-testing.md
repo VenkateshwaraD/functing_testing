@@ -119,17 +119,35 @@ well-formed.
 
 ## 5. Run
 
+**One command** — copy-paste this from the repo root:
+
 ```bash
-# fully offline (deterministic metrics only — no judge needed)
 PYTHONPATH=examples uv run aitestkit run suites/prompt_testing_suite.yaml
-
-# with an LLM judge metric in the mix (correctness, custom_rubric...)
-AITESTKIT_JUDGE_PROVIDER=openai uv run aitestkit run suites/X.yaml
-aitestkit run suites/X.yaml --judge anthropic --judge-model claude-haiku-4-5
-
-# custom output dir
-aitestkit run suites/X.yaml -o results/prompt-run-1
 ```
+
+What each piece means:
+
+| Piece | What it does |
+|---|---|
+| `PYTHONPATH=examples` | lets Python find the demo app (`dummy.demo_app`). Only needed because this demo suite calls a bundled stand-in — skip it once `function:` points at *your* installed app |
+| `uv run` | runs aitestkit inside the project env (or use `aitestkit` directly / `python -m aitestkit.cli`) |
+| `aitestkit run` | the command — load suite → run cases × prompt variants → score → check gates |
+| `suites/prompt_testing_suite.yaml` | which suite file to run |
+
+**Other forms you may need:**
+
+```bash
+# choose where results go (default: scratch/)
+aitestkit run suites/X.yaml -o results/my-run
+
+# use a real LLM judge — only if your suite has judge metrics
+# (correctness, custom_rubric, faithfulness...). This demo suite doesn't.
+aitestkit run suites/X.yaml --judge anthropic --judge-model claude-haiku-4-5
+```
+
+Not sure which to use? If the suite's `metrics:` list only has
+`prompt_sim`/`exact_match`/`contains`/`regex_match`, the first command is all
+you need — nothing calls an API, nothing costs money.
 
 Console output:
 
